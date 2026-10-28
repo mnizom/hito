@@ -489,8 +489,9 @@ async function connect(){
   const c = window.claude?.use ? await window.claude.use("db").catch(() => null) : null;
   if (!c) return;
   db = c; mode = "shared";
+  // 서버는 내가 들어간 연결만 돌려준다. 코드로 찾아 둔 남의 연결(아직 새로 연결 전)은 지우지 않고 덮어쓰기만 한다
   db.collection("spaces").onSnapshot(snap => {
-    const m = {}; snap.docs.forEach(d => { m[d.id] = d.data() }); SP = m; render();
+    const m = {}; snap.docs.forEach(d => { m[d.id] = d.data() }); SP = { ...SP, ...m }; render();
   }, () => {});
   subscribeSpace();
 }
