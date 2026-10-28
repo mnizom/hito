@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793213702318">
-  <script type="module" crossorigin src="./assets/index-DNKqZiXD.js"></script>
+<meta name="hito-build" content="1793214515792">
+  <script type="module" crossorigin src="./assets/index-C2eAhG_I.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -18,7 +18,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Gowun+Batang:wght@400;700&family=Caveat:wght@700&display=swap">
 <style>
 /* Layout: one phone-width column — glass header, scrolling cards, floating tab bar with a raised + button. */
 :root{
@@ -357,6 +357,16 @@ nav.tabs svg{width:25px;height:25px}
 .ask{display:flex;flex-direction:column;gap:4px;padding-top:14px}
 .ask b{font-weight:600;font-size:14.5px}
 .report{font-size:16px}
+/* 로고: 검은 손글씨 뒤에 색연필 한 번 — Hi 는 a 색, To 는 b 색. 밤에는 같은 색을 조금 밝게 */
+:root{--logo-a:var(--a);--logo-b:var(--b)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--logo-a:color-mix(in srgb,var(--a) 72%,white);--logo-b:color-mix(in srgb,var(--b) 72%,white)}
+  :root:not([data-theme="light"]) .logo-mark .under{mix-blend-mode:normal}}
+:root[data-theme="dark"]{--logo-a:color-mix(in srgb,var(--a) 72%,white);--logo-b:color-mix(in srgb,var(--b) 72%,white)}
+:root[data-theme="dark"] .logo-mark .under{mix-blend-mode:normal}
+.logo-mark{display:block;height:36px;width:auto;overflow:visible}
+.logo-mark .under{mix-blend-mode:multiply;opacity:.9}
+.dday{font-size:13.5px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums;flex:none}
+.qpage{padding-inline:clamp(14px,5vw,28px)}
 .bask{font-size:20px;font-weight:600;line-height:1.45;margin:8px 0 4px}
 .bf{display:flex;flex-direction:column;gap:6px;padding:4px 0}
 .chips button i{font-style:normal;font-weight:700;margin-right:6px;color:var(--accent)}
@@ -371,6 +381,19 @@ nav.tabs svg{width:25px;height:25px}
 textarea.short{min-height:0}
 </style>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="pen" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="3"/>
+    <feDisplacementMap in="SourceGraphic" scale="1.8"/>
+  </filter>
+  <filter id="pencil" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="2" seed="7" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="2.2" numOctaves="1" seed="11" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.25" result="ga"/>
+    <feComposite in="d" in2="ga" operator="in"/>
+  </filter>
+</svg>
 <div class="app">
   <header class="top" id="top"></header>
   <main id="view" aria-live="polite"></main>
@@ -404,6 +427,10 @@ const ICON = {
   cloud: '<path d="M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 0 9.5z"/>',
 };
 const svg = (n, cls = "i") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
+// 로고 (로고 시안 아티팩트 그대로): Caveat 손글씨 검은 글씨 + 색연필 밑칠(#pencil). 색은 두 사람의 색을 따른다
+const LOGO = `<svg class="logo-mark" viewBox="62 30 196 82" role="img" aria-label="HiTo">
+  <text class="under" x="163.9" y="94.4" text-anchor="middle" filter="url(#pencil)" style="font:700 98px Caveat,cursive"><tspan fill="var(--logo-a)">Hi</tspan><tspan fill="var(--logo-b)">To</tspan></text>
+  <text x="160" y="92" text-anchor="middle" fill="var(--ink)" filter="url(#pen)" style="font:700 98px Caveat,cursive">HiTo</text></svg>`;
 
 // ---------- built-in content ----------
 const DAILY_LIMIT = 6; // 하루에 올리는 상황 수. basic: 각자 6개 / pro: 각자 24개
@@ -615,9 +642,10 @@ function renderTop(title, action){
   const hearts = heartBalance();
   const left = route.name === "home"
     ? `<button class="iconbtn" data-menu aria-label="설정">${svg("gear")}</button>
-       <h1 class="logo"><span class="hi">Hi</span><span class="to">To</span></h1>`
+       <h1 class="logo">${LOGO}</h1>`
     : `<button class="iconbtn" data-back aria-label="뒤로">${svg("back")}</button><h1>${title || ""}</h1>`;
-  top.innerHTML = `${left}${action ? `<button class="iconbtn" data-action aria-label="${action.label}">${svg(action.icon)}</button>` : ""}<span class="hearts" title="내 하트 점수"><svg viewBox="0 0 24 24">${ICON.heart}</svg>${hearts}</span>`;
+  const dd = space && me ? dday() : "";
+  top.innerHTML = `${left}${action ? `<button class="iconbtn" data-action aria-label="${action.label}">${svg(action.icon)}</button>` : ""}${dd ? `<span class="dday">${dd}</span>` : ""}<span class="hearts" title="내 하트 점수"><svg viewBox="0 0 24 24">${ICON.heart}</svg>${hearts}</span>`;
   top.querySelector("[data-back]")?.addEventListener("click", () => go(route.backTo || "home", route.backParams || {}));
   top.querySelector("[data-menu]")?.addEventListener("click", () => go("settings"));
   top.querySelector("[data-action]")?.addEventListener("click", action?.onClick);
@@ -997,15 +1025,20 @@ const filled = v => Array.isArray(v) ? v.length > 0 : !!String(v ?? "").trim();
 const fieldName = f => typeof f === "string" ? f.replace(/ \(선택\)$/, "") : f.l;
 const baseDoc = w => S.base[w] || { who: w, ans: {} };
 const isAnswered = (a, q) => !!a && (!!a.no || q[3].every((f, i) => optional(f) || filled(a.f?.[i])));
-const baseCount = w => baseList().filter(q => isAnswered(baseDoc(w).ans?.[q[0]], q)).length;
+// 패스한 문제는 맨 뒤로 가고, 다시 답할 때까지 진행 수에 들어가지 않는다 (base/<사람>.pass = 패스한 순서)
+const passed = w => baseDoc(w).pass || [];
+const baseOrder = w => { const p = passed(w), list = baseList(); return [...list.filter(q => !p.includes(q[0])), ...p.map(k => list.find(q => q[0] === k)).filter(Boolean)] };
+const baseCount = w => baseList().filter(q => isAnswered(baseDoc(w).ans?.[q[0]], q) && !passed(w).includes(q[0])).length;
 const baseDone = w => !!S.base[w]?.done;
 const opened = () => baseDone("a") && baseDone("b");
 // 정리에 넘기는 한 줄: 「칸 이름: 값」을 / 로 잇는다
 const baseText = (a, q) => q[3].map((f, i) => { const v = a.f?.[i]; if (!filled(v)) return "";
   const val = Array.isArray(v) ? v.join(", ") : String(v).trim(), n = fieldName(f); return n ? `${n}: ${val}` : val }).filter(Boolean).join(" / ");
 function saveBaseAns(key, a){
-  const d = baseDoc(me);
-  put("base", me, { ...d, who: me, ans: { ...(d.ans || {}), [key]: { ...a, ts: Date.now() } } });
+  const d = baseDoc(me), q = baseList().find(x => x[0] === key);
+  // 패스했던 문제에 다 답하면 패스에서 뺀다
+  const pass = q && isAnswered(a, q) ? (d.pass || []).filter(k => k !== key) : d.pass;
+  put("base", me, { ...d, who: me, ans: { ...(d.ans || {}), [key]: { ...a, ts: Date.now() } }, ...(pass ? { pass } : {}) });
 }
 // 쓰는 중인 줄글은 draft.bt[질문][칸] 에 두었다가 넘기거나 칸을 벗어날 때 저장한다
 function flushBase(){
@@ -1015,10 +1048,11 @@ function flushBase(){
     if (changed) saveBaseAns(key, { ...a, no: false, f }) });
 }
 // 한 번에 한 문제. 처음 열면 아직 안 한 첫 문제로
-const baseAt = () => { const list = baseList(); return Math.max(0, Math.min(draft.bi ?? 0, list.length - 1)) };
+const baseAt = () => { const list = baseOrder(me); return Math.max(0, Math.min(draft.bi ?? 0, list.length - 1)) };
+const firstOpen = () => baseOrder(me).findIndex(q => !isAnswered(baseDoc(me).ans?.[q[0]], q) || passed(me).includes(q[0]));
 function baseHTML(){
-  const list = baseList(), total = list.length, d = baseDoc(me);
-  draft.bi ??= Math.max(0, list.findIndex(q => !isAnswered(d.ans?.[q[0]], q)));
+  const list = baseOrder(me), total = list.length, d = baseDoc(me);
+  draft.bi ??= Math.max(0, firstOpen());
   const i = baseAt(), [key, grp, ask, fields] = list[i], a = d.ans?.[key] || {};
   const field = (f, fi) => typeof f === "string"
     ? `<label class="bf"><span class="small muted">${esc(f)}</span>
@@ -1027,17 +1061,18 @@ function baseHTML(){
         const sel = a.f?.[fi], on = f.m ? (sel || []).includes(o) : sel === o;
         return `<button data-pick="${fi}" data-v="${esc(o)}" aria-pressed="${on}">${f.m && on ? `<i>${sel.indexOf(o) + 1}</i>` : ""}${esc(o)}</button>` }).join("")}</div></div>`;
   return `<div class="welcome" style="padding-top:8px">
-    <span class="small muted">${esc(grp)} · ${i + 1}/${total}</span>
+    <span class="small muted">${esc(grp)} · ${baseCount(me)}/${total}</span>
     <h2 class="bask">${esc(ask)}</h2>
     ${fields.map(field).join("")}
     <div class="bq-row">${SENSITIVE(key) ? `<button class="textbtn" data-no aria-pressed="${!!a.no}">${a.no ? "✓ " : ""}말하고 싶지 않음</button>` : "<span></span>"}
       <button class="textbtn" data-open aria-pressed="${!!a.open}">${a.open ? "상대에게 그대로 보여도 됨" : "속마음"}</button></div>
     <div class="bq-row"><button class="btn" id="bp-prev" ${i ? "" : "disabled"}>이전</button>
+      <button class="textbtn" id="bp-pass">패스</button>
       ${i < total - 1 ? `<button class="btn primary" id="bp-next">다음</button>` : `<button class="btn primary" id="bp-done">끝내기</button>`}</div>
   </div>`;
 }
 function bindBase(v){
-  const list = baseList(), i = baseAt(), [key, , , fields] = list[i];
+  const list = baseOrder(me), i = baseAt(), [key, , , fields] = list[i];
   const cur = () => baseDoc(me).ans?.[key] || {};
   v.querySelectorAll("[data-t]").forEach(t => { const fi = t.dataset.t;
     const grow = () => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px" }; grow();
@@ -1052,10 +1087,13 @@ function bindBase(v){
   const flip = k => { flushBase(); draft.bi = i + k; render(true); document.getElementById("view").scrollTop = 0 };
   v.querySelector("#bp-prev")?.addEventListener("click", () => flip(-1));
   v.querySelector("#bp-next")?.addEventListener("click", () => flip(1));
+  // 패스: 이 문제를 맨 뒤로 보낸다. 같은 자리(i)에 다음 문제가 온다
+  v.querySelector("#bp-pass").onclick = () => { flushBase(); const d = baseDoc(me);
+    put("base", me, { ...d, who: me, pass: [...(d.pass || []).filter(k => k !== key), key] }); render(true); document.getElementById("view").scrollTop = 0 };
   v.querySelector("#bp-done")?.addEventListener("click", () => {
     flushBase();
-    const left = list.findIndex(q => !isAnswered(baseDoc(me).ans?.[q[0]], q));
-    if (left >= 0){ toast(`${list.filter(q => !isAnswered(baseDoc(me).ans?.[q[0]], q)).length}개 남음 · ${left + 1}번부터`); draft.bi = left; render(true); return }
+    const open = baseOrder(me).filter(q => !isAnswered(baseDoc(me).ans?.[q[0]], q) || passed(me).includes(q[0]));
+    if (open.length){ toast(`${open.length}개 남음`); draft.bi = firstOpen(); render(true); return }
     put("base", me, { ...baseDoc(me), who: me, done: Date.now() }); toast("다 답했어요");
   });
 }
@@ -1128,7 +1166,7 @@ VIEWS.questions = () => {
     : !baseDone(o) ? `<div class="welcome" style="align-items:center;text-align:center"><span class="daytitle">다 답했어요</span>
         <span class="muted">${esc(nameOf(o))}님이 ${baseCount(o)}/${baseList().length} 답했어요 · 다 답하면 오늘 질문과 첫 리포트가 열려요</span></div>`
     : todayHTML();
-  return { title: "?", html: `<div class="keybar"><span style="color:var(--accent);font-size:18px">♥</span><b>${heartBalance()}</b></div>${html}`,
+  return { title: "?", html: `<div class="qpage"><div class="keybar"><span style="color:var(--accent);font-size:18px">♥</span><b>${heartBalance()}</b></div>${html}</div>`,
     bind: v => { autoAI(); if (!baseDone(me)) bindBase(v); else if (baseDone(o)) bindToday(v) } };
 };
 
@@ -1321,23 +1359,50 @@ ${tiltLines()}
 ${moodLines("a")}
 ${moodLines("b")}`;
 }
-// 첫 리포트: 두 사람이 기본 질문을 마친 순간 한 번 — 나 · 상대 · 관계를 한 번에 (읽는 사람마다 따로)
-function firstPrompt(w){
-  const o = other(w), O = nameOf(o), W = nameOf(w);
-  return `두 사람(${people()})이 기본 질문에 답한 자료로, ${W}님이 읽는 첫 리포트를 쓴다.
+// 첫 나 리포트: 내 질문을 다 마친 순간 한 번 (상대를 기다리지 않는다) — 내 자료만, 속마음까지. 비싼 모델로 자세히
+const DETAIL = `- 자세히 쓴다. 소제목마다 3~6문장. 자료에 근거가 있는 말만 하고, 근거가 약하면 "~인 것 같아요"로.
+- 마크다운 기호 없이 평문. 소제목은 한 줄, 그 아래 본문. 문단 사이는 빈 줄 하나.`;
+function firstMePrompt(w){
+  const W = nameOf(w);
+  return `${W}님이 처음 답한 질문들(그리고 그 뒤 남긴 것)을 정리한 자료로, ${W}님 자신에 대한 첫 리포트를 쓴다.
 ${PLAIN(w)}
-${SHARED_RULE}
-- [${W}님 자료]는 ${W}님 자신의 것이라 속마음까지 써도 된다. [${O}님 자료]는 위 규칙을 지킨다.
+${DETAIL}
+- 자료에서 "닻"은 위쪽 칸(목표 · 가치 · 기준), "붙은 수"는 그 닻에 실제 답이 몇 개 붙었는지다.
 구성:
-${W}님 — 가장 위에서 바라는 것, 가장 이루고 싶다고 한 것, 지금 막힌 곳, 생각하고 배우는 방식. 4~6문장.
-${O}님 — ${O}님이 바라는 큰 줄기. 2~4문장.
-두 분 — 같은 방향, 생각이 다른 곳, 바라는 것과 해 줄 수 있는 것이 어긋나는 곳, 마음이 전해지는 방식이 다른 곳, 대등함을 전제로 개인의 차이에서 오는 기울기. 4~6문장.
+한 줄로 — ${W}님을 한 문장으로.
+가장 위에서 바라는 것 — 여러 답이 함께 가리키는 방향과 그 끝.
+말한 것과 답에 드러난 것 — 가장 이루고 싶다고 한 것과 다른 답들이 실제로 가리키는 곳이 같은지, 자기 평가끼리 어긋나는 곳.
+세상을 보는 방식 — 가치관, 문제를 어디서 보고 어떻게 푸는지, 스스로 내린 정의들.
+재미와 긁힘 — 어떨 때 좋고, 어떨 때 상하는지.
+생각하고 배우는 방식 — 배우고 이해하고 기억하는 방식, 문제가 닥쳤을 때의 여유, 말로 꺼내고 받는 방식, 자기 판단이 맞는 정도.
+성장 — 성장을 무엇으로 보는지, 지금 자라는 곳과 막힌 곳.
+관계에서의 나 — 상대에게 바라는 것, 해 줄 수 있는 것, 갈등 · 표현 방식.
+생길 수 있는 문제와 해결책 — 2~4개. 각각 어디서 생기는지, 그 밑에 어떤 바람이 있는지, 해 볼 것 한 줄(지금 할 수 있는 크기로).
 
-[${W}님 자료]
-${dataOf(w, w)}
+[${W}님 자료] (id | 날짜 | 누가→누구에 대해 | 내용)
+${dataOf(w, w)}`;
+}
+// 첫 관계 리포트: 두 사람이 다 마친 순간 한 번 — 두 사람이 함께 읽는다(속마음은 둘 다 큰 바람으로만). 비싼 모델로 자세히
+function firstUsPrompt(){
+  return `두 사람(${people()})이 처음 답한 질문들을 정리한 자료로, 두 사람이 함께 읽는 첫 관계 리포트를 쓴다.
+${PLAIN(null)}
+${SHARED_RULE}
+${DETAIL}
+- 두 사람은 대등하다. 기울기는 대등함이 깨진 것이 아니라 개인의 차이에서 온다. 누가 잘못했다고 판정하지 않는다.
+구성:
+두 분은 — 두 사람을 함께 놓고 본 요약.
+같은 방향 — 함께 바라는 것, 한 가지로 둘 다 좋아지는 곳.
+생각이 다른 곳 — 위 규칙대로, 누가 무엇을 원하는지 말하지 않고.
+바라는 것과 해 줄 수 있는 것 — 한쪽이 바라는 것을 다른 쪽이 해 줄 수 있는지, 어긋나 서운함이 생길 수 있는 곳.
+마음이 전해지는 방식 — 한쪽이 보내는 표현을 다른 쪽이 표현으로 읽는지.
+생각하는 방식의 차이 — 생각하고 말하는 방식이 다른 곳, 누가 누구에게 어떻게 풀어서 보여 주면 좋은지.
+기울기 — 개인의 차이로 한쪽으로 기울 수 있는 곳.
+나의 성장과 우리의 성장 — 각자의 성장과 둘의 성장이 놓이는 자리.
+생길 수 있는 문제와 해결책 — 3~5개. 각각 어디서 생기는지, 그 밑에 어떤 바람이 있는지, 두 사람이 해 볼 것 한 줄.
+같이 이야기해 볼 것 — 대화 주제 2~3개, 한 줄씩.
 
-[${O}님 자료]
-${dataOf(o, w)}`;
+[자료] (id | 날짜 | 누가→누구에 대해 | 내용)
+${modsLines(modsFor(null))}`;
 }
 // 궁금한 것: 자료로 답하고, 모자라면 상대의 오늘 질문으로 보낼 질문을 만든다
 function answerPrompt(w, q){
@@ -1400,11 +1465,12 @@ const REPORTS = {
   me: () => ({ key: "self_" + me, prompt: selfPrompt(me), label: "report_me" }),
   other: () => ({ key: "about_" + me, prompt: otherPrompt(me), label: "report_other" }),
   us: () => ({ key: "us", prompt: usPrompt(), opts: { modelTier: "complex" }, label: "report_us" }),
-  first: () => ({ key: "first_" + me, prompt: firstPrompt(me), opts: { modelTier: "complex" }, label: "report_first" }),
+  firstMe: () => ({ key: "first_me_" + me, prompt: firstMePrompt(me), opts: { modelTier: "complex" }, label: "report_first_me" }),
+  firstUs: () => ({ key: "first_us", prompt: firstUsPrompt(), opts: { modelTier: "complex" }, label: "report_first_us" }),
 };
 function writeReport(kind){
   return runAI("쓰는 중", async () => {
-    if (pendingItems().length) await organizeNow();
+    for (let i = 0; i < 8 && pendingItems().length; i++) await organizeNow(); // 쌓인 답을 끝까지 정리한 뒤 쓴다
     const r = REPORTS[kind]();
     const { text } = await ai(r.prompt, { cache: false, ...(r.opts || {}), ...LBL(r.label) });
     put("meta", r.key, { text, ts: Date.now(), by: me });
@@ -1432,7 +1498,9 @@ async function autoAI(){
   // 같은 날 · 같은 일은 한 번만 시도한다 (실패해도 화면을 열 때마다 다시 부르지 않게)
   const date = ymd(new Date());
   if (opened() && !todayDoc() && tried.today !== date){ tried.today = date; await runAI("오늘 질문 만드는 중…", makeToday) }
-  if (opened() && !S.meta["first_" + me] && !tried.first){ tried.first = 1; await writeReport("first") }
+  // 첫 리포트: 나는 내 질문을 다 마치면, 관계는 두 사람이 다 마치면 (관계는 먼저 연 사람이 한 번 쓴다)
+  if (baseDone(me) && !S.meta["first_me_" + me] && !tried.firstMe){ tried.firstMe = 1; await writeReport("firstMe") }
+  if (opened() && !S.meta.first_us && !tried.firstUs){ tried.firstUs = 1; await writeReport("firstUs") }
 }
 
 // diary
@@ -1656,9 +1724,12 @@ function myLoveTrend(){
 }
 // 리포트 + 궁금한 것(asks). 두 사람이 기본 질문을 마치기 전에는 잠긴다.
 // 궁금한 것 중 상대의 오늘 질문으로 물어본 것은, 상대가 답하고 정리된 뒤 이 화면을 열면 다시 답한다.
+const reportOpen = kind => kind === "me" ? baseDone(me) : opened();
 function reportHTML(kind){
-  if (!opened()) return `<section style="margin-top:8px"><span class="small muted">두 사람이 ? 탭의 질문에 다 답하면 리포트가 열려요 · 나 ${baseCount(me)}/${baseList().length} · ${esc(nameOf(other(me)))} ${baseCount(other(me))}/${baseList().length}</span></section>`;
-  const key = { me: "self_" + me, other: "about_" + me, us: "us" }[kind], rp = S.meta[key], first = S.meta["first_" + me];
+  if (!reportOpen(kind)) return `<section style="margin-top:8px"><span class="small muted">${kind === "me"
+    ? `? 탭의 질문에 다 답하면 나 리포트가 나와요 · ${baseCount(me)}/${baseList().length}`
+    : `두 사람이 ? 탭의 질문에 다 답하면 리포트가 열려요 · 나 ${baseCount(me)}/${baseList().length} · ${esc(nameOf(other(me)))} ${baseCount(other(me))}/${baseList().length}`}</span></section>`;
+  const key = { me: "self_" + me, other: "about_" + me, us: "us" }[kind], rp = S.meta[key], first = S.meta[{ me: "first_me_" + me, us: "first_us" }[kind]];
   if (ai && !aiState){
     const redo = all("asks").find(a => a.by === me && !a.done && a.aiq && S.aiq[a.aiq]?.ans && S.aiq[a.aiq].ats <= aiCut() && (a.ats || 0) < aiCut());
     if (redo) setTimeout(() => answerAsk(redo.id), 0);
@@ -1666,7 +1737,7 @@ function reportHTML(kind){
   const d = rp && new Date(rp.ts);
   const asks = all("asks").filter(a => a.by === me).sort((x, y) => y.ts - x.ts);
   return `<section style="margin-top:8px">
-      ${first && kind === "me" ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary><div class="voice report">${esc(first.text)}</div></details>` : ""}
+      ${first ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary><div class="voice report">${esc(first.text)}</div></details>` : ""}
       ${rp ? `<div class="voice report">${esc(rp.text)}</div><span class="small muted">${d.getMonth() + 1}.${d.getDate()} ${hm(rp.ts)}</span>` : ""}
       ${ai ? `<button class="btn primary" id="rp-go" style="align-self:flex-start" ${aiState ? "disabled" : ""}>${aiState || (rp ? "다시 쓰기" : "리포트 쓰기")}</button>` : ""}
     </section>
@@ -1693,7 +1764,7 @@ VIEWS.stats = () => {
       `<button data-sub="${k}" aria-pressed="${sub === k}">${l}</button>`).join("")}</div></div>
     ${body}
     ${reportHTML(sub)}`,
-  bind: v => { autoAI(); v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); if (opened()) bindReport(v, sub) } };
+  bind: v => { autoAI(); v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); if (reportOpen(sub)) bindReport(v, sub) } };
 };
 // 속마음 비교 = 밖으로 말한 글자 수 대비 속마음 글자 수 (공백 제외)
 //   밖으로 말한 것: 상황의 한마디
