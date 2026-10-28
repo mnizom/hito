@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-  <script type="module" crossorigin src="./assets/index-BBg0eXBh.js"></script>
+  <script type="module" crossorigin src="./assets/index-cSsRBYpg.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -38,7 +38,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark}
 
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
@@ -55,9 +55,11 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stro
 .hearts{display:flex;align-items:center;gap:4px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:5px 11px;border-radius:999px;font-size:14px;font-variant-numeric:tabular-nums;flex:none}
 .hearts svg{width:15px;height:15px;fill:currentColor;stroke:none}
 
-main{flex:1;overflow-y:auto;padding-block:6px 112px;
+main{flex:1;overflow-y:auto;padding-block:6px 0;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:16px}
+/* 떠 있는 탭 박스 + 아이폰 홈 바만큼 끝에 빈칸 (스크롤 칸의 padding-bottom 은 사파리가 무시할 때가 있다) */
+main::after{content:"";flex:none;height:calc(84px + env(safe-area-inset-bottom,0px))}
 
 nav.tabs{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));
   display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:64px;padding:0 6px;
@@ -626,7 +628,8 @@ function pairHTML(){
     ${segOf("pm", draft.pm, [["make", "초대하기"], ["join", "코드 입력"]])}
     ${draft.pm === "make" ? segOf("pk", draft.pk, KINDS)
       : `<input type="text" id="p-code" inputmode="numeric" maxlength="7" placeholder="코드" aria-label="코드" value="${esc(draft.code || "")}" style="font-size:24px;letter-spacing:.2em">`}
-    <button class="btn primary" id="p-go">${draft.pm === "make" ? "코드 만들기" : "연결"}</button></div>`,
+    <button class="btn primary" id="p-go">${draft.pm === "make" ? "코드 만들기" : "연결"}</button>
+    ${logoutHTML()}</div>`,
   bind: v => {
     const keep = () => { const c = v.querySelector("#p-code"); if (c) draft.code = c.value };
     v.querySelectorAll("[data-pm]").forEach(b => b.onclick = () => { keep(); draft.pm = b.dataset.pm; render(true) });
@@ -648,8 +651,18 @@ function pairHTML(){
       draft = { pm: "join", found: code }; render(true);
     };
     v.querySelector("#p-go").onclick = go_;
+    bindLogout(v);
     v.querySelector("#p-code")?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) go_() });
   }};
+}
+// 앱 버전(hito-app)에만 로그인이 있다. claude.ai 에서는 window.hitoApp 이 없어 버튼도 없다
+const logoutHTML = () => window.hitoApp ? `<button class="textbtn" id="logout" style="align-self:flex-start">로그아웃</button>` : "";
+function bindLogout(v){
+  const b = v.querySelector("#logout"); if (!b) return;
+  b.onclick = () => {
+    if (!b.dataset.armed){ b.dataset.armed = 1; b.textContent = "한 번 더 누르면 로그아웃"; b.classList.add("danger"); return }
+    window.hitoApp.signOut();
+  };
 }
 // 연결 뒤 처음: 내 이름과 내 색 (상대가 고른 색은 막는다)
 function setupHTML(){
@@ -1387,6 +1400,7 @@ VIEWS.settings = () => {
       <ul class="qlist card">${ids.map(spaceRow).join("")}</ul>
       <button class="btn" id="n-add">${svg("plus")} 새 연결</button>
       <button class="textbtn" id="leave" style="align-self:flex-start">이 기기에서 나가기</button>
+      ${logoutHTML()}
     </section>`,
   bind: v => {
     const keep = () => { draft.na = v.querySelector("#s-a").value; draft.nb = v.querySelector("#s-b").value; draft.start = v.querySelector("#s-start").value };
@@ -1406,6 +1420,7 @@ VIEWS.settings = () => {
       try { localStorage.removeItem("hito.space") } catch {}
       space = null; me = null; subscribeSpace(); COLS.forEach(c => S[c] = {}); go("home");
     };
+    bindLogout(v);
     v.querySelectorAll("[data-color]").forEach(b => b.onclick = () => { keep();
       putSpace(space, { ...SP[space], colors: { ...(SP[space]?.colors || {}), [me]: b.dataset.color } }) });
   }};
