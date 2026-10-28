@@ -408,6 +408,10 @@ function lsSet(k, v){ try { localStorage.setItem(k, v) } catch {} }
 // 이 기기가 들어간 연결 목록과 각 연결에서 내가 a인지 b인지는 이 기기에만 저장한다.
 let space = lsGet("hito.space");
 let SP = {};
+// 초대 링크(?join=코드)로 열렸으면 코드를 기억해 두고 주소에서는 지운다. 로그인을 거쳐도 남도록 저장한다
+{ const q = new URLSearchParams(location.search), c = (q.get("join") || "").replace(/\D/g, "");
+  if (c.length === 6) lsSet("hito.invite", c);
+  if (q.has("join")) try { q.delete("join"); history.replaceState(null, "", location.pathname + (String(q) ? "?" + q : "") + location.hash) } catch {} }
 const colPath = col => `spaces/${space}/${col}`;
 const lsData = () => "hito.data." + space;
 const lsMe = () => "hito.me." + space;
@@ -572,6 +576,12 @@ function render(force){
   pending = false;
   applyColors();
   if (space && me && myId && SP[space]?.joined?.[me] === true && claimed !== space){ claimed = space; putSpace(space, { ...SP[space], joined: { ...SP[space].joined, [me]: myId } }) }
+  // 초대 링크로 들어왔으면 db가 준비된 뒤 그 코드를 찾는 화면으로 (이미 그 연결 안이면 그냥 둔다)
+  const inv = lsGet("hito.invite");
+  if (inv && (db || !window.claude?.use)){
+    try { localStorage.removeItem("hito.invite") } catch {}
+    if (inv !== space){ route = { name: space && me ? "pair" : "home", backTo: "home" }; draft = { pm: "join", code: inv, auto: true } }
+  }
   // 연결이 없으면 어느 탭이든 홈(초대하기 / 코드 입력)으로
   if (!space || !me) route = { name: "home" };
   const v = VIEWS[route.name] || VIEWS.home;
@@ -611,6 +621,7 @@ function pairHTML(){
   const code = draft.found, sp = code && SP[code];
   // 코드를 넣었는데 내 자리가 없고 빈자리도 없으면 들어갈 수 없다. 빈자리가 있으면 새로 연결만
   if (sp) return { html: `<div class="welcome">
+      ${sp.names?.a ? `<span class="muted">${esc(sp.names.a)}님의 초대</span>` : ""}
       <span class="pair-code" style="padding-top:0">${code.slice(0, 3)} ${code.slice(3)}</span>
       ${sp.joined?.b ? `<span class="muted">이미 연결된 코드</span>` : `<button class="btn primary" id="p-new">새로 연결</button>`}
       <button class="textbtn" id="p-back" style="align-self:flex-start">다른 코드</button></div>`,
@@ -651,6 +662,7 @@ function pairHTML(){
       draft = { pm: "join", found: code }; render(true);
     };
     v.querySelector("#p-go").onclick = go_;
+    if (draft.auto){ delete draft.auto; go_() }
     bindLogout(v);
     v.querySelector("#p-code")?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) go_() });
   }};
@@ -691,6 +703,15 @@ function setupHTML(){
   }};
 }
 
+// 초대 보내기: 앱 버전(hito-app)은 웹 주소에 코드를 붙인 링크를, claude.ai 버전은 코드만 보낸다.
+// 공유 창이 없으면(안드로이드 앱 등) 클립보드에 복사한다
+const INVITE_BASE = "https://mnizom.github.io/hito/";
+async function sendInvite(code){
+  const url = window.hitoApp ? `${INVITE_BASE}?join=${code}` : "", text = `HiTo에서 같이 써요 · 연결 코드 ${code}`;
+  if (navigator.share){ try { await navigator.share(url ? { text, url } : { text }); return } catch (e){ if (e?.name === "AbortError") return } }
+  navigator.clipboard.writeText(url ? `${text}\n${url}` : text).then(() => toast(url ? "링크 복사 · 카톡에 붙여 넣어 주세요" : "복사"), () => toast(url || code));
+}
+
 // ---------- screens ----------
 const VIEWS = {};
 VIEWS.pair = () => ({ title: "새 연결", ...pairHTML() });
@@ -701,8 +722,12 @@ VIEWS.home = () => {
   if (SP[space] && !SP[space].names?.[me]) return setupHTML();
   if (waiting()) return { html: `<div class="welcome" style="align-items:center;text-align:center">
       <span class="pair-code">${space.slice(0, 3)} ${space.slice(3)}</span>
-      <button class="btn" id="copy-code">복사</button></div>`,
-    bind: v => v.querySelector("#copy-code").onclick = () => navigator.clipboard.writeText(space).then(() => toast("복사"), () => toast(space)) };
+      <button class="btn primary" id="send-code">${window.hitoApp ? "링크 보내기" : "보내기"}</button>
+      <button class="textbtn" id="copy-code">코드만 복사</button></div>`,
+    bind: v => {
+      v.querySelector("#send-code").onclick = () => sendInvite(space);
+      v.querySelector("#copy-code").onclick = () => navigator.clipboard.writeText(space).then(() => toast("복사"), () => toast(space));
+    }};
   const o = other(me);
   const latest = all("posts").filter(p => p.who === o).sort((x, y) => y.ts - x.ts)[0];
   const html = latest ? postHTML(latest)
