@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793217524205">
-  <script type="module" crossorigin src="./assets/index-PKdTJQET.js"></script>
+<meta name="hito-build" content="1793218353828">
+  <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -430,9 +430,10 @@ const ICON = {
 };
 const svg = (n, cls = "i") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 // 로고 (로고 시안 아티팩트 그대로): Caveat 손글씨 검은 글씨 + 색연필 밑칠(#pencil). 색은 두 사람의 색을 따른다
+// 아이폰 사파리는 필터를 건 글자를 글자 상자까지만 그려서 "o" 뒤 색연필이 잘린다 — 로고 전체 크기의 투명 사각형을 같은 묶음에 넣어 상자를 넓힌다
 const LOGO = `<svg class="logo-mark" width="91" height="47" preserveAspectRatio="xMinYMid meet" viewBox="80 12 220 114" role="img" aria-label="HiTo">
-  <text class="under" x="89.4" y="94.4" filter="url(#pencil)" style="font:700 98px Caveat,cursive"><tspan fill="var(--logo-a)">Hi</tspan><tspan fill="var(--logo-b)">To</tspan></text>
-  <text x="85.5" y="92" fill="var(--ink)" filter="url(#pen)" style="font:700 98px Caveat,cursive">HiTo</text></svg>`;
+  <g class="under" filter="url(#pencil)"><rect x="80" y="12" width="220" height="114" fill="#000" fill-opacity="0"/><text x="89.4" y="94.4" style="font:700 98px Caveat,cursive"><tspan fill="var(--logo-a)">Hi</tspan><tspan fill="var(--logo-b)">To</tspan></text></g>
+  <g filter="url(#pen)"><rect x="80" y="12" width="220" height="114" fill="#000" fill-opacity="0"/><text x="85.5" y="92" fill="var(--ink)" style="font:700 98px Caveat,cursive">HiTo</text></g></svg>`;
 
 // ---------- built-in content ----------
 const DAILY_LIMIT = 6; // 하루에 올리는 상황 수. basic: 각자 6개 / pro: 각자 24개
@@ -516,15 +517,18 @@ function subscribeMine(){
 }
 function syncBase(){
   if (!UB || !me || !space || baseLoaded !== space) return;
-  const d = baseDoc(me), mine = UB.ans || {}, here = d.ans || {}, ans = { ...here };
-  Object.entries(mine).forEach(([k, a]) => { if (!here[k] || (a.ts || 0) > (here[k].ts || 0)) ans[k] = a });
-  const same = (x, y) => JSON.stringify(x) === JSON.stringify(y);
-  if (!same(ans, here)){
+  // 이 연결에 들어온 때(got)를 찍어 둔다 — 정리는 ts 가 아니라 got 으로 새 답을 고른다 (옛날에 쓴 답도 이 연결에선 새것)
+  const d = baseDoc(me), mine = UB.ans || {}, here = d.ans || {}, now = Date.now();
+  const newer = (x, y) => !y || (x.ts || 0) > (y.ts || 0);
+  const ans = { ...here }, acct = { ...mine }; let toHere = false, toMine = false;
+  Object.entries(mine).forEach(([k, a]) => { if (newer(a, here[k])){ ans[k] = { ...a, got: now }; toHere = true } });
+  Object.entries(here).forEach(([k, a]) => { if (newer(a, mine[k])){ const { got, ...rest } = a; acct[k] = rest; toMine = true } });
+  if (toHere){
     const full = baseList().every(q => isAnswered(ans[q[0]], q));
-    put("base", me, { ...d, who: me, ans, ...(full && !d.done ? { done: Date.now() } : {}) });
+    put("base", me, { ...d, who: me, ans, ...(full && !d.done ? { done: now } : {}) });
   }
-  if (!same(ans, mine)){
-    UB = { ...UB, ans };
+  if (toMine){
+    UB = { ...UB, ans: acct };
     queue(ubPath() + "/me", () => db.collection(ubPath()).doc("me").set(UB));
   }
 }
@@ -1287,8 +1291,8 @@ function pendingItems(){
   const c = aiCut(), out = [];
   const push = (ts, line, secret) => out.push({ ts, line: `${secret ? "(속마음) " : ""}${line}` });
   ["a", "b"].forEach(w => { const d = S.base[w]; if (!d) return;
-    baseList().forEach(q => { const a = d.ans?.[q[0]];
-      if (isAnswered(a, q) && a.ts > c && !a.no) push(a.ts, `${tag(w)}의 기본 질문 답 · 「${q[2]}」 ${baseText(a, q)}`, !a.open) }) });
+    baseList().forEach(q => { const a = d.ans?.[q[0]], t = Math.max(a?.ts || 0, a?.got || 0);
+      if (isAnswered(a, q) && t > c && !a.no) push(t,`${tag(w)}의 기본 질문 답 · 「${q[2]}」 ${baseText(a, q)}`, !a.open) }) });
   all("daily").forEach(d => { if ((d.say || "").trim() && d.done > c) push(d.done, `${tag(d.who)}이(가) ${tag(other(d.who))}에게 하고 싶은 말: ${d.say}`, true) });
   all("daily").forEach(d => (d.qs || []).forEach(q => { if (!q.a || !(q.ats > c)) return;
     const kind = q.from ? `${tag(q.from)}이(가) 직접 물은 질문` : q.k === "other" ? `${tag(other(d.who))}에 대해 묻는 질문` : q.k === "rel" ? "관계 질문" : "내 질문";
