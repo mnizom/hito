@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793186713374">
+<meta name="hito-build" content="1793198338135">
   <script type="module" crossorigin src="./assets/index-DIclchhE.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -398,8 +398,8 @@ const DAILY_LIMIT = 6; // 하루에 올리는 상황 수. basic: 각자 6개 / p
 const PLACEHOLDERS = ["cloud", "sun", "heart"];
 
 // ---------- storage: shared db when available, this browser otherwise ----------
-// mods = AI가 정리한 모듈러, aiq = AI가 한 사람에게 보낸 질문, asks = 내가 Claude에게 물은 것
-const COLS = ["meta", "posts", "questions", "events", "projects", "mods", "aiq", "asks"];
+// mods = AI가 정리한 모듈러, aiq = AI가 한 사람에게 보낸 질문, asks = 내가 Claude에게 물은 것, diary = 하루 일기 (id = 사람_날짜)
+const COLS = ["meta", "posts", "questions", "events", "projects", "mods", "aiq", "asks", "diary"];
 const S = Object.fromEntries(COLS.map(c => [c, {}]));
 let db = null, mode = "local";
 function lsGet(k){ try { return localStorage.getItem(k) } catch { return null } }
@@ -850,9 +850,10 @@ VIEWS.questions = () => {
         <div class="qtext">${esc(q.q)}</div></div>
       <div class="qbtns"><button id="q-x" aria-label="아니다">X</button><button id="q-pass">패스</button><button id="q-o" aria-label="그렇다">O</button></div>
       <label class="inline"><input type="text" id="q-etc" placeholder="기타" aria-label="기타"><button class="send" id="q-etc-send" aria-label="보내기">${svg("send")}</button></label>`
-    : empty("plus", "질문 없음", "")}`,
+    : diaryHTML()}`,
   bind: v => {
     autoAI();
+    bindDiary(v);
     const c = v.querySelector("#qcard"); if (!c) return;
     const id = c.dataset.id;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -877,6 +878,25 @@ VIEWS.questions = () => {
     c.addEventListener("pointercancel", reset);
   }};
 };
+// 질문이 없을 때는 오늘 일기. 하루에 한 편, 다시 쓰면 고쳐진다. 정리(모듈러)의 재료가 되고 달력의 글에도 나온다
+const diaryId = (w, date) => `${w}_${date}`;
+function diaryHTML(){
+  const d = S.diary[diaryId(me, ymd(new Date()))];
+  return `<div class="welcome" style="padding-top:8px">
+    <span class="daytitle">오늘 일기</span>
+    <textarea id="d-text" aria-label="오늘 일기">${esc(draft.diary ?? d?.text ?? "")}</textarea>
+    <button class="btn primary" id="d-save" style="align-self:flex-end">${d ? "고치기" : "남기기"}</button></div>`;
+}
+function bindDiary(v){
+  const t = v.querySelector("#d-text"); if (!t) return;
+  t.oninput = () => { draft.diary = t.value };
+  v.querySelector("#d-save").onclick = () => {
+    const text = t.value.trim(); if (!text) { toast("일기 없음"); return }
+    const date = ymd(new Date()), id = diaryId(me, date), cur = S.diary[id];
+    if (cur?.text === text) { t.blur(); return }
+    t.blur(); put("diary", id, { who: me, date, text, ts: Date.now() }); toast(cur ? "고침" : "남김");
+  };
+}
 document.addEventListener("keydown", e => {
   if (route.name !== "questions" || /INPUT|TEXTAREA/.test(document.activeElement?.tagName)) return;
   if (e.key === "ArrowRight") document.getElementById("q-o")?.click();
@@ -910,6 +930,8 @@ function pendingItems(){
     (p.replies || []).forEach(r => r.ts > c && push(r.ts, `${tag(r.who)}가 ${tag(p.who)}의 한마디 「${p.text}」에 단 말: ${r.text}`));
   });
   all("aiq").forEach(q => q.ans && q.ats > c && push(q.ats, `${tag(q.for)}의 답 · 질문 「${q.q}」: ${q.ans}`));
+  // 일기는 고치면 다시 들어온다 (이미 정리한 내용은 RULES대로 덮어쓴다)
+  all("diary").forEach(d => d.ts > c && (d.text || "").trim() && push(d.ts, `${tag(d.who)}의 ${d.date.slice(5).replace("-", ".")} 일기: ${d.text}`));
   return out.sort((x, y) => x.ts - y.ts);
 }
 const modsLines = (ms = all("mods")) => ms.sort((x, y) => x.ts - y.ts).slice(-400)
@@ -1139,6 +1161,7 @@ VIEWS.diary = () => {
     (byDay[d.date] ||= new Set()).add(d.who);
     if (d.who === other(me) && hasSecret(d)) secretDay.add(d.date);
   });
+  all("diary").forEach(d => (byDay[d.date] ||= new Set()).add(d.who));
   let cells = WD.map(w => `<span class="wd">${w}</span>`).join("");
   cells += "<span></span>".repeat(first.getDay());
   for (let d = 1; d <= days; d++){
@@ -1172,8 +1195,10 @@ const isLocked = d => d.who !== me && d.unlockedBy !== me;
 const dayEntries = date => allEntries().filter(d => d.date === date).sort((x, y) => x.ts - y.ts);
 // 사진 탭: 그날 상황의 사진
 const photoItems = dayEntries;
-// 글 탭: 그날 상황의 한마디, 속마음이 있으면 그 아래 속마음 한 줄
-const textItems = date => dayEntries(date).flatMap(d => [
+// 글 탭: 그날 상황의 한마디, 속마음이 있으면 그 아래 속마음 한 줄, 그날 일기 (시간 순)
+const dayDiary = date => all("diary").filter(d => d.date === date && (d.text || "").trim());
+const textItems = date => [...dayEntries(date), ...dayDiary(date).map(d => ({ ...d, diary: true }))]
+  .sort((x, y) => x.ts - y.ts).flatMap(d => [
   ...((d.text || "").trim() ? [{ d, secret: false }] : []),
   ...(hasSecret(d) ? [{ d, secret: true }] : []),
 ]);
@@ -1188,13 +1213,13 @@ function textItemHTML({ d, secret }){
   const text = secret ? d.secret : d.text;
   const body = locked
     ? `${maskHTML(text.length)}${canSpend() ? `<button class="btn accent sm" data-unlock="${d.id}">♥${HEART_COST}로 열람</button>` : ""}`
-    : `<div class="voice who-${d.who}${secret ? " inner" : ""}">${esc(text)}<time>${hm(d.ts)}</time></div>`;
+    : `<div class="voice who-${d.who}${secret ? " inner" : ""}">${esc(text)}<time>${d.diary ? "일기 · " : ""}${hm(d.ts)}</time></div>`;
   // 이름 없이 글자색으로 누군지, 내 글은 오른쪽 · 상대 글은 왼쪽
   return `<article class="entry ${d.who} ${d.who === me ? "mine" : "theirs"}">
     ${body}${locked ? `<time>${hm(d.ts)}</time>` : ""}</article>`;
 }
 function dayHTML(date, ym){
-  const list = dayEntries(date), as = diaryAs;
+  const list = [...dayEntries(date), ...dayDiary(date)], as = diaryAs;
   const photos = photoItems(date), texts = textItems(date);
   const body = !list.length ? empty("pen", "기록 없음", "")
     : as === "grid"
