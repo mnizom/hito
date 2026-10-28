@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793198338135">
-  <script type="module" crossorigin src="./assets/index-DIclchhE.js"></script>
+<meta name="hito-build" content="1793211604820">
+  <script type="module" crossorigin src="./assets/index-DNKqZiXD.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -357,6 +357,15 @@ nav.tabs svg{width:25px;height:25px}
 .ask{display:flex;flex-direction:column;gap:4px;padding-top:14px}
 .ask b{font-weight:600;font-size:14.5px}
 .report{font-size:16px}
+/* 기본 질문 · 오늘 질문 */
+.bq{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--hair)}
+.bq b{font-weight:600;font-size:15.5px}
+.bq-row{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.bq .textbtn[aria-pressed="true"]{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{padding:6px 12px;border:1px solid var(--hair);border-radius:999px;font-size:13.5px;color:var(--ink-2)}
+.chips button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+textarea.short{min-height:0}
 </style>
 
 <div class="app">
@@ -366,7 +375,7 @@ nav.tabs svg{width:25px;height:25px}
     <button data-go="home" aria-label="홈"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></svg></button>
     <button data-go="questions" aria-label="질문"><svg viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4.2 2.75c-.75.34-1.2 1.05-1.2 1.88V14.5"/><circle cx="12" cy="18" r=".6" fill="currentColor"/></svg></button>
     <button data-go="compose" aria-label="지금 내 상황 올리기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button data-go="diary" aria-label="일기"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></button>
+    <button data-go="diary" aria-label="기록"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></button>
     <button data-go="stats" aria-label="우리"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13" width="3" height="4" rx="1"/></svg></button>
   </nav>
 </div>
@@ -398,8 +407,9 @@ const DAILY_LIMIT = 6; // 하루에 올리는 상황 수. basic: 각자 6개 / p
 const PLACEHOLDERS = ["cloud", "sun", "heart"];
 
 // ---------- storage: shared db when available, this browser otherwise ----------
-// mods = AI가 정리한 모듈러, aiq = AI가 한 사람에게 보낸 질문, asks = 내가 Claude에게 물은 것, diary = 하루 일기 (id = 사람_날짜)
-const COLS = ["meta", "posts", "questions", "events", "projects", "mods", "aiq", "asks", "diary"];
+// mods = AI가 정리한 모듈러, base = 기본 질문 답 (id = 사람), daily = 오늘 질문 · 기분 (id = 사람_날짜),
+// aiq = 상대에게 보낸 질문 (직접 쓴 것 direct / 궁금한 것에서 생긴 것 fromAsk), asks = 내가 Claude에게 물은 것
+const COLS = ["meta", "posts", "events", "projects", "mods", "aiq", "asks", "base", "daily"];
 const S = Object.fromEntries(COLS.map(c => [c, {}]));
 let db = null, mode = "local";
 function lsGet(k){ try { return localStorage.getItem(k) } catch { return null } }
@@ -740,9 +750,9 @@ VIEWS.home = () => {
   }};
 };
 
-// ♡ 사랑점수와 속마음은 쓴 사람만 보고, 상대는 일기 화면에서 ♥를 써서 열람한 뒤에만 본다
+// 속마음은 쓴 사람만 보고, 상대는 기록 화면에서 ♥를 써서 열람한 뒤에만 본다
 // (홈에서는 속마음이 있는지조차 드러내지 않는다)
-// ♡ 사랑점수 = 지금 상대를 얼마나 사랑하는지. 쓴 사람에게만 보이고 상대에게는 어디서도 안 보인다
+// ♡ 사랑점수 = 지금 상대를 얼마나 사랑하는지. 쓴 사람에게만 보인다 (예전 상황에만 붙어 있다. 지금은 오늘 질문 끝에서 정한다)
 function moodChips(p){
   const m = p.mood || {};
   const chip = (cls, ic, label, val) => val == null ? "" : `<span class="mood ${cls}" title="${label}">${ic}<span class="m"><i style="width:${val}%"></i></span>${val}</span>`;
@@ -784,9 +794,6 @@ function bindPosts(v){
 }
 
 VIEWS.compose = () => {
-  draft.mood ??= { love: 50, smile: 50, energy: 50 };
-  const sl = (k, ic, label, color) => `<div class="slider"><label for="m-${k}" aria-label="${label}">${ic}</label>
-    <input type="range" id="m-${k}" min="0" max="100" value="${draft.mood[k]}" style="--v:${draft.mood[k]}%;--tc:var(${color})"><output id="o-${k}">${draft.mood[k]}</output></div>`;
   return { title: "지금 내 상황", html: `
     <label class="media pick">
       ${draft.photo ? `<img src="${draft.photo}" alt="고른 사진" style="position:absolute;inset:0">` : `${svg("image")}<span>사진</span>`}
@@ -794,8 +801,6 @@ VIEWS.compose = () => {
     </label>
     <div class="line"><svg viewBox="0 0 24 24" style="color:var(--${me})">${ICON.heart}</svg><textarea id="c-text" rows="1" aria-label="한마디">${esc(draft.text || "")}</textarea></div>
     <div class="line"><svg viewBox="0 0 24 24" style="color:var(--ink-2)">${ICON.heart}</svg><textarea id="c-secret" rows="1" aria-label="속마음">${esc(draft.secret || "")}</textarea></div>
-    <div class="field">
-      ${sl("smile", "☺", "기분", "--b")}${sl("energy", "💊", "에너지", "--accent")}${sl("love", "♡", "사랑점수", "--a")}</div>
     <button class="btn primary" id="c-post" style="align-self:flex-end">${esc(nameOf(other(me)))}에게 보여 주기</button>`,
   bind: v => {
     v.querySelector("#c-photo").onchange = async e => { const f = e.target.files[0]; if (!f) return;
@@ -807,275 +812,523 @@ VIEWS.compose = () => {
     v.querySelectorAll(".line textarea").forEach(grow);
     v.querySelector("#c-text").oninput = e => { draft.text = e.target.value; grow(e.target) };
     v.querySelector("#c-secret").oninput = e => { draft.secret = e.target.value; grow(e.target) };
-    ["love", "smile", "energy"].forEach(k => v.querySelector("#m-" + k).oninput = e => {
-      draft.mood[k] = +e.target.value; if (k === "love") draft.loveSet = true;
-      e.target.style.setProperty("--v", e.target.value + "%"); v.querySelector("#o-" + k).textContent = e.target.value });
     v.querySelector("#c-post").onclick = () => {
       const text = (draft.text || "").trim(); if (!text) { toast("한마디 없음"); return v.querySelector("#c-text").focus() }
       if (all("posts").filter(p => p.who === me && postDate(p) === ymd(new Date())).length >= DAILY_LIMIT) { toast(`${DAILY_LIMIT}/${DAILY_LIMIT}`); return }
-      // ♡ 사랑점수는 움직였을 때만 속마음으로 남긴다
-      const { love, ...shown } = draft.mood;
       put("posts", uid(), { who: me, ts: Date.now(), text, secret: (draft.secret || "").trim(), photo: draft.photo || null,
-        mood: draft.loveSet ? { ...shown, love } : shown, likes: {}, replies: [] });
+        likes: {}, replies: [] });
       toast("올림"); go("home");
     };
   }};
 };
 
-// ♥ 하트 = 점수. 질문에 답하거나 상대가 내 상황에 하트를 누르면 +1,
-// 상황 속마음을 하나 볼 때마다 −1
+// ♥ 하트 = 점수. 오늘 질문에 답하거나 상대가 내 상황에 하트를 누르면 +1,
+// 상대의 속마음(상황 속마음 · 받은 질문의 속마음 답)을 하나 열 때마다 −1
 const HEART_COST = 1;
 function heartBalance(){
-  const qs = allQuestions();
-  const answered = qs.filter(q => (q[me] || "").trim()).length + all("aiq").filter(q => q.for === me && q.ans).length;
+  const answered = all("daily").filter(d => d.who === me).reduce((n, d) => n + (d.qs || []).filter(q => (q.a || "").trim()).length, 0);
   const liked = Object.values(S.posts).filter(p => p.who === me && p.likes?.[other(me)]).length;
-  const spent = Object.values(S.posts).filter(d => d.unlockedBy === me).length
-    + qs.filter(q => q.seenBy?.[me]).length;
+  const spent = Object.values(S.posts).filter(d => d.unlockedBy === me).length + all("aiq").filter(q => q.unlockedBy === me).length;
   return answered + liked - spent * HEART_COST;
 }
 const canSpend = () => heartBalance() >= HEART_COST;
-// 질문은 Claude만 만든다 (aiq). 예전에 사람이 만든 질문(questions)은 화면에 내지 않는다
-const allQuestions = () => all("questions").filter(q => q.text);
+// app 버전에서만 호출 이름을 붙여 토큰 기록(ai_usage)에 남긴다
+const LBL = label => window.hitoApp ? { label } : {};
 
-// ? 탭: Claude가 나에게 보낸 질문을 카드로 한 장씩.
-// 오른쪽으로 밀면 O(그렇다), 왼쪽은 X(아니다), 기타는 직접 쓰고, 패스한 카드는 다시 내지 않는다 (그 주제는 2주 동안 피한다)
-const deck = () => all("aiq").filter(q => q.for === me && !q.ans && !q.pass).sort((x, y) => x.ts - y.ts);
-const answerAiq = (id, ans) => { put("aiq", id, { ...S.aiq[id], ans, ats: Date.now() }); toast("♥+1") };
-const passAiq = id => put("aiq", id, { ...S.aiq[id], pass: Date.now() });
-VIEWS.questions = () => {
-  const q = deck()[0];
-  return { title: "?", html: `
-    <div class="keybar"><span style="color:var(--accent);font-size:18px">♥</span><b>${heartBalance()}</b></div>
-    ${q ? `<div class="qcard" id="qcard" data-id="${q.id}"><span class="mark x" aria-hidden="true">X</span><span class="mark o" aria-hidden="true">O</span>
-        <div class="qtext">${esc(q.q)}</div></div>
-      <div class="qbtns"><button id="q-x" aria-label="아니다">X</button><button id="q-pass">패스</button><button id="q-o" aria-label="그렇다">O</button></div>
-      <label class="inline"><input type="text" id="q-etc" placeholder="기타" aria-label="기타"><button class="send" id="q-etc-send" aria-label="보내기">${svg("send")}</button></label>`
-    : diaryHTML()}`,
-  bind: v => {
-    autoAI();
-    bindDiary(v);
-    const c = v.querySelector("#qcard"); if (!c) return;
-    const id = c.dataset.id;
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const fly = (dir, then) => { if (reduce || !dir) return then();
-      c.style.transform = `translateX(${dir * 120}%) rotate(${dir * 18}deg)`; c.style.opacity = "0"; setTimeout(then, 230) };
-    const o = () => fly(1, () => answerAiq(id, "그렇다")), x = () => fly(-1, () => answerAiq(id, "아니다"));
-    v.querySelector("#q-o").onclick = o;
-    v.querySelector("#q-x").onclick = x;
-    v.querySelector("#q-pass").onclick = () => fly(0, () => passAiq(id));
-    const etc = () => { const i = v.querySelector("#q-etc"), t = i.value.trim(); if (!t) return i.focus(); i.blur(); answerAiq(id, "기타: " + t) };
-    v.querySelector("#q-etc-send").onclick = e => { e.preventDefault(); etc() };
-    v.querySelector("#q-etc").onkeydown = e => { if (e.key === "Enter" && !e.isComposing) etc() };
-    // 카드 밀기
-    let x0 = null, dx = 0;
-    const reset = () => { x0 = null; dx = 0; c.style.transition = ""; c.style.transform = ""; c.style.setProperty("--o", 0); c.style.setProperty("--x", 0) };
-    c.addEventListener("pointerdown", e => { x0 = e.clientX; dx = 0; c.setPointerCapture(e.pointerId); c.style.transition = "none" });
-    c.addEventListener("pointermove", e => { if (x0 == null) return; dx = e.clientX - x0;
-      c.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
-      c.style.setProperty("--o", Math.max(0, Math.min(1, dx / 90))); c.style.setProperty("--x", Math.max(0, Math.min(1, -dx / 90))) });
-    c.addEventListener("pointerup", () => { if (x0 == null) return; const d = dx; x0 = null; c.style.transition = "";
-      if (d > 90) o(); else if (d < -90) x(); else reset() });
-    c.addEventListener("pointercancel", reset);
-  }};
-};
-// 질문이 없을 때는 오늘 일기. 하루에 한 편, 다시 쓰면 고쳐진다. 정리(모듈러)의 재료가 되고 달력의 글에도 나온다
-const diaryId = (w, date) => `${w}_${date}`;
-function diaryHTML(){
-  const d = S.diary[diaryId(me, ymd(new Date()))];
+// ---------- 기본 질문: 연결마다 두 사람이 모두 답해야 오늘 질문 · 리포트가 열린다 (docs/알고리즘.md 1장) ----------
+// 기본 질문 — docs/알고리즘.md 1장 표에서 뽑았다 [번호, 묶음, 질문, 세부]. 세부가 「가 / 나 / 다」 꼴이면 고르기 칸이 생긴다
+const BASE_Q = [
+  [1, "나", "나는 어떤 사람", "스스로 보는 성격 3가지, 주변에서 자주 듣는 말"],
+  [2, "나", "잘하는 것", "일 / 생각 / 사람 관계에서 각각"],
+  [3, "나", "부족한 점", "잘 안 되는 것, 반복해서 막히는 지점"],
+  [4, "나", "생각하는 방식 (디지털 · 아날로그)", "결정: 장단점 나열 / 끌리는 쪽 먼저 · 설명: 단계별로 / \"그냥 그렇다\" · 사람 파악: 말·행동 근거 / 느낌"],
+  [5, "나", "새로운 걸 배울 때 순서", "전체 구조 먼저 / 예제부터 / 해 보면서"],
+  [6, "나", "무엇이 되면 \"이해했다\"고 보는지", "설명할 수 있을 때 / 문제를 풀 수 있을 때 / 다른 데 적용할 수 있을 때"],
+  [7, "나", "배운 걸 남기는 방법", "정리해 둔다 / 반복한다 / 써먹는다 / 남에게 설명한다"],
+  [8, "나", "공부를 계속하게 만드는 것", "궁금해서 / 필요해서 / 마감 / 누가 봐줘서"],
+  [9, "나", "공부하다 막혔을 때", "혼자 파고든다 / 묻는다 / 잠시 둔다"],
+  [10, "나", "하는 일과 그 일을 하는 이유", ""],
+  [11, "나", "생각이 크게 바뀐 계기 하나", "무엇에 대한 생각이 어떻게 바뀌었는지"],
+  [12, "나", "나를 지치게 하는 것", "일 / 사람 / 돈 / 몸 중 큰 순서"],
+  [13, "나", "바닥일 때 다시 올라오는 방식", ""],
+  [14, "나", "큰 아픔이 있었다면 그 아픔을 소화한 방식", "원인을 이해하고 납득했다 / 누군가와 이야기하며 정리했다 / 다른 일에 몰두했다 / 시간이 지나며 흐려졌다 / 아직 소화 중이다 (여럿 가능) / 없음. 아픔의 내용은 묻지 않는다"],
+  [15, "나", "아픈 이야기를", "꺼내서 말하며 푼다 / 혼자 정리한다"],
+  [16, "나", "혼자 있는 시간", "일주일에 얼마나 필요한지"],
+  [17, "나", "지금 가장 큰 고민", "막힌 지점"],
+  [18, "나", "들었을 때 가장 기분 좋은 칭찬", ""],
+  [19, "나", "남들이 나에 대해 자주 틀리는 것", "실제로는 어떤지"],
+  [20, "나", "들었을 때 가장 기분 나쁜 말", ""],
+  [21, "나", "화가 나는 지점", "무시당할 때 / 불공정할 때 / 약속이 깨질 때 / 통제당할 때 중 큰 순서"],
+  [22, "나", "농담으로 들어도 화가 나는 주제", "외모 / 능력 · 학벌 / 돈 / 가족 / 과거 / 성격 / 기타 / 없음 (여럿 가능)"],
+  [23, "나", "실패를 다루는 방식", "원인부터 분석 / 바로 다른 시도 / 한동안 멈춤"],
+  [24, "나", "도움이 필요할 때", "먼저 요청함 / 버티다 요청함 / 요청 안 함"],
+  [25, "나", "몸과 머리", "몸 쓰는 걸 좋아함 / 사색을 좋아함 / 둘 다"],
+  [26, "나", "관심 분야", "여러 개를 얕게 / 몇 개를 깊게"],
+  [27, "나", "사람 관계", "많은 사람과 넓게 / 몇 명과 깊게"],
+  [28, "나", "새로움", "새 장소 · 활동을 찾아감 / 익숙한 걸 반복함"],
+  [29, "나", "계획", "미리 정해 두고 움직임 / 그때그때 정함"],
+  [30, "나", "결정 속도", "빨리 정하고 고쳐 감 / 오래 보고 한 번에"],
+  [31, "나", "일 처리", "하나씩 끝까지 / 여러 개를 동시에"],
+  [32, "나", "마감", "미리 끝냄 / 직전에 몰아서"],
+  [33, "나", "감정 표현", "바로 드러남 / 정리된 뒤 말함 / 잘 안 드러냄"],
+  [34, "나", "생각을 말하는 방식", "말하면서 정리함 / 정리된 것만 말함"],
+  [35, "나", "보기 좋은 것", "중요함 / 기능이면 충분"],
+  [36, "나", "주변 정돈", "정돈돼야 편함 / 상관없음"],
+  [37, "나", "하루 리듬", "아침에 잘 됨 / 밤에 잘 됨"],
+  [38, "나", "경쟁", "이기는 게 동기가 됨 / 상관없음"],
+  [39, "나", "말하는 방식", "돌려 말함 / 그대로 말함"],
+  [40, "나", "비판을 받으면", "바로 받아들임 / 생각해 보고 판단 / 반박부터 함"],
+  [41, "나", "상처가 될 사실", "말해야 함 / 물으면 말함 / 말 안 함"],
+  [42, "나", "새 기술", "빨리 써 봄 / 남들이 쓰고 나서 / 필요할 때만"],
+  [43, "나", "재미를 느끼는 구조", "흩어진 것들이 하나의 큰 그림으로 맞춰질 때 / 하나를 깊이 파고들 때 / 없던 걸 만들어 낼 때 / 이길 때 / 몸이 움직일 때 / 말이 주고받아질 때 — 큰 순서. 시간 가는 줄 모르고 한 일 하나"],
+  [44, "나", "관심이 가는 대상", "세상 · 사회 / 사람 / 기술 · 사물 / 자연 / 예술 · 표현 / 몸 — 큰 순서"],
+  [45, "나", "말이 통한다는 기준", "길게 설명 안 해도 알아들을 때 / 관심사가 같을 때 / 끝까지 들어 줄 때 / 반박이 오갈 때"],
+  [46, "나", "좋아하는 책 · 영화 · 콘텐츠", "3개, 각각 어디가 좋았는지"],
+  [47, "나", "여러 번 다시 본 것", "하나"],
+  [48, "나", "좋아하는 인물", "작품 속이든 실제든 하나, 그 사람의 어떤 점"],
+  [49, "나", "끝까지 못 본 것이나 싫었던 것", "하나와 이유"],
+  [50, "나", "좋아하는 결말", "닫힌 결말 / 열린 결말 / 비극"],
+  [51, "나", "일의 결과를 미리 짐작하면", "대부분 그대로 된다 / 반반 / 자주 빗나간다"],
+  [52, "나", "걸리는 시간을 짐작하면", "짐작한 시간 안에 끝난다 / 자주 넘긴다 / 오히려 일찍 끝난다"],
+  [53, "나", "시험이나 평가 전에 예상한 결과와 실제", "비슷하다 / 실제가 더 좋다 / 실제가 더 나쁘다"],
+  [54, "나", "사람에 대한 첫인상은", "나중에도 대체로 맞다 / 자주 바뀐다"],
+  [55, "나", "기분이 상했을 때 그 이유를", "바로 안다 / 나중에 안다 / 잘 모른다"],
+  [56, "나", "남이 나를 평가한 말과 내 생각", "대체로 같다 / 남이 더 높게 본다 / 남이 더 낮게 본다"],
+  [57, "나", "최근에 예상이 틀렸던 일", "사례 하나와 무엇을 잘못 봤는지"],
+  [58, "나", "처음 보는 문제를 만나면", "비슷했던 문제가 떠오른다 / 처음부터 생각한다"],
+  [59, "나", "한 분야에서 배운 걸 다른 분야에", "자주 가져다 쓴다 / 가끔 / 거의 없다"],
+  [60, "나", "문제가 생기면 떠오르는 해결책", "하나 / 두세 개 / 여럿"],
+  [61, "나", "잘 모르는 주제로 대화할 때", "아는 것과 이어서 말할 수 있다 / 주로 듣는다"],
+  [62, "나", "다른 분야의 방식으로 문제를 푼 일", "사례 하나"],
+  [63, "나", "책 읽기", "즐겨 읽는다 / 필요할 때만 / 거의 안 읽는다. 주로 읽는 분야, 생각을 바꾼 책 하나"],
+  [64, "나", "예상 못한 문제가 생기면", "바로 할 일이 보인다 / 잠깐 멈췄다가 보인다 / 한동안 막막하다"],
+  [65, "나", "여러 일이 한꺼번에 몰리면", "순서가 바로 정해진다 / 하나씩 하다 보면 정리된다 / 손을 못 댄다"],
+  [66, "나", "처음 하는 일을 맡으면", "바로 시작한다 / 알아본 뒤 시작한다 / 미룬다"],
+  [67, "나", "예상 못한 문제를 푼 일", "사례 하나와 어떻게 풀었는지"],
+  [68, "나", "머릿속 생각을 말로 옮길 때", "바로 옮겨진다 / 말하다 보면 정리된다 / 말로 옮기기 어렵다"],
+  [69, "나", "더 편한 쪽", "말 / 글 / 비슷하다"],
+  [70, "나", "무언가를 설명할 때", "핵심만 짧게 / 순서대로 다 / 상대 반응을 보며 늘리거나 줄인다"],
+  [71, "나", "오해를 받으면", "끝까지 풀어야 직성이 풀린다 / 한 번 설명하고 넘긴다 / 그냥 둔다"],
+  [72, "나", "상대가 내 말을 오해하는 일", "거의 없다 / 가끔 / 자주"],
+  [73, "나", "같은 내용을 상대에 따라", "바꿔 말한다 / 같은 방식으로 말한다"],
+  [74, "나", "비유나 예시를", "자주 쓴다 / 가끔 / 거의 안 쓴다"],
+  [75, "나", "감정을 말로 할 때", "이름 붙여 말할 수 있다 / 설명은 되는데 이름이 안 붙는다 / 말로 하기 어렵다"],
+  [76, "나", "남의 말을 듣고 요약하면", "상대가 맞다고 한다 / 자주 고쳐 준다"],
+  [77, "나", "오해가 생겼던 일", "사례 하나와 어디서 어긋났는지"],
+  [78, "나", "학창 시절 잘했던 과목과 못했던 과목", "과목 이름, 수학은 상 / 중 / 하"],
+  [79, "나", "수학 문제를 풀 때", "원리를 이해해야 풀렸다 / 유형을 익히면 풀렸다 / 잘 안 풀렸다"],
+  [80, "나", "남의 주장을 들으면", "빈 곳이 먼저 보인다 / 결론이 먼저 들어온다 / 말하는 사람을 먼저 본다"],
+  [81, "나", "\"원래 그런 거야\"라는 말을 들으면", "이유를 찾아본다 / 일단 받아들인다"],
+  [82, "나", "퍼즐이나 전략 게임", "좋아한다 / 보통 / 싫어한다"],
+  [83, "나", "아이디어가 나올 때", "상관없던 것들이 이어질 때 / 하나를 깊이 팔 때 / 남과 이야기할 때"],
+  [84, "목표", "올해 목표", "최대 3개, 각각 현재 진행 정도"],
+  [85, "목표", "10년 후 목표", "일 · 사는 곳 · 관계"],
+  [86, "목표", "10년 후 목표를 원하는 이유", ""],
+  [87, "목표", "위 목표 중 하나만 이룰 수 있다면", ""],
+  [88, "가치관", "성공의 기준", "무엇이 되면 성공했다고 보는지 — 방향의 끝"],
+  [89, "가치관", "존경하는 사람", "누구, 그 사람의 무엇을 존경하는지 — 존경의 뜻과 방향"],
+  [90, "가치관", "정치 성향", "진보 / 중도 / 보수 / 기타"],
+  [91, "가치관", "사회 문제를 보는 방식", "원인: 개인 / 제도 · 구조 · 해결 주체: 개인 · 시장 / 국가 · 제도 / 공동체 · 바꾸는 속도: 점진 / 빠르게"],
+  [92, "가치관", "가장 중요하게 보는 사회 문제 하나", "그 문제를 어떻게 풀어야 한다고 보는지"],
+  [93, "가치관", "종교 · 믿는 것", "있다면 무엇, 그 안에서 받아들이는 생각"],
+  [94, "가치관", "결과를 정하는 것", "능력 / 노력 / 운의 비율"],
+  [95, "가치관", "사람은 바뀌는가", "바뀐다 / 안 바뀐다, 바뀐다면 무엇으로"],
+  [96, "가치관", "처음 만난 사람에 대한 기본 태도", "먼저 믿고 틀리면 거둔다 / 확인된 만큼만 믿는다"],
+  [97, "가치관", "공정이란", "같은 기회 / 같은 결과 / 한 만큼"],
+  [98, "가치관", "규칙과 판단", "규칙이 먼저 / 상황 판단이 먼저"],
+  [99, "가치관", "법과 도덕", "법만 지키면 됨 / 법보다 도덕이 먼저"],
+  [100, "가치관", "신뢰가 생기는 근거", "말 / 행동 / 시간"],
+  [101, "가치관", "돈이 해 주는 것", "안전 / 자유 / 인정 / 수단"],
+  [102, "가치관", "일의 의미", "생계 / 성장 / 정체성 / 기여"],
+  [103, "가치관", "자유와 안정", "이직 · 투자 · 이사 같은 위험을 어디까지 감수하는지"],
+  [104, "가치관", "책임", "책임진다는 것이 무엇인지, 어디까지가 내 책임인지"],
+  [105, "가치관", "약속", "약속을 지킨다는 것이 무엇인지, 어겨도 되는 경우가 있는지"],
+  [106, "가치관", "용서란", "잊는 것과 같은지, 용서한 뒤 관계는 어떻게 되는지"],
+  [107, "가치관", "나와 공동체가 부딪히면", "내 선택 / 가족 · 공동체"],
+  [108, "가치관", "친구란", "친구의 조건, 친구에게 해 주는 것과 받는 것"],
+  [109, "가치관", "가족이란", "부모 · 형제와의 거리, 가족에게 지는 책임"],
+  [110, "관계", "상대에게 기대하는 것", "해 줬으면 하는 것, 내 삶에서 맡았으면 하는 자리 (연인 사이면 \"연인에게\")"],
+  [111, "관계", "상대에게 해 줄 수 있는 것 · 없는 것", ""],
+  [112, "관계", "갈등 방식", "바로 말함 / 시간 두고 / 말 안 함"],
+  [113, "관계", "생각이 다를 때 바라는 것", "각자 생각을 그대로 둔다 / 이야기해서 한쪽으로 맞춘다 / 중간을 찾는다 / 그 주제는 피한다. 꼭 맞춰야 한다고 보는 주제가 있다면 무엇인지"],
+  [114, "관계", "힘들 때 원하는 반응", "들어주기 / 해결 / 혼자 두기"],
+  [115, "관계", "사과 방식", "말로 / 행동으로 / 시간 지나면 넘어감"],
+  [116, "관계", "고마움 표현", "말로 / 행동으로 / 잘 안 함"],
+  [117, "관계", "내 단점을 말해 주길", "바로 / 내가 물을 때만 / 안 말해 주길"],
+  [118, "연인", "연인이란", ""],
+  [119, "연인", "친구와 연인의 차이", ""],
+  [120, "연인", "동반자란", "무엇을 함께하는 사람인지"],
+  [121, "연인", "큰 결정", "혼자 정하고 알림 / 상의해서 정함"],
+  [122, "연인", "좋아한다와 사랑한다", "둘의 차이"],
+  [123, "연인", "애정을 확인하는 방법", "말 / 행동 / 함께 보내는 시간 / 선물 / 스킨십 중 큰 순서"],
+  [124, "연인", "연애의 목적", "즐거움 / 안정 / 성장 / 동반자 중 큰 순서"],
+  [125, "연인", "연애와 내 목표가 부딪히면", "연애를 줄임 / 목표를 조정 / 같이 정함"],
+  [126, "연인", "연인이 바닥일 때", "내가 할 수 있는 것과 한계"],
+  [127, "연인", "연인 사이의 대등함", "무엇이 같아야 대등한지: 돈 / 노력 / 감정 / 결정권"],
+  [128, "연인", "결혼이 바꾸는 것", "결혼 전과 후에 관계에서 무엇이 달라지는지"],
+  [129, "연인", "연인에게 바꾸길 바라도 되는 것과 안 되는 것", ""],
+  [130, "연인", "연인 사이의 비밀", "있어도 되는지, 어디까지"],
+  [131, "연인", "생활 반경 — 내 영역을 얼마나 지켜 줘야 하는지", "하루를 대부분 공유하고 연락이 자주 오간다 / 각자 하루를 보내고 하루 한두 번 근황을 나눈다 / 각자 지내다 만날 때 몰아서 나눈다. \"이것만은 내 영역\"인 것 하나"],
+  [132, "연인", "연인과 가족 · 친구가 부딪히면", "무엇이 먼저인지"],
+  [133, "연인", "연인 사이의 돈", "따로 / 일부 같이 / 전부 같이"],
+  [134, "연인", "화해의 조건", "사과 / 시간 / 행동 변화"],
+  [135, "연인", "연인 관계가 끝나는 조건", "어떤 일이 있으면 끝내는지"],
+  [136, "연인", "헤어진 뒤", "친구로 지낼 수 있다 / 없다, 그 이유"],
+  [137, "연인", "이상형", "외모 / 성격 / 일 / 생활 방식 항목별"],
+  [138, "연인", "연인에게 안 되는 것", ""],
+  [139, "연인", "결혼 · 아이", "할지, 언제, 몇 명"],
+  [140, "연인", "역할 분담", "가사 · 육아 · 경제적 역할"],
+  [141, "연인", "생활 습관 기준", "술 · 담배 · 게임 · 운동 등, 나와 연인 각각 허용 범위"],
+  [142, "연인", "이성 친구", "나와 연인 각각 어디까지 (단둘이 만남 · 연락 · 술자리)"],
+  [143, "연인", "전 연애 (여러 개 추가)", "하나마다: 헤어진 이유 — 내가 보는 이유 / 상대가 말한 이유. 없으면 \"없음\""],
+  [144, "연인", "전 연애들에서 배운 교훈", "전체에서"],
+];
+const BASE_PAGE = 8;
+const baseList = () => BASE_Q.filter(q => !(isFriend() && q[1] === "연인"));
+// 세부가 「가 / 나 / 다」 꼴이면 고르기 칸(여럿 고를 수 있다). 축이 여럿(「결정: … · 설명: …」)이거나 「각각」이면 줄글만
+function baseOpts(d){
+  if (!d.includes(" / ") || d.includes(":") || d.includes("각각")) return null;
+  const o = d.replace(/\(.*?\)/g, "").split(/\.\s|—/)[0].replace(/ 중 큰 순서.*/, "").split(" / ").map(x => x.trim()).filter(Boolean);
+  return o.length > 1 ? o : null;
+}
+const SENSITIVE = t => /아픔|아픈|전 연애/.test(t);
+const baseDoc = w => S.base[w] || { who: w, ans: {} };
+const isAnswered = a => !!a && !!(a.no || (a.p || []).length || (a.t || "").trim());
+const baseCount = w => baseList().filter(q => isAnswered(baseDoc(w).ans?.[q[0]])).length;
+const baseDone = w => !!S.base[w]?.done;
+const opened = () => baseDone("a") && baseDone("b");
+const baseText = a => [...(a.p || []), (a.t || "").trim()].filter(Boolean).join(" · ");
+function saveBaseAns(n, a){
+  const d = baseDoc(me);
+  put("base", me, { ...d, who: me, ans: { ...(d.ans || {}), [n]: { ...a, ts: Date.now() } } });
+}
+// 쓰는 중인 줄글은 draft.bt 에 두었다가 페이지를 넘기거나 칸을 벗어날 때 저장한다
+function flushBase(){
+  const bt = draft.bt || {}; draft.bt = {};
+  Object.entries(bt).forEach(([n, t]) => { const a = baseDoc(me).ans?.[n] || {}; if ((a.t || "") !== t) saveBaseAns(n, { ...a, no: false, t }) });
+}
+function baseHTML(){
+  const list = baseList(), total = list.length, mine = baseCount(me), theirs = baseCount(other(me));
+  const pages = Math.ceil(total / BASE_PAGE), d = baseDoc(me);
+  draft.bp ??= Math.floor(Math.max(0, list.findIndex(q => !isAnswered(d.ans?.[q[0]]))) / BASE_PAGE);
+  const page = Math.max(0, Math.min(draft.bp, pages - 1)), qs = list.slice(page * BASE_PAGE, (page + 1) * BASE_PAGE);
+  const item = ([n, , t, det]) => { const a = d.ans?.[n] || {}, opts = baseOpts(det);
+    return `<div class="bq" data-n="${n}">
+      <b>${n}. ${esc(t)}</b>${det ? `<span class="small muted">${esc(det)}</span>` : ""}
+      ${opts ? `<div class="chips">${opts.map(o => `<button data-pick="${esc(o)}" aria-pressed="${(a.p || []).includes(o)}">${esc(o)}</button>`).join("")}</div>` : ""}
+      <textarea class="short" rows="1" data-t aria-label="${esc(t)}" placeholder="${opts ? "더 쓰기 (선택)" : ""}">${esc(draft.bt?.[n] ?? a.t ?? "")}</textarea>
+      <div class="bq-row">${SENSITIVE(t) ? `<button class="textbtn" data-no aria-pressed="${!!a.no}">${a.no ? "✓ " : ""}말하고 싶지 않음</button>` : "<span></span>"}
+        <button class="textbtn" data-open aria-pressed="${!!a.open}">${a.open ? "상대에게 그대로 보여도 됨" : "속마음"}</button></div>
+    </div>` };
   return `<div class="welcome" style="padding-top:8px">
-    <span class="daytitle">오늘 일기</span>
-    <textarea id="d-text" aria-label="오늘 일기">${esc(draft.diary ?? d?.text ?? "")}</textarea>
-    <button class="btn primary" id="d-save" style="align-self:flex-end">${d ? "고치기" : "남기기"}</button></div>`;
+    <span class="daytitle">기본 질문 · ${esc(qs[0]?.[1] || "")}</span>
+    <span class="small muted">나 ${mine}/${total} · ${esc(nameOf(other(me)))} ${theirs}/${total} — 두 사람이 다 답하면 오늘 질문과 리포트가 열려요</span>
+    ${qs.map(item).join("")}
+    <div class="bq-row"><button class="btn" id="bp-prev" ${page ? "" : "disabled"}>이전</button>
+      <span class="small muted">${page + 1}/${pages}</span>
+      ${page < pages - 1 ? `<button class="btn primary" id="bp-next">다음</button>` : `<button class="btn primary" id="bp-done">끝내기</button>`}</div>
+  </div>`;
 }
-function bindDiary(v){
-  const t = v.querySelector("#d-text"); if (!t) return;
-  t.oninput = () => { draft.diary = t.value };
-  v.querySelector("#d-save").onclick = () => {
-    const text = t.value.trim(); if (!text) { toast("일기 없음"); return }
-    const date = ymd(new Date()), id = diaryId(me, date), cur = S.diary[id];
-    if (cur?.text === text) { t.blur(); return }
-    t.blur(); put("diary", id, { who: me, date, text, ts: Date.now() }); toast(cur ? "고침" : "남김");
-  };
+function bindBase(v){
+  const cur = n => baseDoc(me).ans?.[n] || {};
+  v.querySelectorAll(".bq[data-n]").forEach(el => {
+    const n = el.dataset.n, t = el.querySelector("[data-t]");
+    const grow = () => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px" }; grow();
+    t.oninput = () => { (draft.bt ||= {})[n] = t.value; grow() };
+    t.onblur = () => setTimeout(flushBase, 250);
+    el.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { flushBase(); const a = cur(n), o = b.dataset.pick, p = a.p || [];
+      saveBaseAns(n, { ...a, no: false, p: p.includes(o) ? p.filter(x => x !== o) : [...p, o] }) });
+    el.querySelector("[data-no]")?.addEventListener("click", () => { flushBase(); const a = cur(n); saveBaseAns(n, { ...a, no: !a.no }) });
+    el.querySelector("[data-open]").onclick = () => { flushBase(); const a = cur(n); saveBaseAns(n, { ...a, open: !a.open }) };
+  });
+  const flip = k => { flushBase(); draft.bp = (draft.bp || 0) + k; render(true); document.getElementById("view").scrollTop = 0 };
+  v.querySelector("#bp-prev")?.addEventListener("click", () => flip(-1));
+  v.querySelector("#bp-next")?.addEventListener("click", () => flip(1));
+  v.querySelector("#bp-done")?.addEventListener("click", () => {
+    flushBase();
+    const left = baseList().filter(q => !isAnswered(baseDoc(me).ans?.[q[0]]));
+    if (left.length){ toast(`${left.length}개 남음 · ${left[0][0]}번부터`); draft.bp = Math.floor(baseList().indexOf(left[0]) / BASE_PAGE); render(true); return }
+    put("base", me, { ...baseDoc(me), who: me, done: Date.now() }); toast("기본 질문 끝");
+  });
 }
-document.addEventListener("keydown", e => {
-  if (route.name !== "questions" || /INPUT|TEXTAREA/.test(document.activeElement?.tagName)) return;
-  if (e.key === "ArrowRight") document.getElementById("q-o")?.click();
-  if (e.key === "ArrowLeft") document.getElementById("q-x")?.click();
-});
 
-// ---------- 모듈러: 두 사람이 쓴 것을 Claude가 모듈러로 정리하고, 질문을 보내고, 리포트를 쓴다 ----------
-// Claude는 이 페이지에서 직접 부른다 (claude.use("sample"), 연 사람의 claude.ai 사용량). 없으면 아무것도 하지 않는다.
-// 화면은 없다. ? 탭을 열 때 autoAI가 마지막 정리 뒤에 생긴 글을 모아 한 번에 정리하고 (meta/ai.cut),
-// 오늘 받을 질문이 남았으면 새 질문을 카드 뒤에 쌓는다. 리포트와 내가 묻기는 우리 탭 · 관계에서 부른다.
-// 질문이 집요하지 않게: 하루에 사람마다 최대 DAILY_Q장, 패스한 주제는 2주 동안 피하고, 최근 2일 안의 글은 바로 되묻지 않는다.
+// ---------- 오늘 질문: 하루 세 개 — 나 · 상대 · 관계. 답은 모두 줄글, 정리가 모듈러를 뽑는다 (3장) ----------
+const todayKey = (w = me) => `${w}_${ymd(new Date())}`;
+const todayDoc = () => S.daily[todayKey()];
+const relOf = date => S.meta["rel_" + date];
+// 받을 질문: 상대가 직접 물었거나(direct) 궁금한 것 리포트가 보낸 것(fromAsk). 하루 하나씩 줄을 서서 내 질문 자리에 들어간다
+const queuedFor = w => all("aiq").filter(q => q.for === w && !q.used && !q.ans && (q.direct || q.fromAsk)).sort((x, y) => x.ts - y.ts)[0];
+function moodSliders(){
+  const sl = (k, ic, label, color) => `<div class="slider"><label for="m-${k}" aria-label="${label}">${ic}</label>
+    <input type="range" id="m-${k}" min="0" max="100" value="${draft.mood[k]}" style="--v:${draft.mood[k]}%;--tc:var(${color})"><output id="o-${k}">${draft.mood[k]}</output></div>`;
+  return `<div class="field">${sl("smile", "☺", "기분", "--b")}${sl("energy", "💊", "에너지", "--accent")}${sl("love", "♡", loveWord() + " · 나만 보여요", "--a")}</div>`;
+}
+function todayHTML(){
+  const d = todayDoc();
+  if (!d) return `<div class="welcome" style="align-items:center;text-align:center"><span class="muted">${aiState || (ai ? "오늘 질문을 준비해요" : "Claude를 쓸 수 없어요")}</span></div>`;
+  if (d.done) return todayDoneHTML(d);
+  draft.ta ??= d.qs.map(q => q.a || "");
+  draft.share ??= d.qs.map(q => q.share || "open");
+  draft.mood ??= { smile: 50, energy: 50, love: 50 };
+  const label = q => q.from ? `${esc(nameOf(q.from))}님이 물었어요` : q.k === "me" ? "내 질문" : q.k === "other" ? `${esc(nameOf(other(me)))}님에 대한 질문 · 상대는 못 봐요` : "우리 질문 · 상대도 봐요";
+  return `<div class="welcome" style="padding-top:8px">
+    <span class="daytitle">오늘 질문</span>
+    ${d.qs.map((q, i) => `<div class="bq"><span class="small muted">${label(q)}</span><b>${esc(q.q)}</b>
+      <textarea data-ta="${i}" aria-label="${esc(q.q)}">${esc(draft.ta[i])}</textarea>
+      ${q.from ? `<div class="seg">${[["open", "공개 답"], ["secret", "속마음 답"]].map(([k, l]) => `<button data-share="${i}:${k}" aria-pressed="${draft.share[i] === k}">${l}</button>`).join("")}</div>` : ""}</div>`).join("")}
+    ${moodSliders()}
+    <div class="bq"><span class="small muted">${esc(nameOf(other(me)))}님에게 묻고 싶은 것 (선택) · 다음 오늘 질문에 들어가요</span>
+      <textarea class="short" rows="1" id="t-ask" aria-label="상대에게 묻고 싶은 것">${esc(draft.ask || "")}</textarea></div>
+    <button class="btn primary" id="t-done" style="align-self:flex-end">오늘 끝</button></div>`;
+}
+function todayDoneHTML(d){
+  const rq = relOf(d.date)?.q, theirs = S.daily[`${other(me)}_${d.date}`];
+  const relA = w => (w === me ? d : theirs)?.qs?.find(q => q.k === "rel")?.a;
+  const asked = all("aiq").filter(q => q.by === me && q.direct).sort((x, y) => y.ts - x.ts).slice(0, 5);
+  const ansHTML = q => !q.ans ? `<span class="small muted">아직</span>`
+    : q.secret && q.unlockedBy !== me ? `${maskHTML(q.ans.length)}${canSpend() ? `<button class="btn accent sm" data-unlockq="${q.id}">♥${HEART_COST}로 열람</button>` : ""}`
+    : `<div class="voice who-${other(me)}">${esc(q.ans)}</div>`;
+  return `<div class="welcome" style="padding-top:8px">
+    <span class="daytitle">오늘 질문 끝</span>
+    ${rq ? `<div class="bq"><span class="small muted">우리 질문</span><b>${esc(rq)}</b>
+      ${["a", "b"].map(w => { const a = relA(w); return a ? `<div class="voice who-${w}">${esc(a)}</div>` : `<span class="small muted">${esc(nameOf(w))} 아직</span>` }).join("")}</div>` : ""}
+    ${asked.length ? `<div class="bq"><span class="small muted">내가 물은 것</span>${asked.map(q => `<b>${esc(q.q)}</b>${ansHTML(q)}`).join("")}</div>` : ""}
+  </div>`;
+}
+function bindToday(v){
+  v.querySelectorAll("[data-ta]").forEach(t => t.oninput = () => { draft.ta[+t.dataset.ta] = t.value });
+  v.querySelectorAll("[data-share]").forEach(b => b.onclick = () => { const [i, k] = b.dataset.share.split(":"); draft.share[+i] = k; render(true) });
+  ["love", "smile", "energy"].forEach(k => v.querySelector("#m-" + k)?.addEventListener("input", e => {
+    draft.mood[k] = +e.target.value; e.target.style.setProperty("--v", e.target.value + "%"); v.querySelector("#o-" + k).textContent = e.target.value }));
+  const ask = v.querySelector("#t-ask"); if (ask) ask.oninput = () => { draft.ask = ask.value };
+  v.querySelector("#t-done")?.addEventListener("click", () => {
+    const d = todayDoc(), now = Date.now();
+    const qs = d.qs.map((q, i) => ({ ...q, a: (draft.ta[i] || "").trim(), ats: now, ...(q.from ? { share: draft.share[i] } : {}) }));
+    put("daily", todayKey(), { ...d, qs, mood: { ...draft.mood }, done: now });
+    // 받은 질문의 답은 물은 사람에게도 간다 (속마음 답이면 가려지고 ♥로 열람)
+    qs.forEach(q => { if (q.aiqId && q.a && S.aiq[q.aiqId]) put("aiq", q.aiqId, { ...S.aiq[q.aiqId], ans: q.a, ats: now, secret: q.share === "secret" }) });
+    const t = (draft.ask || "").trim(); if (t) put("aiq", uid(), { for: other(me), q: t, ts: now, by: me, direct: true });
+    const n = qs.filter(q => q.a).length; draft = {}; toast(n ? `♥+${n}` : "오늘 끝");
+  });
+  v.querySelectorAll("[data-unlockq]").forEach(b => b.onclick = () => { const id = b.dataset.unlockq; put("aiq", id, { ...S.aiq[id], unlockedBy: me }); toast(`♥−${HEART_COST}`) });
+}
+
+// ? 탭: 기본 질문 → (상대 기다리기) → 오늘 질문
+VIEWS.questions = () => {
+  const o = other(me);
+  const html = !baseDone(me) ? baseHTML()
+    : !baseDone(o) ? `<div class="welcome" style="align-items:center;text-align:center"><span class="daytitle">기본 질문 끝</span>
+        <span class="muted">${esc(nameOf(o))}님 ${baseCount(o)}/${baseList().length} · 다 답하면 오늘 질문과 첫 리포트가 열려요</span></div>`
+    : todayHTML();
+  return { title: "?", html: `<div class="keybar"><span style="color:var(--accent);font-size:18px">♥</span><b>${heartBalance()}</b></div>${html}`,
+    bind: v => { autoAI(); if (!baseDone(me)) bindBase(v); else if (baseDone(o)) bindToday(v) } };
+};
+
+// ---------- 정리 · 질문 만들기 · 리포트: Claude를 부르는 곳 ----------
+// Claude는 이 페이지에서 직접 부른다 (claude.use("sample") / 앱은 supabase claude 함수). 없으면 아무것도 하지 않는다.
+// ? 탭 · 우리 탭을 열 때 autoAI 가 ① 마지막 정리(meta/ai.cut) 뒤의 답 · 글을 정리하고 ② 오늘 질문이 없으면 만들고 ③ 첫 리포트가 없으면 쓴다.
 let ai = null, aiState = "";
-const DAILY_Q = 2, DAY = 864e5, RECENT = 2 * DAY, AVOID = 14 * DAY;
+const DAY = 864e5;
 const aiCut = () => S.meta.ai?.cut || 0;
 const tag = w => `${w}(${nameOf(w)})`;
 const people = () => `a = ${nameOf("a")}, b = ${nameOf("b")} (${isFriend() ? "친구" : "연인"} 사이)`;
 const md_ = ts => { const d = new Date(ts); return `${pad(d.getMonth() + 1)}.${pad(d.getDate())}` };
-const todayStart = () => new Date(ymd(new Date())).getTime();
-// 오늘 그 사람에게 더 보낼 수 있는 질문 수 (내가 Claude에게 물어서 생긴 카드는 세지 않는다)
-const qLeft = w => Math.max(0, DAILY_Q - all("aiq").filter(q => q.for === w && !q.fromAsk && q.ts >= todayStart()).length);
-const avoidList = w => all("aiq").filter(q => q.for === w && q.pass && q.pass > Date.now() - AVOID).map(q => q.q);
-// 마지막 정리 뒤에 생긴 글 · 답. 속마음도 넣되 속마음이라고 표시한다. 최근 2일 안의 것은 (최근) 표시
+// 마지막 정리 뒤에 생긴 답 · 글. 속마음 출처는 (속마음)으로 표시한다
 function pendingItems(){
-  const c = aiCut(), out = [], now = Date.now();
-  const push = (ts, line) => out.push({ ts, line: `${ts > now - RECENT ? "(최근) " : ""}${line}` });
+  const c = aiCut(), out = [];
+  const push = (ts, line, secret) => out.push({ ts, line: `${secret ? "(속마음) " : ""}${line}` });
+  ["a", "b"].forEach(w => { const d = S.base[w]; if (!d) return;
+    baseList().forEach(([n, , t]) => { const a = d.ans?.[n];
+      if (isAnswered(a) && a.ts > c && !a.no) push(a.ts, `${tag(w)}의 기본 질문 답 · 「${t}」: ${baseText(a)}`, !a.open) }) });
+  all("daily").forEach(d => (d.qs || []).forEach(q => { if (!q.a || !(q.ats > c)) return;
+    const kind = q.from ? `${tag(q.from)}이(가) 직접 물은 질문` : q.k === "other" ? `${tag(other(d.who))}에 대해 묻는 질문` : q.k === "rel" ? "관계 질문" : "내 질문";
+    push(q.ats, `${tag(d.who)}의 오늘 질문 답 · ${kind} 「${q.q}」: ${q.a}`, q.k === "rel" ? false : q.from ? q.share === "secret" : true) }));
   all("posts").forEach(p => {
     if (p.ts > c){
-      if ((p.text || "").trim()) push(p.ts, `${tag(p.who)}의 한마디: ${p.text}`);
-      if ((p.secret || "").trim()) push(p.ts, `${tag(p.who)}의 속마음: ${p.secret}`);
+      if ((p.text || "").trim()) push(p.ts, `${tag(p.who)}의 한마디: ${p.text}`, false);
+      if ((p.secret || "").trim()) push(p.ts, `${tag(p.who)}의 속마음: ${p.secret}`, true);
     }
-    (p.replies || []).forEach(r => r.ts > c && push(r.ts, `${tag(r.who)}가 ${tag(p.who)}의 한마디 「${p.text}」에 단 말: ${r.text}`));
+    (p.replies || []).forEach(r => r.ts > c && push(r.ts, `${tag(r.who)}가 ${tag(p.who)}의 한마디 「${p.text}」에 단 말: ${r.text}`, false));
   });
-  all("aiq").forEach(q => q.ans && q.ats > c && push(q.ats, `${tag(q.for)}의 답 · 질문 「${q.q}」: ${q.ans}`));
-  // 일기는 고치면 다시 들어온다 (이미 정리한 내용은 RULES대로 덮어쓴다)
-  all("diary").forEach(d => d.ts > c && (d.text || "").trim() && push(d.ts, `${tag(d.who)}의 ${d.date.slice(5).replace("-", ".")} 일기: ${d.text}`));
   return out.sort((x, y) => x.ts - y.ts);
 }
-const modsLines = (ms = all("mods")) => ms.sort((x, y) => x.ts - y.ts).slice(-400)
-  .map(m => `${m.id} | ${md_(m.ts)} | ${m.who}→${m.about} | ${m.desire ? "바람 · " : ""}${m.kind === "가설" ? "가설 · " : ""}${m.open ? "열림 · " : ""}${m.text}`).join("\n") || "(아직 없음)";
-
-const ASK_RULES = n => `- 물을것: 그 사람이 그렇다/아니다로 답할 수 있는 한 문장. 사람마다 최대 ${n}개.
-  · 관계에 대한 것만 묻지 말고 그 사람 자신(취향, 일상, 요즘 하고 싶은 것, 바라는 것)에 대한 질문을 절반 이상 섞는다. 그 사람이 무엇을 바라는지 확인한다.
-  · 대부분은 가볍게. 깊은 질문은 대략 네 개에 하나. 서운함·짜증·다툼 같은 무거운 주제는 그 사람이 먼저 글로 꺼낸 것만, 꺼낸 지 2일이 지난 뒤에만 묻는다.
-  · (최근) 표시가 붙은 글의 내용을 바로 되묻지 않는다.
-  · 상대 이름이 들어간 질문보다 「나는 ~」 질문을 더 많이.
-  · 단정하지 말고 「나는 ~한 편이다」「나는 ~할 때가 있다」처럼 끝을 열어 둔다. 언제·어디서 같은 조건과 행동을 문장 안에 넣는다. 이유나 정의를 통째로 묻지 않는다.
-  · [피할 주제]와 겹치는 질문은 만들지 않는다.`;
-const avoidBlock = () => ["a", "b"].map(w => `${tag(w)}: ${avoidList(w).join(" / ") || "(없음)"}`).join("\n");
-const RULES = () => `너는 커플 앱에서 두 사람의 글과 답을 「모듈러」로 정리한다. ${people()}.
+// 속마음 출처 모듈러는 쓴 사람에게만 원문(명제), 다른 사람이 읽는 자료에는 큰 바람 한 줄만 (5장 — 코드가 지킨다)
+// viewer = 그 자료를 읽을 사람. null 이면 두 사람이 함께 읽는 자료(속마음은 모두 큰 바람)
+const viewOf = (m, viewer) => !m.secret || m.who === viewer ? m
+  : ("wish" in m ? (m.wish ? { ...m, text: m.wish } : null) : m); // 예전 모듈러는 이미 큰 바람으로 적혀 있다
+const modsFor = (viewer, ms = all("mods")) => ms.map(m => viewOf(m, viewer)).filter(Boolean);
+// 닻 카드: 닻은 전부(붙은 수와 함께), 닻이 아닌 것은 최근 것만 — 기록이 쌓여도 프롬프트가 늘지 않게 (6장)
+function modsLines(ms = all("mods")){
+  const under = {}; ms.forEach(m => { if (m.up) under[m.up] = (under[m.up] || 0) + 1 });
+  const line = m => `${m.id} | ${md_(m.ts)} | ${m.who}→${m.about} | ${m.anchor ? `닻(붙은 ${under[m.id] || 0}) · ` : ""}${m.up ? `↑${m.up} · ` : ""}${m.desire ? "바람 · " : ""}${m.kind === "가설" ? "가설 · " : ""}${m.open ? "열림 · " : ""}${m.text}`;
+  const anchors = ms.filter(m => m.anchor), rest = ms.filter(m => !m.anchor).sort((x, y) => x.ts - y.ts).slice(-150);
+  return [...anchors.sort((x, y) => x.ts - y.ts), ...rest].map(line).join("\n") || "(아직 없음)";
+}
+const RULES = () => `너는 커플 앱에서 두 사람의 답과 글을 「모듈러」로 정리한다. ${people()}.
 모듈러 = 단독으로 참·거짓이 갈리는 한 줄 명제. 기호·날짜 머리말·「그걸」 같은 지시어·윗줄에 기대는 문장을 쓰지 않는다.
+줄글 답 하나에서 여러 개를 뽑는다. 사건·날짜·그날 한 말은 입구로만 쓰고, 그 밑의 욕망·기준·연결로 올린다.
 - 주인: 그 생각을 가진 사람(a 또는 b). 대상: 누구에 대한 것인지(a 또는 b).
   주인과 대상이 같으면 「나는/내가/나의」를 주어로 쓴다 (예: 나는 기념일에 상대가 꾸미지 않으면 서운하다).
   주인과 대상이 다르면 주인이 인식한 상대를 「상대이름은 ~다」로 쓴다 (예: ${nameOf("b")}는 답이 늦어도 마음이 식은 게 아니다).
-- 욕망: 「나는 ~하고 싶다」 꼴이면 true. 열림: 아직 참·거짓이 닫히지 않은 것(~것 같다, 궁금함, 모름, 추측)이면 true.
-- 속마음: 속마음 글에서만 나온 것이면 true. 속마음 글에서 나온 것은 구체적인 사건·말·사람·장소·때를 빼고, 그 밑에 깔린 큰 바람 하나만 「나는 ~하고 싶다」 꼴로 남긴다.
-  (예: 속마음 「어제 통화 끝나고 괜히 서운했어」 → 「나는 상대와 늘 이어져 있다고 느끼고 싶다」)
-- 종류: 글에 직접 있는 것은 "명제", 네가 여러 모듈러를 이어 세운 것은 "가설".
+- 욕망: 「나는 ~하고 싶다」 꼴이면 true. 열림: 아직 참·거짓이 닫히지 않은 것(~것 같다, 모름, 추측)이면 true.
+- 닻: 목표·가치·기준·정의·원칙·자기 평가·상위 욕망처럼 위쪽 칸이면 true. 사례·사건·일상 습관이면 false.
+- 붙는닻: 이 모듈러가 어떤 닻의 사례·근거·하위 욕망이면 그 닻의 id(이번에 새로 만드는 닻이면 그 임시id). 없으면 "".
+- 속마음: (속마음) 표시가 붙은 출처에서 나왔으면 true. 그때 명제는 원래 뜻 그대로 쓰고(쓴 사람에게만 보인다), 큰바람에는 구체적인 사건·말·사람·장소·때를 뺀 큰 바람 한 줄을 「나는 ~하고 싶다」 꼴로 쓴다. 속마음이 아니면 큰바람은 "".
+- 종류: 글·답에 직접 있는 것은 "명제", 네가 여러 모듈러를 이어 세운 것은 "가설".
 - 이미 있는 모듈러와 같은 것이면 새로 만들지 말고 그 id를 덮어쓴다 (더 구체적이면 합쳐서, 반대면 바뀐 내용으로). 같은 내용이 두 id에 있으면 하나를 덮어쓰고 나머지를 삭제한다.
-- 질문 답: 그렇다면 질문 명제 그대로, 아니다면 그 부정으로, 모르겠다면 열림으로, 기타면 그 답을 명제로.`;
-
+- 아픔·전 연애에 대한 답에서는 내용이 아니라 소화하는 방식·반복되는 패턴만 뽑는다.`;
 function organizePrompt(items){
   return `${RULES()}
-${ASK_RULES(Math.max(qLeft("a"), qLeft("b")))}
-
-[피할 주제]
-${avoidBlock()}
 
 [지금까지의 모듈러] (id | 날짜 | 주인→대상 | 명제)
 ${modsLines()}
 
-[새로 들어온 글과 답]
+[새로 들어온 답과 글]
 ${items.map(i => i.line).join("\n")}
 
-새 글과 답을 정리해서 JSON 하나로만 답한다:
-{"추가":[{"주인":"a","대상":"a","명제":"…","욕망":false,"열림":false,"속마음":false,"종류":"명제"}],
- "덮어쓰기":[{"id":"기존 id","명제":"…","열림":false}],
+정리해서 JSON 하나로만 답한다:
+{"추가":[{"임시id":"n1","주인":"a","대상":"a","명제":"…","욕망":false,"열림":false,"닻":false,"붙는닻":"","속마음":false,"큰바람":"","종류":"명제"}],
+ "덮어쓰기":[{"id":"기존 id","명제":"…","열림":false,"큰바람":""}],
  "삭제":["기존 id"],
- "물을것":[{"누구에게":"a","명제":"나는 …"}],
  "보고":"무엇을 정리했는지 한두 문장"}`;
 }
-function askPrompt(w, n){
-  const sent = all("aiq").filter(q => q.for === w).map(q => q.q);
-  return `${RULES()}
-${ASK_RULES(n)}
+// 오늘 질문 만들기. 원칙: 드라이하게 · 위로만 · 좁게 한 가지 · 답은 줄글 (3장, 3.1 질문)
+function todayPrompt(w, needMine, needRel){
+  const o = other(w), mine = all("mods").filter(m => m.who === w);
+  const asked = all("daily").filter(d => d.who === w).flatMap(d => (d.qs || []).map(q => q.q));
+  const rels = Object.keys(S.meta).filter(k => k.startsWith("rel_")).map(k => S.meta[k].q);
+  return `커플 앱에서 ${nameOf(w)}님에게 오늘 물을 질문을 만든다. ${people()}. 오늘은 ${ymd(new Date())}.
+원칙:
+- 말투는 드라이하게. 감성·자기계발식 문구(「나답다」「채워지다」 같은 말), 유치한 가정형, 뭉뚱그린 형용사를 쓰지 않는다.
+- 위로만 묻는다: 왜 그런지, 무엇을 원하는지, 무엇이 더 중요한지, 아닌 때가 있는지, 그 말이 무슨 뜻인지. 사실 확인("오늘 뭐 했어?")이나 "어떻게 할 건데?"는 묻지 않는다.
+- 관찰을 전제하지 않는다. "요즘 ~가 많던데"처럼 말하지 않는다. 날짜·사건·그날 한 말을 질문에 넣지 않는다.
+- 좁게 한 가지만 묻는다. 필요하면 그 사람의 자료에서 짚을 것을 하나 꺼내 질문에 넣는다. 답은 줄글로 받는다.
+- 무거운 주제(아픔, 다툼, 서운함)는 그 사람이 먼저 쓴 것만 다룬다.
+${needMine ? `- 내: ${nameOf(w)}님의 자료에서 빈 곳(위가 빈 욕망, 근거가 하나뿐인 닻, 뜻이 흐린 말, 서로 어긋나는 답, 오래된 닻) 하나를 골라 묻는다.\n` : ""}- 상대: ${nameOf(w)}님이 ${nameOf(o)}님을 어떻게 보는지 묻는다 (예: ${nameOf(o)}님이 요즘 가장 바라는 것은 무엇이라고 보는지, 왜 그렇게 보는지). [${nameOf(o)}님 자료]의 내용은 질문에 드러내지 않는다.
+${needRel ? `- 관계: 두 사람에게 똑같이 묻는 질문 하나. 기대하는 것, 해 줄 수 있는 것, 마음이 전해지는 방식, 생각이 다를 때, 함께 바라는 것 중에서.\n` : ""}
+[이미 물은 질문 — 겹치지 않게]
+${[...asked, ...rels].slice(-60).join("\n") || "(없음)"}
 
-[피할 주제]
-${avoidBlock()}
+[${nameOf(w)}님 자료] (id | 날짜 | 주인→대상 | 명제)
+${modsLines(mine)}
 
-[지금까지의 모듈러]
-${modsLines()}
+[${nameOf(o)}님 자료]
+${modsLines(modsFor(w, all("mods").filter(m => m.who === o)))}
 
-[이미 보낸 질문]
-${sent.join("\n") || "(없음)"}
-
-${tag(w)}에게 물을 새 질문 ${n}개를 만든다. 이미 보낸 질문과 겹치지 않게.
-JSON 하나로만 답한다: {"물을것":["나는 …"]}`;
+JSON 하나로만 답한다: {${[needMine && '"내":"…"', '"상대":"…"', needRel && '"관계":"…"'].filter(Boolean).join(",")}}`;
 }
-// 리포트와 내 질문의 답은 읽는 사람(w)에게 맞춰 쓴다. 모듈러라는 말은 쓰지 않는다
-const PLAIN = w => `- ${nameOf(w)}님이 읽는다. 존댓말로, 일상적인 말로 쓴다.
-- "모듈러", "명제", "가설", "욕망", "관여", "쾌" 같은 말을 쓰지 않는다. "바라는 것", "하고 싶은 것", "좋았던 것", "아쉬웠던 것"처럼 말한다.
+// 리포트는 읽는 사람(w)에게 맞춰 쓴다. 모듈러라는 말은 쓰지 않는다
+const PLAIN = w => `- ${w ? `${nameOf(w)}님이 읽는다` : "두 사람이 함께 읽는다. \"두 분\"이라고 부른다"}. 존댓말로, 일상적인 말로, 드라이하게 쓴다.
+- "모듈러", "명제", "가설", "욕망", "관여", "쾌", "닻" 같은 말을 쓰지 않는다. "바라는 것", "하고 싶은 것", "좋았던 것", "아쉬웠던 것"처럼 말한다.
 - 큰 이야기로 쓴다. 날짜·사건·주고받은 말을 하나하나 늘어놓지 않는다.
-- 자료에 없는 것은 지어내지 않는다. 짐작은 "~인 것 같아요"로 말한다.
-- 마크다운 기호 없이 평문. 문단 사이는 빈 줄 하나.`;
+- 자료에 없는 것은 지어내지 않는다. 짐작은 "~인 것 같아요"로 말한다. 자료가 모자란 곳은 "아직 잘 모르겠어요"라고만.
+- 마크다운 기호 없이 평문. 소제목은 한 줄로. 문단 사이는 빈 줄 하나.`;
+// 상대에게 보이는 내용의 규칙 (5장)
+const SHARED_RULE = `- 두 사람의 생각이 같으면 "같은 방향"이라고 말하고, 다르면 누가 무엇을 원하는지 말하지 않고 "이 주제에서 생각이 달라요"라고만 말한다.
+- 아픔이나 전 연애는 그 말도 꺼내지 않는다.`;
 function moodLines(who){
-  const now = Date.now(), win = (k, ms) => { const xs = all("posts").filter(p => p.who === who && p.ts > now - ms && p.mood?.[k] != null);
+  const now = Date.now(), win = (k, ms) => { const xs = series(who, k, 999).filter(p => p.ts > now - ms);
     return xs.length ? Math.round(xs.reduce((n, p) => n + p.mood[k], 0) / xs.length) : "-" };
   return `${tag(who)} 최근 1주일 기분 ${win("smile", 7 * DAY)} 에너지 ${win("energy", 7 * DAY)} / 최근 한 달 기분 ${win("smile", 30 * DAY)} 에너지 ${win("energy", 30 * DAY)}`;
 }
-const dataOf = who => modsLines(all("mods").filter(m => m.who === who));
-// 나: 나는 어떤 사람인지 + 상대와의 관계에서 바라는 것
+const relQA = () => Object.keys(S.meta).filter(k => k.startsWith("rel_")).sort().slice(-10).map(k => { const date = k.slice(4);
+  const a = w => S.daily[`${w}_${date}`]?.qs?.find(q => q.k === "rel")?.a || "(아직)";
+  return `「${S.meta[k].q}」 ${nameOf("a")}: ${a("a")} / ${nameOf("b")}: ${a("b")}` }).join("\n") || "(없음)";
+const dataOf = (who, viewer) => modsLines(modsFor(viewer, all("mods").filter(m => m.who === who)));
+// 나: 내 자료는 속마음까지 전부
 function selfPrompt(w){
   const o = nameOf(other(w));
-  return `${nameOf(w)}님이 앱에 남긴 기록을 정리한 자료로 ${nameOf(w)}님 자신에 대한 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
+  return `${nameOf(w)}님이 앱에 남긴 답과 글을 정리한 자료로 ${nameOf(w)}님 자신에 대한 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
 ${PLAIN(w)}
+- 자료에서 "닻"은 위쪽 칸(목표·가치·기준), "붙은 수"는 그 닻에 실제 답·글이 몇 개 붙었는지다.
 구성:
-"${nameOf(w)}님은 이런 사람이군요!"로 시작해, ${nameOf(w)}님이 자기 삶에서 바라는 것들을 큰 줄기로 3~5문장.
-빈 줄 뒤 "${o}님과의 관계에서는"으로 시작해, ${nameOf(w)}님이 ${o}님과의 관계에서 바라는 것을 2~4문장.
+"${nameOf(w)}님은 이런 사람이군요!" — 가장 위에서 바라는 것을 큰 줄기로 3~5문장.
+말한 것과 실제 — 가장 이루고 싶다고 말한 것과, 실제 답·글이 많이 몰린 곳이 같은지 2~3문장.
+지금 막힌 곳 — 끊겨 있는 곳과 그 이유를 1~3문장.
+${o}님과의 관계에서는 — ${nameOf(w)}님이 바라는 것 2~3문장.
 
 [${nameOf(w)}님 자료] (id | 날짜 | 누가→누구에 대해 | 내용)
-${dataOf(w)}
+${dataOf(w, w)}
 
 [기분·에너지 평균 (0~100)]
 ${moodLines(w)}`;
 }
-// 상대: 상대는 어떤 사람인지 + 나와의 관계에서 바라는 것 + 내가 해 줄 수 있는 것 + 최근 하루
+// 상대: 상대의 속마음은 큰 바람으로만. 내가 상대에 대해 쓴 답과 맞대 "내가 아는 상대"를 본다
 function otherPrompt(w){
   const o = other(w), O = nameOf(o), W = nameOf(w);
-  return `두 사람(${people()})이 앱에 남긴 기록을 정리한 자료로, ${W}님에게 ${O}님에 대해 알려 주는 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
+  return `두 사람(${people()})이 남긴 자료로, ${W}님에게 ${O}님에 대해 알려 주는 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
 ${PLAIN(w)}
-- ${W}님 자신의 생각은 리포트에 쓰지 않는다. [${W}님 자료]는 제안이 ${W}님이 바라는 것을 해치지 않는지 확인하는 데만 쓴다.
+${SHARED_RULE}
+- [${W}님 자료]는 ${W}님 자신의 생각이다. 리포트에 옮겨 쓰지 않고, ${W}님이 ${O}님을 어떻게 보는지(${W}→${o} 줄)와 제안이 ${W}님이 바라는 것을 해치지 않는지 확인하는 데만 쓴다.
 구성:
-"${O}님은 이런 사람이군요!"로 시작해, ${O}님이 자기 삶에서 바라는 것들을 큰 줄기로 3~5문장.
-빈 줄 뒤 "${W}님과의 관계에서는"으로 시작해, ${O}님이 ${W}님과의 관계에서 바라는 것을 2~4문장.
-빈 줄 뒤 "${W}님이 해 줄 수 있는 것"으로 시작해, ${W}님이 바라는 것을 해치지 않는 선에서 해 줄 수 있는 것 2~3가지를 한 문장씩.
-빈 줄 뒤 "${O}님은 최근에 이런 하루를 보냈어요"로 시작해, 최근 1주일을 큰 흐름으로 2~3문장.
+"${O}님은 이런 사람이군요!" — ${O}님이 바라는 것을 큰 줄기로 3~5문장.
+${W}님과의 관계에서는 — ${O}님이 이 관계에서 바라는 것 2~3문장.
+${W}님이 아는 ${O}님 — ${W}님이 ${O}님에 대해 짐작한 것 중 맞게 본 곳과 다르게 본 곳 2~3문장.
+${W}님이 해 줄 수 있는 것 — ${W}님이 바라는 것을 해치지 않는 선에서 2~3가지, 한 문장씩.
 
 [${O}님 자료] (id | 날짜 | 누가→누구에 대해 | 내용)
-${dataOf(o)}
+${dataOf(o, w)}
 
-[${W}님 자료 — 리포트에 쓰지 말 것]
-${dataOf(w)}
+[${W}님 자료 — 리포트에 옮겨 쓰지 말 것]
+${dataOf(w, w)}
 
 [${O}님 기분·에너지 평균 (0~100)]
 ${moodLines(o)}`;
 }
-// 우리: 요새 어떻게 지내는지 + 다섯 기준 (모듈러이론의 관여·정확히 앎·채움·합류와 충돌·비대칭을 일상 말로). 두 사람 모두에게 같은 글
+// 관계: 두 사람이 함께 읽는다 — 속마음은 둘 다 큰 바람으로만
 function usPrompt(){
-  const A = nameOf("a"), B = nameOf("b");
-  return `두 사람(${people()})이 앱에 남긴 기록을 정리한 자료로, 두 사람이 함께 읽는 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
-- 두 사람이 함께 읽는다. 존댓말로, 일상적인 말로, "두 분"이라고 부른다.
-- "모듈러", "명제", "가설", "욕망", "관여", "쾌", "합류", "비대칭" 같은 말을 쓰지 않는다.
-- 큰 이야기로 쓴다. 날짜·사건·주고받은 말을 하나하나 늘어놓지 않는다. 한쪽의 속마음에서 나온 내용은 상대가 알아챌 만큼 구체적으로 쓰지 않는다.
-- 자료에 없는 것은 지어내지 않는다. 짐작은 "~인 것 같아요"로. 마크다운 기호 없이 평문. 문단 사이는 빈 줄 하나.
-구성 (소제목은 한 줄로):
-요즘 두 분은 — 요새 어떻게 지내고 있는지 2~3문장.
-서로에게 마음을 쓰고 있나요 — 각자 상대가 잘 지내기를 바라고, 상대를 자기 바람 안에 두고 있는지.
-서로를 잘 알고 있나요 — ${A}님이 아는 ${B}님과 ${B}님 자신이 말한 ${B}님이 맞는지, 그 반대도.
-서로 바라는 걸 채워 줄 수 있나요 — 각자 바라는 것을 상대가 자기 힘 안에서 채우고 있거나 채울 수 있는지.
-같이 좋을 때와 부딪힐 때 — 한 가지 일로 둘 다 좋아지는 곳, 바라는 것이 부딪히는 곳.
-한쪽으로 기운 곳 — 한쪽만 마음을 쓰거나 한쪽만 채워 주는 곳.
-각 소제목 아래 2~3문장. 자료가 모자란 곳은 "아직 잘 모르겠어요"라고만.
+  return `두 사람(${people()})이 남긴 자료로, 두 사람이 함께 읽는 관계 리포트를 쓴다. 오늘은 ${ymd(new Date())}.
+${PLAIN(null)}
+${SHARED_RULE}
+구성:
+요즘 두 분은 — 2~3문장.
+같은 방향 — 둘이 함께 바라는 것, 한 가지로 둘 다 좋아지는 곳.
+생각이 다른 곳 — 위 규칙대로, 누가 무엇을 원하는지 말하지 않고.
+바라는 것과 해 줄 수 있는 것 — 한쪽이 바라는 것을 다른 쪽이 해 줄 수 있는지, 어긋나 서운함이 생길 수 있는 곳.
+마음이 전해지는 방식 — 한쪽이 보내는 표현을 다른 쪽이 표현으로 잘 읽는지.
+각 소제목 아래 2~3문장.
 
 [자료] (id | 날짜 | 누가→누구에 대해 | 내용)
-${modsLines()}
+${modsLines(modsFor(null))}
+
+[관계 질문과 두 사람의 답]
+${relQA()}
 
 [기분·에너지 평균 (0~100)]
 ${moodLines("a")}
 ${moodLines("b")}`;
 }
-function answerPrompt(w, q){
-  return `두 사람(${people()})이 앱에 남긴 기록을 정리한 자료가 아래에 있다. ${nameOf(w)}님이 질문했다: 「${q}」
+// 첫 리포트: 두 사람이 기본 질문을 마친 순간 한 번 — 나 · 상대 · 관계를 한 번에 (읽는 사람마다 따로)
+function firstPrompt(w){
+  const o = other(w), O = nameOf(o), W = nameOf(w);
+  return `두 사람(${people()})이 기본 질문에 답한 자료로, ${W}님이 읽는 첫 리포트를 쓴다.
 ${PLAIN(w)}
-- 묻는 만큼 자세히 답한다. 다만 ${nameOf(other(w))}님이 속마음으로 쓴 것은 알아챌 만큼 구체적으로 말하지 않는다.
+${SHARED_RULE}
+- [${W}님 자료]는 ${W}님 자신의 것이라 속마음까지 써도 된다. [${O}님 자료]는 위 규칙을 지킨다.
+구성:
+${W}님 — 가장 위에서 바라는 것, 가장 이루고 싶다고 한 것, 지금 막힌 곳, 생각하고 배우는 방식. 4~6문장.
+${O}님 — ${O}님이 바라는 큰 줄기. 2~4문장.
+두 분 — 같은 방향, 생각이 다른 곳, 바라는 것과 해 줄 수 있는 것이 어긋나는 곳, 마음이 전해지는 방식이 다른 곳. 4~6문장.
+
+[${W}님 자료]
+${dataOf(w, w)}
+
+[${O}님 자료]
+${dataOf(o, w)}`;
+}
+// 궁금한 것: 자료로 답하고, 모자라면 상대의 오늘 질문으로 보낼 질문을 만든다
+function answerPrompt(w, q){
+  const O = nameOf(other(w));
+  return `두 사람(${people()})이 남긴 자료가 아래에 있다. ${nameOf(w)}님이 궁금해한다: 「${q}」
+${PLAIN(w)}
+${SHARED_RULE}
+- 묻는 만큼 자세히 답한다.
 - 자료로 답할 수 있으면 답한다.
-- 자료가 모자라면 "모름"을 true로 하고, 그 빈칸을 채우려고 ${nameOf(other(w))}님에게 물을 질문 하나를 만든다. ${nameOf(other(w))}님이 그렇다/아니다로 답할 수 있게 「나는 ~한 편이다」 꼴로, 부드럽게, 누가 물었는지 드러나지 않게.
-JSON 하나로만 답한다: {"답":"…","모름":false,"물을것":"나는 …"}
+- 자료가 모자라면 "모름"을 true로 하고, 그 빈칸을 채우려고 ${O}님에게 물을 질문 하나를 만든다. 드라이하게, 한 가지만, 줄글로 답할 수 있게, 누가 물었는지 드러나지 않게.
+JSON 하나로만 답한다: {"답":"…","모름":false,"물을것":"…"}
 
 [자료]
-${modsLines()}`;
+${modsLines(modsFor(w))}`;
 }
 
 const aiErr = e => ({ not_granted: "Claude 사용을 허락하지 않음", sampling_disabled: "Claude를 쓸 수 없는 계정", rate_limited: "잠시 뒤에 다시",
@@ -1087,52 +1340,58 @@ async function runAI(label, fn){
   finally { aiState = ""; render() }
 }
 const AB = w => w === "a" || w === "b";
-function organize(){
-  if (!pendingItems().length) return;
-  return runAI("정리하는 중…", organizeNow);
-}
+const CHUNK = 40; // 한 번에 정리하는 답 · 글 수 (기본 질문은 몇 번에 나눠 정리된다)
 async function organizeNow(){
-  const items = pendingItems(); if (!items.length) return;
-  const cut = Date.now(); // 정리하는 동안 새로 쓴 글은 다음 정리로
-  {
-    const r = await ai.json(organizePrompt(items), { cache: false }) || {};
-    const now = Date.now(), left = { a: qLeft("a"), b: qLeft("b") };
-    (r.추가 || []).forEach(m => { if (!m?.명제 || !AB(m.주인)) return;
-      put("mods", uid(), { who: m.주인, about: AB(m.대상) ? m.대상 : m.주인, text: String(m.명제), desire: !!m.욕망, open: !!m.열림, secret: !!m.속마음, kind: m.종류 === "가설" ? "가설" : "명제", ts: now }) });
-    (r.덮어쓰기 || []).forEach(m => { const cur = S.mods[m?.id]; if (cur && m.명제) put("mods", m.id, { ...cur, text: String(m.명제), open: typeof m.열림 === "boolean" ? m.열림 : cur.open, ts: now }) });
-    (r.삭제 || []).forEach(id => S.mods[id] && del("mods", id));
-    (r.물을것 || []).forEach(q => { if (q?.명제 && AB(q.누구에게) && left[q.누구에게]-- > 0) put("aiq", uid(), { for: q.누구에게, q: String(q.명제), ts: now, by: me }) });
-    put("meta", "ai", { ...(S.meta.ai || {}), cut, last: { ts: now, by: me, report: String(r.보고 || "") } });
-  }
+  const pend = pendingItems(); if (!pend.length) return;
+  let n = Math.min(CHUNK, pend.length);
+  while (n < pend.length && pend[n].ts === pend[n - 1].ts) n++; // 같은 때 생긴 것은 함께
+  const items = pend.slice(0, n), cut = n < pend.length ? items.at(-1).ts : Date.now();
+  const r = await ai.json(organizePrompt(items), { cache: false, ...LBL("organize") }) || {};
+  const now = Date.now(), ids = {};
+  (r.추가 || []).forEach(m => { if (m?.명제 && AB(m.주인)) ids[m.임시id || uid()] = uid() });
+  (r.추가 || []).forEach(m => { if (!m?.명제 || !AB(m.주인)) return;
+    const up = ids[m.붙는닻] || (S.mods[m.붙는닻] ? m.붙는닻 : null);
+    put("mods", ids[m.임시id] || uid(), { who: m.주인, about: AB(m.대상) ? m.대상 : m.주인, text: String(m.명제), desire: !!m.욕망, open: !!m.열림,
+      anchor: !!m.닻, up, secret: !!m.속마음, wish: m.속마음 ? String(m.큰바람 || "") : "", kind: m.종류 === "가설" ? "가설" : "명제", ts: now }) });
+  (r.덮어쓰기 || []).forEach(m => { const cur = S.mods[m?.id]; if (cur && m.명제) put("mods", m.id, { ...cur, text: String(m.명제),
+    open: typeof m.열림 === "boolean" ? m.열림 : cur.open, ...(cur.secret && m.큰바람 ? { wish: String(m.큰바람) } : {}), ts: now }) });
+  (r.삭제 || []).forEach(id => S.mods[id] && del("mods", id));
+  put("meta", "ai", { ...(S.meta.ai || {}), cut, last: { ts: now, by: me, report: String(r.보고 || "") } });
 }
-function moreQuestions(){
-  const n = qLeft(me); if (!n) return;
-  return runAI("질문 만드는 중…", async () => {
-    const r = await ai.json(askPrompt(me, n), { cache: false }) || {};
-    const now = Date.now();
-    (r.물을것 || []).slice(0, n).forEach(q => q && put("aiq", uid(), { for: me, q: String(q), ts: now, by: me }));
-  });
+async function makeToday(){
+  if (todayDoc() || !opened()) return;
+  const queued = queuedFor(me), date = ymd(new Date());
+  const r = await ai.json(todayPrompt(me, !queued, !relOf(date)), { cache: false, ...LBL("today") }) || {};
+  if (todayDoc()) return;
+  // 관계 질문은 두 사람이 같은 것을 받는다. 먼저 만든 쪽 것을 쓴다
+  const relQ = relOf(date)?.q || String(r.관계 || "").trim();
+  if (!relOf(date) && relQ) put("meta", "rel_" + date, { q: relQ, ts: Date.now(), by: me });
+  const mine = queued ? { k: "me", q: queued.q, aiqId: queued.id, ...(queued.direct ? { from: queued.by } : {}) } : { k: "me", q: String(r.내 || "").trim() };
+  const qs = [mine, { k: "other", q: String(r.상대 || "").trim() }, { k: "rel", q: relQ }].filter(q => q.q);
+  if (!qs.length) return;
+  put("daily", todayKey(), { who: me, date, qs, ts: Date.now() });
+  if (queued){ const { id, ...rest } = queued; put("aiq", id, { ...rest, used: date }) }
 }
-// 리포트는 버튼을 누를 때마다 새로 쓴다 (베타).
-// 나: meta/self_<나>, 상대: meta/about_<나>(내가 보는 상대 리포트), 우리: meta/us (두 사람 모두에게 보임, 더 강한 모델)
+// 리포트는 버튼을 누를 때마다 새로 쓴다. 나: meta/self_<나>, 상대: meta/about_<나>, 관계: meta/us (두 사람 모두), 첫: meta/first_<나>
 const REPORTS = {
-  me: () => ({ key: "self_" + me, prompt: selfPrompt(me) }),
-  other: () => ({ key: "about_" + me, prompt: otherPrompt(me) }),
-  us: () => ({ key: "us", prompt: usPrompt(), opts: { modelTier: "complex" } }),
+  me: () => ({ key: "self_" + me, prompt: selfPrompt(me), label: "report_me" }),
+  other: () => ({ key: "about_" + me, prompt: otherPrompt(me), label: "report_other" }),
+  us: () => ({ key: "us", prompt: usPrompt(), opts: { modelTier: "complex" }, label: "report_us" }),
+  first: () => ({ key: "first_" + me, prompt: firstPrompt(me), opts: { modelTier: "complex" }, label: "report_first" }),
 };
 function writeReport(kind){
-  const r = REPORTS[kind]();
   return runAI("쓰는 중", async () => {
     if (pendingItems().length) await organizeNow();
-    const { text } = await ai(REPORTS[kind]().prompt, { cache: false, ...(r.opts || {}) });
+    const r = REPORTS[kind]();
+    const { text } = await ai(r.prompt, { cache: false, ...(r.opts || {}), ...LBL(r.label) });
     put("meta", r.key, { text, ts: Date.now(), by: me });
   });
 }
-// 내가 묻기: 자료로 답하고, 모자라면 상대에게 질문 카드를 보낸다. 그 카드에 답이 오고 정리되면 다시 답한다
+// 궁금한 것: 자료로 답하고, 모자라면 상대의 오늘 질문 줄에 질문을 세운다. 그 답이 정리되면 다시 답한다
 function answerAsk(id){
   const a = S.asks[id]; if (!a) return;
   return runAI("답 찾는 중…", async () => {
-    const r = await ai.json(answerPrompt(me, a.q), { cache: false }) || {};
+    const r = await ai.json(answerPrompt(me, a.q), { cache: false, ...LBL("ask") }) || {};
     const now = Date.now(), cur = S.asks[id] || a;
     let aiqId = cur.aiq || null;
     if (r.모름 && r.물을것 && !aiqId){ aiqId = uid(); put("aiq", aiqId, { for: other(me), q: String(r.물을것), ts: now, fromAsk: true, by: me }) }
@@ -1140,13 +1399,19 @@ function answerAsk(id){
   });
 }
 
-let lastAuto = 0;
+let lastAuto = 0, tried = {};
 async function autoAI(){
-  if (!ai || aiState || Date.now() - lastAuto < 10 * 60e3) return;
-  lastAuto = Date.now();
-  if (pendingItems().length) await organize();
-  if (!deck().length) await moreQuestions();
+  if (!ai || aiState) return;
+  if (Date.now() - lastAuto > 10 * 60e3 && pendingItems().length){
+    lastAuto = Date.now();
+    await runAI("정리하는 중…", async () => { for (let i = 0; i < 6 && pendingItems().length; i++) await organizeNow() });
+  }
+  // 같은 날 · 같은 일은 한 번만 시도한다 (실패해도 화면을 열 때마다 다시 부르지 않게)
+  const date = ymd(new Date());
+  if (opened() && !todayDoc() && tried.today !== date){ tried.today = date; await runAI("오늘 질문 만드는 중…", makeToday) }
+  if (opened() && !S.meta["first_" + me] && !tried.first){ tried.first = 1; await writeReport("first") }
 }
+
 // diary
 // 사진/글 보기는 마지막으로 고른 쪽을 계속 쓴다
 let diaryAs = lsGet("hito.diaryAs") === "list" ? "list" : "grid";
@@ -1161,7 +1426,6 @@ VIEWS.diary = () => {
     (byDay[d.date] ||= new Set()).add(d.who);
     if (d.who === other(me) && hasSecret(d)) secretDay.add(d.date);
   });
-  all("diary").forEach(d => (byDay[d.date] ||= new Set()).add(d.who));
   let cells = WD.map(w => `<span class="wd">${w}</span>`).join("");
   cells += "<span></span>".repeat(first.getDay());
   for (let d = 1; d <= days; d++){
@@ -1172,7 +1436,7 @@ VIEWS.diary = () => {
   }
   const shift = k => { const t = new Date(y, m - 1 + k, 1); return `${t.getFullYear()}-${pad(t.getMonth() + 1)}` };
   const day = sel ? dayHTML(sel, ym) : null;
-  return { title: "공유 일기", html: `
+  return { title: "기록", html: `
     <div class="card" style="display:flex;flex-direction:column;gap:14px">
       <div class="monthbar"><button class="iconbtn" data-ym="${shift(-1)}" aria-label="이전 달">${svg("left")}</button>
         <span class="ym">${y}. ${pad(m)}</span><button class="iconbtn" data-ym="${shift(1)}" aria-label="다음 달">${svg("right")}</button></div>
@@ -1185,7 +1449,7 @@ VIEWS.diary = () => {
     day?.bind(v);
   }};
 };
-// 일기 = 그날 올린 상황 모음. 따로 쓰는 일기는 없다
+// 기록 = 그날 올린 상황 모음. 따로 쓰는 일기는 없다
 const postDate = p => ymd(new Date(p.ts));
 const allEntries = () => all("posts").map(p => ({ ...p, date: postDate(p) }));
 // 속마음 글이 있는 상황 (♡ 사랑점수는 글이 아니라 여기서 빠진다)
@@ -1195,10 +1459,8 @@ const isLocked = d => d.who !== me && d.unlockedBy !== me;
 const dayEntries = date => allEntries().filter(d => d.date === date).sort((x, y) => x.ts - y.ts);
 // 사진 탭: 그날 상황의 사진
 const photoItems = dayEntries;
-// 글 탭: 그날 상황의 한마디, 속마음이 있으면 그 아래 속마음 한 줄, 그날 일기 (시간 순)
-const dayDiary = date => all("diary").filter(d => d.date === date && (d.text || "").trim());
-const textItems = date => [...dayEntries(date), ...dayDiary(date).map(d => ({ ...d, diary: true }))]
-  .sort((x, y) => x.ts - y.ts).flatMap(d => [
+// 글 탭: 그날 상황의 한마디, 속마음이 있으면 그 아래 속마음 한 줄 (시간 순)
+const textItems = date => dayEntries(date).flatMap(d => [
   ...((d.text || "").trim() ? [{ d, secret: false }] : []),
   ...(hasSecret(d) ? [{ d, secret: true }] : []),
 ]);
@@ -1213,13 +1475,13 @@ function textItemHTML({ d, secret }){
   const text = secret ? d.secret : d.text;
   const body = locked
     ? `${maskHTML(text.length)}${canSpend() ? `<button class="btn accent sm" data-unlock="${d.id}">♥${HEART_COST}로 열람</button>` : ""}`
-    : `<div class="voice who-${d.who}${secret ? " inner" : ""}">${esc(text)}<time>${d.diary ? "일기 · " : ""}${hm(d.ts)}</time></div>`;
+    : `<div class="voice who-${d.who}${secret ? " inner" : ""}">${esc(text)}<time>${hm(d.ts)}</time></div>`;
   // 이름 없이 글자색으로 누군지, 내 글은 오른쪽 · 상대 글은 왼쪽
   return `<article class="entry ${d.who} ${d.who === me ? "mine" : "theirs"}">
     ${body}${locked ? `<time>${hm(d.ts)}</time>` : ""}</article>`;
 }
 function dayHTML(date, ym){
-  const list = [...dayEntries(date), ...dayDiary(date)], as = diaryAs;
+  const list = dayEntries(date), as = diaryAs;
   const photos = photoItems(date), texts = textItems(date);
   const body = !list.length ? empty("pen", "기록 없음", "")
     : as === "grid"
@@ -1339,7 +1601,9 @@ function trendChart(series, label){ // series: [{arr, color, key}]
     <text x="${L}" y="${H - 6}" font-size="10.5" fill="var(--ink-2)">${md(t0)}</text><text x="${W - R}" y="${H - 6}" font-size="10.5" text-anchor="end" fill="var(--ink-2)">${md(t1)}</text>
     ${series.map(line).join("")}</svg>`;
 }
-const series = (w, k) => all("posts").filter(p => p.who === w && p.mood?.[k] != null).sort((x, y) => x.ts - y.ts).slice(-14);
+// 기분 · 에너지 · 사랑 = 오늘 질문 끝에서 하루 한 번 (예전 상황에 붙은 것도 함께 그린다)
+const series = (w, k, n = 14) => [...all("daily").filter(d => d.who === w && d.mood?.[k] != null).map(d => ({ ts: d.done || d.ts, mood: d.mood })),
+  ...all("posts").filter(p => p.who === w && p.mood?.[k] != null)].sort((x, y) => x.ts - y.ts).slice(-n);
 const avgOf = (arr, k) => arr.length ? Math.round(arr.reduce((n, p) => n + p.mood[k], 0) / arr.length) : "–";
 function bothTrend(k, ic, label){
   const pa = series("a", k), pb = series("b", k);
@@ -1367,10 +1631,11 @@ function myLoveTrend(){
       : `<span class="small muted">데이터 없음</span>`}
     </div>`;
 }
-// 리포트 + 내가 Claude에게 묻기(asks).
-// 내 질문 중 상대 카드로 물어본 것은, 상대가 답하고 정리된 뒤 이 화면을 열면 다시 답한다.
+// 리포트 + 궁금한 것(asks). 두 사람이 기본 질문을 마치기 전에는 잠긴다.
+// 궁금한 것 중 상대의 오늘 질문으로 물어본 것은, 상대가 답하고 정리된 뒤 이 화면을 열면 다시 답한다.
 function reportHTML(kind){
-  const key = REPORTS[kind]().key, rp = S.meta[key];
+  if (!opened()) return `<section style="margin-top:8px"><span class="small muted">두 사람이 기본 질문을 마치면 첫 리포트와 리포트가 열려요 · 나 ${baseCount(me)}/${baseList().length} · ${esc(nameOf(other(me)))} ${baseCount(other(me))}/${baseList().length}</span></section>`;
+  const key = { me: "self_" + me, other: "about_" + me, us: "us" }[kind], rp = S.meta[key], first = S.meta["first_" + me];
   if (ai && !aiState){
     const redo = all("asks").find(a => a.by === me && !a.done && a.aiq && S.aiq[a.aiq]?.ans && S.aiq[a.aiq].ats <= aiCut() && (a.ats || 0) < aiCut());
     if (redo) setTimeout(() => answerAsk(redo.id), 0);
@@ -1378,11 +1643,12 @@ function reportHTML(kind){
   const d = rp && new Date(rp.ts);
   const asks = all("asks").filter(a => a.by === me).sort((x, y) => y.ts - x.ts);
   return `<section style="margin-top:8px">
+      ${first && kind === "me" ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary><div class="voice report">${esc(first.text)}</div></details>` : ""}
       ${rp ? `<div class="voice report">${esc(rp.text)}</div><span class="small muted">${d.getMonth() + 1}.${d.getDate()} ${hm(rp.ts)}</span>` : ""}
       ${ai ? `<button class="btn primary" id="rp-go" style="align-self:flex-start" ${aiState ? "disabled" : ""}>${aiState || (rp ? "다시 쓰기" : "리포트 쓰기")}</button>` : ""}
     </section>
     <section>
-      <label class="inline"><input type="text" id="ask-in" placeholder="물어보기" aria-label="Claude에게 물어보기"><button class="send" id="ask-send" aria-label="보내기">${svg("send")}</button></label>
+      <label class="inline"><input type="text" id="ask-in" placeholder="궁금한 것" aria-label="궁금한 것 물어보기"><button class="send" id="ask-send" aria-label="보내기">${svg("send")}</button></label>
       ${asks.map(a => `<div class="ask"><b>${esc(a.q)}</b>${a.a ? `<div class="voice" style="font-size:15.5px">${esc(a.a)}</div>` : `<span class="small muted">…</span>`}</div>`).join("")}
     </section>`;
 }
@@ -1400,11 +1666,11 @@ VIEWS.stats = () => {
     : sub === "other" ? oneTrend(o, "smile", "☺", "기분") + oneTrend(o, "energy", "💊", "에너지") + compareHTML(o)
     : bothTrend("smile", "☺", "기분") + bothTrend("energy", "💊", "에너지");
   return { title: "우리", html: `
-    <div style="display:flex;justify-content:center"><div class="seg">${[["me", "나"], ["other", esc(nameOf(o))], ["us", "우리"]].map(([k, l]) =>
+    <div style="display:flex;justify-content:center"><div class="seg">${[["me", "나"], ["other", esc(nameOf(o))], ["us", "관계"]].map(([k, l]) =>
       `<button data-sub="${k}" aria-pressed="${sub === k}">${l}</button>`).join("")}</div></div>
     ${body}
     ${reportHTML(sub)}`,
-  bind: v => { v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); bindReport(v, sub) } };
+  bind: v => { autoAI(); v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); if (opened()) bindReport(v, sub) } };
 };
 // 속마음 비교 = 밖으로 말한 글자 수 대비 속마음 글자 수 (공백 제외)
 //   밖으로 말한 것: 상황의 한마디
