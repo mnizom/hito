@@ -806,7 +806,6 @@ VIEWS.compose = () => {
     v.querySelectorAll(".line textarea").forEach(grow);
     v.querySelector("#c-text").oninput = e => { draft.text = e.target.value; grow(e.target) };
     v.querySelector("#c-secret").oninput = e => { draft.secret = e.target.value; grow(e.target) };
-    if (!draft.text) v.querySelector("#c-text").focus();
     ["love", "smile", "energy"].forEach(k => v.querySelector("#m-" + k).oninput = e => {
       draft.mood[k] = +e.target.value; if (k === "love") draft.loveSet = true;
       e.target.style.setProperty("--v", e.target.value + "%"); v.querySelector("#o-" + k).textContent = e.target.value });
