@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-  <script type="module" crossorigin src="./assets/index-cSsRBYpg.js"></script>
+  <script type="module" crossorigin src="./assets/index-BEFc86Ix.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -657,6 +657,12 @@ function pairHTML(){
 }
 // 앱 버전(hito-app)에만 로그인이 있다. claude.ai 에서는 window.hitoApp 이 없어 버튼도 없다
 const logoutHTML = () => window.hitoApp ? `<button class="textbtn" id="logout" style="align-self:flex-start">로그아웃</button>` : "";
+const PUSH_LABEL = { on: "알림 켜짐", off: "알림 켜기", denied: "알림 꺼짐 · 폰 설정에서 허용", unsupported: "알림 · 홈 화면에 추가한 뒤 켜기", error: "알림 다시 시도" };
+const pushHTML = () => { const p = window.hitoApp?.push; return p ? `<button class="textbtn" id="push" style="align-self:flex-start" ${p.state === "on" ? "disabled" : ""}>${PUSH_LABEL[p.state] || PUSH_LABEL.off}</button>` : "" };
+function bindPush(v){
+  const b = v.querySelector("#push"); if (!b) return;
+  b.onclick = async () => { b.disabled = true; const s = await window.hitoApp.push.enable(); if (s === "error") toast("알림을 켜지 못했어요"); render(true) };
+}
 function bindLogout(v){
   const b = v.querySelector("#logout"); if (!b) return;
   b.onclick = () => {
@@ -1047,7 +1053,7 @@ async function organizeNow(){
       put("mods", uid(), { who: m.주인, about: AB(m.대상) ? m.대상 : m.주인, text: String(m.명제), desire: !!m.욕망, open: !!m.열림, secret: !!m.속마음, kind: m.종류 === "가설" ? "가설" : "명제", ts: now }) });
     (r.덮어쓰기 || []).forEach(m => { const cur = S.mods[m?.id]; if (cur && m.명제) put("mods", m.id, { ...cur, text: String(m.명제), open: typeof m.열림 === "boolean" ? m.열림 : cur.open, ts: now }) });
     (r.삭제 || []).forEach(id => S.mods[id] && del("mods", id));
-    (r.물을것 || []).forEach(q => { if (q?.명제 && AB(q.누구에게) && left[q.누구에게]-- > 0) put("aiq", uid(), { for: q.누구에게, q: String(q.명제), ts: now }) });
+    (r.물을것 || []).forEach(q => { if (q?.명제 && AB(q.누구에게) && left[q.누구에게]-- > 0) put("aiq", uid(), { for: q.누구에게, q: String(q.명제), ts: now, by: me }) });
     put("meta", "ai", { ...(S.meta.ai || {}), cut, last: { ts: now, by: me, report: String(r.보고 || "") } });
   }
 }
@@ -1056,7 +1062,7 @@ function moreQuestions(){
   return runAI("질문 만드는 중…", async () => {
     const r = await ai.json(askPrompt(me, n), { cache: false }) || {};
     const now = Date.now();
-    (r.물을것 || []).slice(0, n).forEach(q => q && put("aiq", uid(), { for: me, q: String(q), ts: now }));
+    (r.물을것 || []).slice(0, n).forEach(q => q && put("aiq", uid(), { for: me, q: String(q), ts: now, by: me }));
   });
 }
 // 리포트는 버튼을 누를 때마다 새로 쓴다 (베타).
@@ -1081,7 +1087,7 @@ function answerAsk(id){
     const r = await ai.json(answerPrompt(me, a.q), { cache: false }) || {};
     const now = Date.now(), cur = S.asks[id] || a;
     let aiqId = cur.aiq || null;
-    if (r.모름 && r.물을것 && !aiqId){ aiqId = uid(); put("aiq", aiqId, { for: other(me), q: String(r.물을것), ts: now, fromAsk: true }) }
+    if (r.모름 && r.물을것 && !aiqId){ aiqId = uid(); put("aiq", aiqId, { for: other(me), q: String(r.물을것), ts: now, fromAsk: true, by: me }) }
     put("asks", id, { ...cur, a: String(r.답 || ""), ats: now, aiq: aiqId, done: !r.모름 });
   });
 }
@@ -1399,6 +1405,7 @@ VIEWS.settings = () => {
     <section><h3>사람 바꾸기</h3>
       <ul class="qlist card">${ids.map(spaceRow).join("")}</ul>
       <button class="btn" id="n-add">${svg("plus")} 새 연결</button>
+      ${pushHTML()}
       <button class="textbtn" id="leave" style="align-self:flex-start">이 기기에서 나가기</button>
       ${logoutHTML()}
     </section>`,
@@ -1420,6 +1427,7 @@ VIEWS.settings = () => {
       try { localStorage.removeItem("hito.space") } catch {}
       space = null; me = null; subscribeSpace(); COLS.forEach(c => S[c] = {}); go("home");
     };
+    bindPush(v);
     bindLogout(v);
     v.querySelectorAll("[data-color]").forEach(b => b.onclick = () => { keep();
       putSpace(space, { ...SP[space], colors: { ...(SP[space]?.colors || {}), [me]: b.dataset.color } }) });
