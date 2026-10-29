@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793260274596">
+<meta name="hito-build" content="1793261174186">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -904,7 +904,7 @@ function heartBalance(){
   const answered = all("daily").filter(d => d.who === me).reduce((n, d) => n + (d.qs || []).filter(q => (q.a || "").trim()).length, 0);
   const liked = Object.values(S.posts).filter(p => p.who === me && p.likes?.[other(me)]).length;
   const spent = Object.values(S.posts).filter(d => d.unlockedBy === me).length + all("aiq").filter(q => q.unlockedBy === me).length
-    + all("daily").filter(d => d.sayOpenedBy === me).length;
+    + all("daily").filter(d => d.sayOpenedBy === me).length + all("daily").filter(d => d.diaryOpenedBy === me).length;
   return answered + liked - spent * HEART_COST;
 }
 const canSpend = () => heartBalance() >= HEART_COST;
@@ -1089,8 +1089,14 @@ function doneHTML(d){
   const ansHTML = q => !q.ans ? `<span class="small muted">아직</span>`
     : q.secret && q.unlockedBy !== me ? locked(q.ans, `data-unlockq="${q.id}"`) : `<div class="voice who-${o}">${esc(q.ans)}</div>`;
   const more = !baseDone(me);
+  draft.diary ??= d?.diary?.text || ""; draft.dsec ??= !!d?.diary?.secret;
   return `<div class="welcome" style="padding-top:8px">
     <span class="daytitle">오늘은 끝</span>
+    ${d ? `<div class="bq"><span class="small muted">일기</span>
+      <textarea id="diary-in" aria-label="일기">${esc(draft.diary)}</textarea>
+      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+        <div class="seg">${[[false, "일기"], [true, "속마음 일기"]].map(([k, l]) => `<button data-dsec="${k}" aria-pressed="${draft.dsec === k}">${l}</button>`).join("")}</div>
+        <button class="btn primary sm" id="diary-save">${d.diary ? "고치기" : "남기기"}</button></div></div>` : ""}
     ${more ? `<button class="btn" id="t-more" style="align-self:flex-start">5개 더 하기</button>`
       : !opened() ? `<span class="small muted">${esc(nameOf(o))}님이 아직 답하는 중이에요 · 다 답하면 오늘 질문과 관계 리포트가 열려요</span>` : ""}
     ${theirs?.say ? `<div class="bq"><span class="small muted">${esc(nameOf(o))}님이 하고 싶은 말</span>${theirs.sayOpenedBy === me ? `<div class="voice who-${o}">${esc(theirs.say)}</div>` : locked(theirs.say, "data-unlocksay")}</div>` : ""}
@@ -1101,6 +1107,13 @@ function doneHTML(d){
 }
 function bindDone(v){
   const o = other(me), date = ymd(new Date());
+  // 일기: 하루에 하나, 다시 남기면 고친다. 속마음 일기는 상대가 ♥로 열어야 보인다
+  const di = v.querySelector("#diary-in");
+  if (di){ const grow = () => { di.style.height = "auto"; di.style.height = di.scrollHeight + "px" }; grow();
+    di.oninput = () => { draft.diary = di.value; grow() };
+    v.querySelectorAll("[data-dsec]").forEach(b => b.onclick = () => { draft.dsec = b.dataset.dsec === "true"; render(true) });
+    v.querySelector("#diary-save").onclick = () => { const d = todayDoc(), t = di.value.trim(); if (!t) return di.focus();
+      put("daily", todayKey(), { ...d, diary: { text: t, secret: draft.dsec, ts: Date.now() }, diaryOpenedBy: null }); toast("남겼어요") } }
   v.querySelector("#t-more")?.addEventListener("click", () => { const d = baseDoc(me);
     put("base", me, { ...d, who: me, more: { ...(d.more || {}), [date]: (d.more?.[date] || 0) + 1 } }); draft = {} });
   v.querySelectorAll("[data-unlockq]").forEach(b => b.onclick = () => { const id = b.dataset.unlockq; put("aiq", id, { ...S.aiq[id], unlockedBy: me }); toast(`♥−${HEART_COST}`) });
@@ -1177,6 +1190,7 @@ function pendingItems(){
     // 고른 선지는 이미 닻(pk_ 모듈러)이다. 정리에는 기타 글만 보낸다
     baseList().forEach(q => { const a = d.ans?.[q.name], t = Math.max(a?.ts || 0, a?.got || 0);
       if (a?.etc?.trim() && t > c && !a.no) push(t, `${tag(w)}의 처음 질문 「${q.ask}」 기타 답: ${a.etc}${(a.pick || []).length ? ` (함께 고른 것: ${baseText({ pick: a.pick }, q, w)})` : ""}`, true) }) });
+  all("daily").forEach(d => { if ((d.diary?.text || "").trim() && d.diary.ts > c) push(d.diary.ts, `${tag(d.who)}의 일기: ${d.diary.text}`, !!d.diary.secret) });
   all("daily").forEach(d => { if ((d.say || "").trim() && d.done > c) push(d.done, `${tag(d.who)}이(가) ${tag(other(d.who))}에게 하고 싶은 말: ${d.say}`, true) });
   all("daily").forEach(d => (d.qs || []).forEach(q => { if (!q.a || !(q.ats > c)) return;
     const kind = q.from ? `${tag(q.from)}이(가) 직접 물은 질문` : q.k === "other" ? `${tag(other(d.who))}에 대해 묻는 질문` : q.k === "rel" ? "관계 질문" : "내 질문";
@@ -1528,6 +1542,7 @@ VIEWS.diary = () => {
     (byDay[d.date] ||= new Set()).add(d.who);
     if (d.who === other(me) && hasSecret(d)) secretDay.add(d.date);
   });
+  diaries().forEach(d => { (byDay[d.date] ||= new Set()).add(d.who); if (d.who === other(me) && d.diary.secret) secretDay.add(d.date) });
   let cells = WD.map(w => `<span class="wd">${w}</span>`).join("");
   cells += "<span></span>".repeat(first.getDay());
   for (let d = 1; d <= days; d++){
@@ -1559,31 +1574,33 @@ const hasSecret = d => !!(d.secret || "").trim();
 // 속마음은 상대 것이고 아직 열람하지 않았으면 노랗게 가린다
 const isLocked = d => d.who !== me && d.unlockedBy !== me;
 const dayEntries = date => allEntries().filter(d => d.date === date).sort((x, y) => x.ts - y.ts);
+// 하루 마무리에 남긴 일기 (daily 의 diary)
+const diaries = () => all("daily").filter(d => (d.diary?.text || "").trim());
 // 사진 탭: 그날 상황의 사진
 const photoItems = dayEntries;
 // 글 탭: 그날 상황의 한마디, 속마음이 있으면 그 아래 속마음 한 줄 (시간 순)
-const textItems = date => dayEntries(date).flatMap(d => [
-  ...((d.text || "").trim() ? [{ d, secret: false }] : []),
-  ...(hasSecret(d) ? [{ d, secret: true }] : []),
-]);
+//   일기도 같은 줄에 (속마음 일기면 속마음처럼 가린다)
+const textItems = date => [...dayEntries(date).flatMap(d => [
+  ...((d.text || "").trim() ? [{ who: d.who, ts: d.ts, text: d.text, secret: false }] : []),
+  ...(hasSecret(d) ? [{ who: d.who, ts: d.ts, text: d.secret, secret: true, locked: isLocked(d), unlock: `data-unlock="${d.id}"` }] : []),
+]), ...diaries().filter(d => d.date === date).map(d => ({ who: d.who, ts: d.diary.ts, text: d.diary.text, secret: d.diary.secret, diary: true,
+  locked: d.diary.secret && d.who !== me && d.diaryOpenedBy !== me, unlock: `data-unlockdiary="${d.id}"` }))].sort((x, y) => x.ts - y.ts);
 // 가린 글은 내용을 화면에 넣지 않고, 길이만 짐작되는 노란 막대로 그린다
 function maskHTML(len){
   const lines = Math.max(1, Math.min(4, Math.ceil(len / 20)));
   return `<div class="mask" role="img" aria-label="가려진 속마음">${Array.from({ length: lines }, (_, i) =>
     `<i style="width:${i === lines - 1 && lines > 1 ? 45 + (len * 7) % 40 : 92 - i * 4}%"></i>`).join("")}</div>`;
 }
-function textItemHTML({ d, secret }){
-  const locked = secret && isLocked(d);
-  const text = secret ? d.secret : d.text;
+function textItemHTML({ who, ts, text, secret, locked, unlock, diary }){
   const body = locked
-    ? `${maskHTML(text.length)}${canSpend() ? `<button class="btn accent sm" data-unlock="${d.id}">♥${HEART_COST}로 열람</button>` : ""}`
-    : `<div class="voice who-${d.who}${secret ? " inner" : ""}">${esc(text)}<time>${hm(d.ts)}</time></div>`;
+    ? `${maskHTML(text.length)}${canSpend() ? `<button class="btn accent sm" ${unlock}>♥${HEART_COST}로 열람</button>` : ""}`
+    : `<div class="voice who-${who}${secret ? " inner" : ""}">${esc(text)}<time>${diary ? "일기 · " : ""}${hm(ts)}</time></div>`;
   // 이름 없이 글자색으로 누군지, 내 글은 오른쪽 · 상대 글은 왼쪽
-  return `<article class="entry ${d.who} ${d.who === me ? "mine" : "theirs"}">
-    ${body}${locked ? `<time>${hm(d.ts)}</time>` : ""}</article>`;
+  return `<article class="entry ${who} ${who === me ? "mine" : "theirs"}">
+    ${body}${locked ? `<time>${diary ? "일기 · " : ""}${hm(ts)}</time>` : ""}</article>`;
 }
 function dayHTML(date, ym){
-  const list = dayEntries(date), as = diaryAs;
+  const list = [...dayEntries(date), ...diaries().filter(d => d.date === date)], as = diaryAs;
   const photos = photoItems(date), texts = textItems(date);
   const body = !list.length ? empty("pen", "기록 없음", "")
     : as === "grid"
@@ -1603,6 +1620,9 @@ function dayHTML(date, ym){
     v.querySelectorAll("[data-open]").forEach(b => b.onclick = () => go("entry", { id: b.dataset.open, date, backTo: "diary", backParams: back }));
     v.querySelectorAll("[data-unlock]").forEach(b => b.onclick = () => {
       const id = b.dataset.unlock; put("posts", id, { ...S.posts[id], unlockedBy: me }); toast(`♥−${HEART_COST}`);
+    });
+    v.querySelectorAll("[data-unlockdiary]").forEach(b => b.onclick = () => {
+      const id = b.dataset.unlockdiary; put("daily", id, { ...S.daily[id], diaryOpenedBy: me }); toast(`♥−${HEART_COST}`);
     });
     v.querySelectorAll("[data-toq]").forEach(b => b.onclick = () => go("questions"));
   }};
