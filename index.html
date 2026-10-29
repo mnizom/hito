@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793257554021">
+<meta name="hito-build" content="1793259336991">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -360,6 +360,14 @@ nav.tabs svg{width:25px;height:25px}
 .report p{margin:0 0 12px;white-space:pre-wrap}
 .report .rt{font-size:22px;line-height:1.35;font-weight:700;margin:2px 0 10px}
 .report .rh{font-size:17px;font-weight:700;margin:20px 0 4px}
+/* 리포트 카드: 소제목 하나 = 카드 하나, 옆으로 넘긴다 */
+.rcards{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:2px 16px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rcards::-webkit-scrollbar{display:none}
+.rcard{flex:0 0 calc(100% - 24px);scroll-snap-align:center;background:var(--surface);border:1px solid var(--hair);border-radius:18px;padding:18px 18px 8px;box-shadow:var(--shadow);max-height:62vh;overflow-y:auto}
+.rcard .rh{margin-top:0}
+.rdots{display:flex;justify-content:center;gap:6px;margin-top:6px}
+.rdots i{width:6px;height:6px;border-radius:50%;background:var(--hair)}
+.rdots i[aria-current="true"]{background:var(--ink-2)}
 /* 로고: 검은 손글씨 뒤에 색연필 한 번 — Hi 는 a 색, To 는 b 색. 밤에는 같은 색을 조금 밝게 */
 :root{--logo-a:var(--a);--logo-b:var(--b)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--logo-a:color-mix(in srgb,var(--a) 72%,white);--logo-b:color-mix(in srgb,var(--b) 72%,white)}
@@ -1722,11 +1730,18 @@ function myLoveTrend(){
 // 리포트 + 궁금한 것(asks). 두 사람이 기본 질문을 마치기 전에는 잠긴다.
 // 궁금한 것 중 상대의 오늘 질문으로 물어본 것은, 상대가 답하고 정리된 뒤 이 화면을 열면 다시 답한다.
 const reportOpen = kind => kind === "me" ? baseDone(me) : opened();
-// 리포트 글 → 기사 모양: 첫 문단이 한 줄뿐이면 제목, 여러 줄 문단은 첫 줄이 소제목
-const reportBody = t => String(t || "").trim().split(/\n\s*\n/).map((b, i) => { const ls = b.trim().split("\n");
-  if (i === 0 && ls.length === 1 && ls[0].length <= 40) return `<h3 class="rt">${esc(ls[0])}</h3>`;
-  if (ls.length > 1 && ls[0].length <= 40) return `<h4 class="rh">${esc(ls[0])}</h4><p>${esc(ls.slice(1).join("\n"))}</p>`;
-  return `<p>${esc(b.trim())}</p>` }).join("");
+// 리포트 글 → 카드: 첫 문단이 한 줄뿐이면 제목, 여러 줄 문단은 첫 줄이 소제목이고 소제목마다 새 카드
+const reportBody = t => { const cards = [[]];
+  String(t || "").trim().split(/\n\s*\n/).forEach((b, i) => { const ls = b.trim().split("\n");
+    if (i === 0 && ls.length === 1 && ls[0].length <= 40) return cards[0].push(`<h3 class="rt">${esc(ls[0])}</h3>`);
+    if (ls.length > 1 && ls[0].length <= 40){ if (cards.at(-1).length) cards.push([]); return cards.at(-1).push(`<h4 class="rh">${esc(ls[0])}</h4><p>${esc(ls.slice(1).join("\n"))}</p>`) }
+    cards.at(-1).push(`<p>${esc(b.trim())}</p>`) });
+  const cs = cards.filter(c => c.length);
+  return `<div class="rcards">${cs.map(c => `<div class="rcard voice report">${c.join("")}</div>`).join("")}</div>
+    ${cs.length > 1 ? `<div class="rdots">${cs.map((_, i) => `<i aria-current="${!i}"></i>`).join("")}</div>` : ""}` };
+// 넘길 때 아래 점을 따라 옮긴다
+const bindCards = v => v.querySelectorAll(".rcards").forEach(r => { const dots = r.nextElementSibling?.classList.contains("rdots") ? [...r.nextElementSibling.children] : [];
+  r.addEventListener("scroll", () => { const i = Math.round(r.scrollLeft / (r.firstElementChild.offsetWidth + 10)); dots.forEach((d, j) => d.setAttribute("aria-current", j === i)) }, { passive: true }) });
 function reportHTML(kind){
   if (!reportOpen(kind)) return `<section style="margin-top:8px"><span class="small muted">${kind === "me"
     ? `? 탭의 질문에 다 답하면 나 리포트가 나와요 · ${baseCount(me)}/${baseList().length}`
@@ -1739,8 +1754,8 @@ function reportHTML(kind){
   const d = rp && new Date(rp.ts);
   const asks = all("asks").filter(a => a.by === me).sort((x, y) => y.ts - x.ts);
   return `<section style="margin-top:8px">
-      ${first ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary><div class="voice report">${reportBody(first.text)}</div></details>` : ""}
-      ${rp ? `<div class="voice report">${reportBody(rp.text)}</div><span class="small muted">${d.getMonth() + 1}.${d.getDate()} ${hm(rp.ts)}</span>` : ""}
+      ${first ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary>${reportBody(first.text)}</details>` : ""}
+      ${rp ? `${reportBody(rp.text)}<span class="small muted">${d.getMonth() + 1}.${d.getDate()} ${hm(rp.ts)}</span>` : ""}
       ${ai ? `<button class="btn primary" id="rp-go" style="align-self:flex-start" ${aiState ? "disabled" : ""}>${aiState || (rp ? "다시 쓰기" : "리포트 쓰기")}</button>` : ""}
     </section>
     <section>
@@ -1749,6 +1764,7 @@ function reportHTML(kind){
     </section>`;
 }
 function bindReport(v, kind){
+  bindCards(v);
   v.querySelector("#rp-go")?.addEventListener("click", () => writeReport(kind));
   const send = () => { const i = v.querySelector("#ask-in"), q = i.value.trim(); if (!q) return i.focus();
     i.value = ""; i.blur(); const id = uid(); put("asks", id, { by: me, q, ts: Date.now() }); answerAsk(id) };
