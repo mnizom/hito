@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793259681836">
+<meta name="hito-build" content="1793260274596">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -417,7 +417,7 @@ textarea.short{min-height:0}
     <button data-go="home" aria-label="홈"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></svg></button>
     <button data-go="questions" aria-label="질문"><svg viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4.2 2.75c-.75.34-1.2 1.05-1.2 1.88V14.5"/><circle cx="12" cy="18" r=".6" fill="currentColor"/></svg></button>
     <button data-go="compose" aria-label="지금 내 상황 올리기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button data-go="diary" aria-label="기록"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></button>
+    <button data-go="ask" aria-label="AI에게 묻기"><svg viewBox="0 0 24 24"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17h-8l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z"/><path d="M12 8.6l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z" fill="currentColor"/></svg></button>
     <button data-go="stats" aria-label="우리"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13" width="3" height="4" rx="1"/></svg></button>
   </nav>
 </div>
@@ -427,6 +427,7 @@ textarea.short{min-height:0}
 const ICON = {
   menu: '<path d="M4 7h16M4 12h16M4 17h10"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
+  calendar: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M8 3v4M16 3v4M4 10h16"/>',
   heart: '<path d="M12 20s-7.5-4.6-7.5-10A4.2 4.2 0 0 1 12 7.3 4.2 4.2 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/>',
   send: '<path d="M5 12h13M13 6l6 6-6 6"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
@@ -682,7 +683,7 @@ function render(force){
   const view = document.getElementById("view");
   view.innerHTML = out.html;
   out.bind?.(view);
-  const tab = { day: "diary", entry: "diary" }[route.name] || route.name;
+  const tab = { diary: "home", day: "home", entry: "home" }[route.name] || route.name;
   document.querySelectorAll("#tabs [data-go]").forEach(b => b.setAttribute("aria-current", String(b.dataset.go === tab)));
 }
 document.addEventListener("focusout", () => setTimeout(() => { if (pending) render() }, 0));
@@ -825,7 +826,8 @@ VIEWS.home = () => {
   const latest = all("posts").filter(p => p.who === o).sort((x, y) => y.ts - x.ts)[0];
   const html = latest ? postHTML(latest)
     : empty("image", "아직 없음", "");
-  return { html, bind: v => {
+  // 달력은 홈 위쪽 버튼으로 연다
+  return { html, action: { icon: "calendar", label: "달력", onClick: () => go("diary") }, bind: v => {
     v.querySelector("[data-go-compose]")?.addEventListener("click", () => go("compose"));
     bindPosts(v);
   }};
@@ -1419,7 +1421,11 @@ ${SHARED_RULE}
 JSON 하나로만 답한다: {"답":"…","모름":false,"물을것":"…"}
 
 [자료]
-${modsLines(modsFor(w))}`;
+${modsLines(modsFor(w))}
+
+[요즘]
+${moodLines("a")}
+${moodLines("b")}`;
 }
 
 const aiErr = e => ({ not_granted: "Claude 사용을 허락하지 않음", sampling_disabled: "Claude를 쓸 수 없는 계정", rate_limited: "잠시 뒤에 다시",
@@ -1738,30 +1744,37 @@ function reportHTML(kind){
     ? `? 탭의 질문에 다 답하면 나 리포트가 나와요 · ${baseCount(me)}/${baseList().length}`
     : `두 사람이 ? 탭의 질문에 다 답하면 리포트가 열려요 · 나 ${baseCount(me)}/${baseList().length} · ${esc(nameOf(other(me)))} ${baseCount(other(me))}/${baseList().length}`}</span></section>`;
   const key = { me: "self_" + me, other: "about_" + me, us: "us" }[kind], rp = S.meta[key], first = S.meta[{ me: "first_me_" + me, us: "first_us" }[kind]];
-  if (ai && !aiState){
-    const redo = all("asks").find(a => a.by === me && !a.done && a.aiq && S.aiq[a.aiq]?.ans && S.aiq[a.aiq].ats <= aiCut() && (a.ats || 0) < aiCut());
-    if (redo) setTimeout(() => answerAsk(redo.id), 0);
-  }
   const d = rp && new Date(rp.ts);
-  const asks = all("asks").filter(a => a.by === me).sort((x, y) => y.ts - x.ts);
   return `<section style="margin-top:8px">
       ${first ? `<details${rp ? "" : " open"}><summary class="small muted" style="cursor:pointer">첫 리포트</summary>${reportBody(first.text)}</details>` : ""}
       ${rp ? `${reportBody(rp.text)}<span class="small muted">${d.getMonth() + 1}.${d.getDate()} ${hm(rp.ts)}</span>` : ""}
       ${ai ? `<button class="btn primary" id="rp-go" style="align-self:flex-start" ${aiState ? "disabled" : ""}>${aiState || (rp ? "다시 쓰기" : "리포트 쓰기")}</button>` : ""}
-    </section>
-    <section>
-      <label class="inline"><input type="text" id="ask-in" placeholder="궁금한 것" aria-label="궁금한 것 물어보기"><button class="send" id="ask-send" aria-label="보내기">${svg("send")}</button></label>
-      ${asks.map(a => `<div class="ask"><b>${esc(a.q)}</b>${a.a ? `<div class="voice" style="font-size:15.5px">${esc(a.a)}</div>` : `<span class="small muted">…</span>`}</div>`).join("")}
     </section>`;
 }
 function bindReport(v, kind){
   bindCards(v);
   v.querySelector("#rp-go")?.addEventListener("click", () => writeReport(kind));
-  const send = () => { const i = v.querySelector("#ask-in"), q = i.value.trim(); if (!q) return i.focus();
-    i.value = ""; i.blur(); const id = uid(); put("asks", id, { by: me, q, ts: Date.now() }); answerAsk(id) };
-  v.querySelector("#ask-send")?.addEventListener("click", e => { e.preventDefault(); send() });
-  v.querySelector("#ask-in")?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) send() });
 }
+// AI 탭: 지금까지 정리된 자료(모듈러)로 답한다. 자료가 모자라면 상대의 오늘 질문으로 물어보고, 그 답이 정리되면 이 탭을 열 때 다시 답한다
+VIEWS.ask = () => {
+  if (ai && !aiState){
+    // 다른 AI 일을 하느라 못 답한 것(ats 없음)도 여기서 다시 답한다
+    const redo = all("asks").find(a => a.by === me && (!a.ats || !a.done && a.aiq && S.aiq[a.aiq]?.ans && S.aiq[a.aiq].ats <= aiCut() && (a.ats || 0) < aiCut()));
+    // 실패해도 화면을 그릴 때마다 다시 부르지 않게 한 번만
+    if (redo && !tried["ask" + redo.id + (redo.ats || "")]){ tried["ask" + redo.id + (redo.ats || "")] = 1; setTimeout(() => answerAsk(redo.id), 0) }
+  }
+  const asks = all("asks").filter(a => a.by === me).sort((x, y) => y.ts - x.ts);
+  return { title: "AI에게 묻기", html: `<section style="margin-top:8px">
+      <label class="inline"><input type="text" id="ask-in" placeholder="궁금한 것" aria-label="AI에게 묻기"><button class="send" id="ask-send" aria-label="보내기" ${ai ? "" : "disabled"}>${svg("send")}</button></label>
+      ${aiState ? `<span class="small muted">${esc(aiState)}</span>` : ""}
+      ${asks.map(a => `<div class="ask"><b>${esc(a.q)}</b>${a.a ? `<div class="voice" style="font-size:15.5px">${esc(a.a)}</div>` : `<span class="small muted">…</span>`}</div>`).join("")}
+    </section>`,
+  bind: v => { autoAI();
+    const send = () => { const i = v.querySelector("#ask-in"), q = i.value.trim(); if (!q) return i.focus();
+      i.value = ""; i.blur(); const id = uid(); put("asks", id, { by: me, q, ts: Date.now() }); answerAsk(id) };
+    v.querySelector("#ask-send")?.addEventListener("click", e => { e.preventDefault(); send() });
+    v.querySelector("#ask-in")?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) send() }) } };
+};
 // 우리 탭: 나 · 상대 · 관계는 리포트, 그래프는 두 사람 기분 · 에너지를 겹친 것과 내 마음
 VIEWS.stats = () => {
   const sub = route.sub || "me", o = other(me);
