@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793259346238">
+<meta name="hito-build" content="1793259681836">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1703,19 +1703,10 @@ const series = (w, k, n = 14) => [...all("daily").filter(d => d.who === w && d.m
 const avgOf = (arr, k) => arr.length ? Math.round(arr.reduce((n, p) => n + p.mood[k], 0) / arr.length) : "–";
 function bothTrend(k, ic, label){
   const pa = series("a", k), pb = series("b", k);
-  if (!pa.length && !pb.length) return empty("chart", "데이터 없음", "");
   return `<div class="card" style="display:flex;flex-direction:column;gap:12px">
       <span class="lab">${ic} ${label}</span>
-      ${trendChart([{ arr: pa, color: "a", key: k }, { arr: pb, color: "b", key: k }], `${label} 변화 그래프`)}
-      <div class="legend"><span><i style="background:var(--a)"></i>${esc(nameOf("a"))} 평균 ${avgOf(pa, k)}</span><span><i style="background:var(--b)"></i>${esc(nameOf("b"))} 평균 ${avgOf(pb, k)}</span></div>
-    </div>`;
-}
-function oneTrend(w, k, ic, label){
-  const arr = series(w, k);
-  return `<div class="card" style="display:flex;flex-direction:column;gap:12px">
-      <span class="lab">${ic} ${label}</span>
-      ${arr.length ? `${trendChart([{ arr, color: w, key: k }], `${label} 변화 그래프`)}<span class="small muted">평균 ${avgOf(arr, k)}</span>`
-        : `<span class="small muted">데이터 없음</span>`}
+      ${!pa.length && !pb.length ? `<span class="small muted">데이터 없음</span>` : `${trendChart([{ arr: pa, color: "a", key: k }, { arr: pb, color: "b", key: k }], `${label} 변화 그래프`)}
+      <div class="legend"><span><i style="background:var(--a)"></i>${esc(nameOf("a"))} 평균 ${avgOf(pa, k)}</span><span><i style="background:var(--b)"></i>${esc(nameOf("b"))} 평균 ${avgOf(pb, k)}</span></div>`}
     </div>`;
 }
 function myLoveTrend(){
@@ -1771,41 +1762,16 @@ function bindReport(v, kind){
   v.querySelector("#ask-send")?.addEventListener("click", e => { e.preventDefault(); send() });
   v.querySelector("#ask-in")?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) send() });
 }
-// 우리 탭: 나 · 상대 · 우리. 나·상대는 그 사람의 기분·에너지·속마음 비율(+ 나는 내 마음)과 리포트, 우리는 두 사람 기분·에너지를 겹쳐 그리고 리포트
+// 우리 탭: 나 · 상대 · 관계는 리포트, 그래프는 두 사람 기분 · 에너지를 겹친 것과 내 마음
 VIEWS.stats = () => {
   const sub = route.sub || "me", o = other(me);
-  const body = sub === "me" ? oneTrend(me, "smile", "☺", "기분") + oneTrend(me, "energy", "💊", "에너지") + compareHTML(me) + myLoveTrend()
-    : sub === "other" ? oneTrend(o, "smile", "☺", "기분") + oneTrend(o, "energy", "💊", "에너지") + compareHTML(o)
-    : bothTrend("smile", "☺", "기분") + bothTrend("energy", "💊", "에너지");
+  const body = sub === "graph" ? bothTrend("smile", "☺", "기분") + bothTrend("energy", "💊", "에너지") + myLoveTrend() : reportHTML(sub);
   return { title: "우리", html: `
-    <div style="display:flex;justify-content:center"><div class="seg">${[["me", "나"], ["other", esc(nameOf(o))], ["us", "관계"]].map(([k, l]) =>
+    <div style="display:flex;justify-content:center"><div class="seg">${[["me", "나"], ["other", esc(nameOf(o))], ["us", "관계"], ["graph", "그래프"]].map(([k, l]) =>
       `<button data-sub="${k}" aria-pressed="${sub === k}">${l}</button>`).join("")}</div></div>
-    ${body}
-    ${reportHTML(sub)}`,
-  bind: v => { autoAI(); v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); if (reportOpen(sub)) bindReport(v, sub) } };
+    ${body}`,
+  bind: v => { autoAI(); v.querySelectorAll("[data-sub]").forEach(b => b.onclick = () => { route.sub = b.dataset.sub; render(true) }); if (sub !== "graph" && reportOpen(sub)) bindReport(v, sub) } };
 };
-// 속마음 비교 = 밖으로 말한 글자 수 대비 속마음 글자 수 (공백 제외)
-//   밖으로 말한 것: 상황의 한마디
-//   속마음: 상황의 속마음 글
-const chars = s => [...String(s || "").replace(/\s/g, "")].length;
-function speechCounts(w){
-  let said = 0, inner = 0;
-  all("posts").forEach(p => { if (p.who === w){ said += chars(p.text); inner += chars(p.secret) } });
-  return { said, inner, ratio: said ? inner / said : null };
-}
-function compareHTML(only){
-  const c = { a: speechCounts("a"), b: speechCounts("b") };
-  const max = Math.max(1, c.a.said, c.a.inner, c.b.said, c.b.inner);
-  const pct = n => (n / max * 72).toFixed(1); // 오른쪽에 글자 수 들어갈 자리를 남긴다
-  const card = w => `<div class="card ratio" style="display:flex;flex-direction:column;gap:12px">
-      <div class="post"><div class="head"><b class="who-${w}">${esc(nameOf(w))}</b></div></div>
-      <div class="big"><b class="who-${w}">${c[w].ratio == null ? "–" : c[w].ratio.toFixed(2)}</b><span>배</span></div>
-      <div class="bars">
-        <div class="bar"><span>한마디</span><div class="track"><div class="fill said" style="width:${pct(c[w].said)}%"></div><span class="num">${c[w].said.toLocaleString()}자</span></div></div>
-        <div class="bar"><span>속마음</span><div class="track"><div class="fill ${w}" style="width:${pct(c[w].inner)}%"></div><span class="num">${c[w].inner.toLocaleString()}자</span></div></div>
-      </div></div>`;
-  return only ? card(only) : card(me) + card(other(me));
-}
 const KINDS = [["couple", "연인"], ["friend", "친구"]];
 VIEWS.settings = () => {
   const c = couple();
