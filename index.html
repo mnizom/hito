@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793261790833">
+<meta name="hito-build" content="1793262477777">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -63,11 +63,15 @@ main{flex:1;overflow-y:auto;padding-block:6px 0;
 main::after{content:"";flex:none;height:calc(84px + env(safe-area-inset-bottom,0px))}
 
 nav.tabs{position:absolute;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));
-  display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:64px;padding:0 6px;
+  display:grid;grid-template-columns:repeat(4,1fr);align-items:center;height:64px;padding:0 6px;
   background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border:1px solid var(--hair);border-radius:24px;box-shadow:var(--shadow);z-index:5}
 nav.tabs button{height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-2);border-radius:16px;font-size:10.5px;font-weight:500}
 nav.tabs button[aria-current="true"]{color:var(--a)}
+nav.tabs .hitab{font:700 27px/1 Caveat,cursive;letter-spacing:-.01em;margin-top:2px}
+/* 홈의 올리기 버튼: 아래 탭 위 오른쪽에 떠 있다 */
+.fab{position:sticky;bottom:calc(92px + env(safe-area-inset-bottom,0px));margin-top:auto;align-self:flex-end;flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--a);color:#fff;box-shadow:var(--shadow),0 6px 18px color-mix(in srgb,var(--a) 35%,transparent);z-index:4}
+.fab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
 nav.tabs svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
 .muted{color:var(--ink-2)} .small{font-size:13px}
@@ -424,9 +428,8 @@ textarea.short{min-height:0}
   <header class="top" id="top"></header>
   <main id="view" aria-live="polite"></main>
   <nav class="tabs" id="tabs" aria-label="메뉴">
-    <button data-go="home" aria-label="홈"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></svg></button>
+    <button data-go="home" aria-label="홈"><span class="hitab">Hi</span></button>
     <button data-go="questions" aria-label="질문"><svg viewBox="0 0 24 24"><path d="M9 9a3 3 0 1 1 4.2 2.75c-.75.34-1.2 1.05-1.2 1.88V14.5"/><circle cx="12" cy="18" r=".6" fill="currentColor"/></svg></button>
-    <button data-go="compose" aria-label="지금 내 상황 올리기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
     <button data-go="ask" aria-label="AI에게 묻기"><svg viewBox="0 0 24 24"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17h-8l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z"/><path d="M12 8.6l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z" fill="currentColor"/></svg></button>
     <button data-go="stats" aria-label="우리"><svg viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="5.5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="6" width="3" height="11" rx="1"/><rect x="15.5" y="13" width="3" height="4" rx="1"/></svg></button>
   </nav>
@@ -702,7 +705,7 @@ function render(force){
   const view = document.getElementById("view");
   view.innerHTML = out.html;
   out.bind?.(view);
-  const tab = { diary: "home", day: "home", entry: "home" }[route.name] || route.name;
+  const tab = { diary: "home", day: "home", entry: "home", compose: "home" }[route.name] || route.name;
   document.querySelectorAll("#tabs [data-go]").forEach(b => b.setAttribute("aria-current", String(b.dataset.go === tab)));
 }
 document.addEventListener("focusout", () => setTimeout(() => { if (pending) render() }, 0));
@@ -843,11 +846,12 @@ VIEWS.home = () => {
     }};
   const o = other(me);
   const latest = all("posts").filter(p => p.who === o).sort((x, y) => y.ts - x.ts)[0];
-  const html = latest ? postHTML(latest)
-    : empty("image", "아직 없음", "");
+  const html = (latest ? postHTML(latest) : empty("image", "아직 없음", ""))
+    + `<button class="fab" id="go-compose" aria-label="지금 내 상황 올리기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>`;
   // 달력은 홈 위쪽 버튼으로 연다
   return { html, action: { icon: "calendar", label: "달력", onClick: () => go("diary") }, bind: v => {
     v.querySelector("[data-go-compose]")?.addEventListener("click", () => go("compose"));
+    v.querySelector("#go-compose").onclick = () => go("compose");
     bindPosts(v);
   }};
 };
