@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793246687840">
+<meta name="hito-build" content="1793256730258">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -961,11 +961,11 @@ const baseAt = () => { const list = baseOrder(me); return Math.max(0, Math.min(d
 const firstOpen = () => baseOrder(me).findIndex(q => !doneQ(me, q));
 const HOW = { many: "여러 개 골라도 돼요", one: "하나만 골라 주세요", min: "없으면 안 되는 것만 골라 주세요" };
 function baseHTML(){
-  const list = baseOrder(me), total = list.length, d = baseDoc(me);
+  const list = baseOrder(me), d = baseDoc(me);
   draft.bi ??= Math.max(0, firstOpen());
   const q = list[baseAt()], a = d.ans?.[q.name] || {}, pick = a.pick || [], opts = optsOf(q);
   return `<div class="welcome" style="padding-top:8px">
-    <span class="small muted">${esc(q.g)} · ${baseCount(me)}/${total} · 오늘 ${answeredToday()}/${baseLimit()}</span>
+    <span class="small muted">오늘 ${answeredToday()}/${baseLimit()}</span>
     <h2 class="bask">${esc(q.ask)}</h2>
     ${q.desc ? `<p class="bdesc">${esc(q.desc)}</p>` : ""}
     <span class="small muted">${HOW[q.how]}</span>
@@ -1080,8 +1080,8 @@ function doneHTML(d){
   const more = !baseDone(me);
   return `<div class="welcome" style="padding-top:8px">
     <span class="daytitle">오늘은 끝</span>
-    ${more ? `<span class="small muted">${baseCount(me)}/${baseList().length} 답했어요</span><button class="btn" id="t-more" style="align-self:flex-start">5개 더 하기</button>`
-      : !opened() ? `<span class="small muted">${esc(nameOf(o))}님이 ${baseCount(o)}/${baseList().length} 답했어요 · 다 답하면 오늘 질문과 관계 리포트가 열려요</span>` : ""}
+    ${more ? `<button class="btn" id="t-more" style="align-self:flex-start">5개 더 하기</button>`
+      : !opened() ? `<span class="small muted">${esc(nameOf(o))}님이 아직 답하는 중이에요 · 다 답하면 오늘 질문과 관계 리포트가 열려요</span>` : ""}
     ${theirs?.say ? `<div class="bq"><span class="small muted">${esc(nameOf(o))}님이 하고 싶은 말</span>${theirs.sayOpenedBy === me ? `<div class="voice who-${o}">${esc(theirs.say)}</div>` : locked(theirs.say, "data-unlocksay")}</div>` : ""}
     ${rq ? `<div class="bq"><span class="small muted">우리 질문</span><b>${esc(rq)}</b>
       ${["a", "b"].map(w => { const a = relA(w); return a ? `<div class="voice who-${w}">${esc(a)}</div>` : `<span class="small muted">${esc(nameOf(w))} 아직</span>` }).join("")}</div>` : ""}
