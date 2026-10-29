@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793261174186">
+<meta name="hito-build" content="1793261358293">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -395,6 +395,16 @@ nav.tabs svg{width:25px;height:25px}
 .chips button{padding:6px 12px;border:1px solid var(--hair);border-radius:999px;font-size:13.5px;color:var(--ink-2)}
 .chips button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
 textarea.short{min-height:0}
+/* 일기: 종이 한 장. 속마음을 켜면 속마음 색으로 */
+.diary{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--hair);border-radius:20px;padding:16px 16px 10px;box-shadow:var(--shadow);margin-top:6px;transition:border-color .2s}
+.diary textarea{border:0;background:none;padding:0;min-height:140px;resize:none;outline:none;box-shadow:none;font-size:17.5px}
+.diary textarea::placeholder{color:var(--ink-2);opacity:.6}
+.diary .drow{display:flex;align-items:center;justify-content:space-between}
+.diary .dsec{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:999px;font-size:13px;color:var(--ink-2);border:1px solid var(--hair)}
+.diary .dsec svg{width:14px;height:14px}
+.diary .dsec[aria-pressed="true"]{color:var(--accent);border-color:var(--accent);font-weight:600}
+.diary.sec{border-color:color-mix(in srgb,var(--accent) 45%,var(--hair))}
+.diary .dsave{font-size:14.5px;font-weight:700;color:var(--accent);padding:6px 4px}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1092,13 +1102,12 @@ function doneHTML(d){
   draft.diary ??= d?.diary?.text || ""; draft.dsec ??= !!d?.diary?.secret;
   return `<div class="welcome" style="padding-top:8px">
     <span class="daytitle">오늘은 끝</span>
-    ${d ? `<div class="bq"><span class="small muted">일기</span>
-      <textarea id="diary-in" aria-label="일기">${esc(draft.diary)}</textarea>
-      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
-        <div class="seg">${[[false, "일기"], [true, "속마음 일기"]].map(([k, l]) => `<button data-dsec="${k}" aria-pressed="${draft.dsec === k}">${l}</button>`).join("")}</div>
-        <button class="btn primary sm" id="diary-save">${d.diary ? "고치기" : "남기기"}</button></div></div>` : ""}
+    ${d ? `<div class="diary${draft.dsec ? " sec" : ""}">
+      <textarea id="diary-in" aria-label="일기" placeholder="오늘 하루">${esc(draft.diary)}</textarea>
+      <div class="drow"><button class="dsec" id="diary-sec" aria-pressed="${draft.dsec}">${svg("lock")}속마음</button>
+        <button class="dsave" id="diary-save">${d.diary ? "고치기" : "남기기"}</button></div></div>` : ""}
     ${more ? `<button class="btn" id="t-more" style="align-self:flex-start">5개 더 하기</button>`
-      : !opened() ? `<span class="small muted">${esc(nameOf(o))}님이 아직 답하는 중이에요 · 다 답하면 오늘 질문과 관계 리포트가 열려요</span>` : ""}
+      : ""}
     ${theirs?.say ? `<div class="bq"><span class="small muted">${esc(nameOf(o))}님이 하고 싶은 말</span>${theirs.sayOpenedBy === me ? `<div class="voice who-${o}">${esc(theirs.say)}</div>` : locked(theirs.say, "data-unlocksay")}</div>` : ""}
     ${rq ? `<div class="bq"><span class="small muted">우리 질문</span><b>${esc(rq)}</b>
       ${["a", "b"].map(w => { const a = relA(w); return a ? `<div class="voice who-${w}">${esc(a)}</div>` : `<span class="small muted">${esc(nameOf(w))} 아직</span>` }).join("")}</div>` : ""}
@@ -1111,7 +1120,7 @@ function bindDone(v){
   const di = v.querySelector("#diary-in");
   if (di){ const grow = () => { di.style.height = "auto"; di.style.height = di.scrollHeight + "px" }; grow();
     di.oninput = () => { draft.diary = di.value; grow() };
-    v.querySelectorAll("[data-dsec]").forEach(b => b.onclick = () => { draft.dsec = b.dataset.dsec === "true"; render(true) });
+    v.querySelector("#diary-sec").onclick = () => { draft.dsec = !draft.dsec; render(true) };
     v.querySelector("#diary-save").onclick = () => { const d = todayDoc(), t = di.value.trim(); if (!t) return di.focus();
       put("daily", todayKey(), { ...d, diary: { text: t, secret: draft.dsec, ts: Date.now() }, diaryOpenedBy: null }); toast("남겼어요") } }
   v.querySelector("#t-more")?.addEventListener("click", () => { const d = baseDoc(me);
