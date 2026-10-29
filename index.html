@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793246084723">
+<meta name="hito-build" content="1793246687840">
   <script type="module" crossorigin src="./assets/index-DClLe3Zk.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -918,7 +918,7 @@ const isAnswered = (a, q) => !!a && (!!a.no || (a.pick || []).length > 0 || fill
 // 패스한 문제는 맨 뒤로 가고, 다시 답할 때까지 진행 수에 들어가지 않는다 (base/<사람>.pass = 패스한 순서)
 const passed = w => baseDoc(w).pass || [];
 const baseOrder = w => { const p = passed(w), list = baseList(); return [...list.filter(q => !p.includes(q.name)), ...p.map(k => list.find(q => q.name === k)).filter(Boolean)] };
-const doneQ = (w, q) => isAnswered(baseDoc(w).ans?.[q.name], q) && !passed(w).includes(q.name);
+const doneQ = (w, q) => { const a = baseDoc(w).ans?.[q.name]; return isAnswered(a, q) && !!a.at && !passed(w).includes(q.name) };
 const baseCount = w => baseList().filter(q => doneQ(w, q)).length;
 // 끝남 = 끝 표시가 있고 지금 목록을 다 답했을 때 (질문이 바뀌면 다시 열린다)
 const baseDone = w => !!S.base[w]?.done && baseList().every(q => isAnswered(baseDoc(w).ans?.[q.name], q));
@@ -946,11 +946,8 @@ function pickMods(w, q){
 const syncPickMods = (w = me) => baseList().forEach(q => { if (doneQ(w, q) || S.mods[`pk_${w}_${q.n}_0`]) pickMods(w, q) });
 function saveBaseAns(key, a){
   const d = baseDoc(me), q = qByName(key), prev = d.ans?.[key];
-  const now = Date.now(), done = q && isAnswered(a, q);
-  // 처음 다 답한 때(at)로 오늘 몇 개 했는지 센다. 패스했던 문제에 답하면 패스에서 뺀다
-  const at = prev?.at || (done ? now : undefined);
-  const pass = done ? (d.pass || []).filter(k => k !== key) : d.pass;
-  put("base", me, { ...d, who: me, ans: { ...(d.ans || {}), [key]: { ...a, ts: now, ...(at ? { at } : {}) } }, ...(pass ? { pass } : {}) });
+  // 고를 때마다 바로 저장한다. 오늘 몇 개 했는지(at)는 「답하기」를 누를 때 센다 — 고르는 순간 하루가 끝나지 않게
+  put("base", me, { ...d, who: me, ans: { ...(d.ans || {}), [key]: { ...a, ts: Date.now(), ...(prev?.at ? { at: prev.at } : {}) } } });
   if (q) pickMods(me, q);
   syncBase();
 }
@@ -1002,6 +999,9 @@ function bindBase(v){
   v.querySelector("#bp-next").onclick = () => {
     flushBase();
     if (!isAnswered(cur(), q)) { toast("골라 주세요 · 패스할 수도 있어요"); return }
+    // 답하기를 누른 때(at)로 오늘 몇 개 했는지 센다. 패스했던 문제면 패스에서 뺀다
+    { const d = baseDoc(me), a = cur();
+      put("base", me, { ...d, who: me, ans: { ...d.ans, [key]: { ...a, at: a.at || Date.now() } }, pass: (d.pass || []).filter(k => k !== key) }); }
     if (!baseList().some(x => !doneQ(me, x))) { put("base", me, { ...baseDoc(me), who: me, done: Date.now() }); toast("다 답했어요"); draft = {}; top(); return }
     const next = baseOrder(me).findIndex((x, j) => j > i && !doneQ(me, x));
     draft.bi = next >= 0 ? next : Math.max(0, firstOpen()); top();
