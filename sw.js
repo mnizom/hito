@@ -10,5 +10,5 @@ self.addEventListener("push", e => {
 self.addEventListener("notificationclick", e => {
   e.notification.close();
   e.waitUntil(clients.matchAll({ type: "window", includeUncontrolled: true }).then(ws =>
-    ws.length ? ws[0].focus() : clients.openWindow(self.registration.scope)));
+    ws.length ? ws[0].focus() : clients.openWindow(self.registration.scope + "?from=push")));
 });
