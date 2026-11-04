@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793694002913">
+<meta name="hito-build" content="1793788204729">
   <script type="module" crossorigin src="./assets/index-DE-pbsuW.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1913,8 +1913,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
 .top { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: max(10px, env(safe-area-inset-top)) 18px 6px; }
 .wrap { max-width: 520px; margin: 0 auto; }
-.bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 36px; }
-select { appearance: none; -webkit-appearance: none; background: none; border: 0; font-size: 14px; font-weight: 500; color: var(--ink-2); padding: 6px 18px 6px 0; max-width: 70%; background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(-45deg, transparent 50%, var(--ink-2) 50%); background-size: 5px 5px; background-position: right 5px center, right 0 center; background-repeat: no-repeat; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 32px; }
+#prog { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+select { appearance: none; -webkit-appearance: none; background: none; border: 0; font-size: 14px; font-weight: 500; color: var(--ink-2); padding: 2px 18px 2px 0; max-width: 100%; background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(-45deg, transparent 50%, var(--ink-2) 50%); background-size: 5px 5px; background-position: right 5px center, right 0 center; background-repeat: no-repeat; }
 .round { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--surface); box-shadow: var(--shadow); transition: transform .1s; }
 .round:active { transform: scale(.94); }
 .round:disabled { opacity: .35; cursor: default; box-shadow: none; }
@@ -1927,11 +1928,33 @@ select { appearance: none; -webkit-appearance: none; background: none; border: 0
 #qv { max-width: 520px; margin: 0 auto; padding: 0 18px calc(116px + env(safe-area-inset-bottom)); }
 .card { background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 22px 20px 10px; }
 h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 12px; font: 700 20px/1.4 "Gowun Batang", AppleMyungjo, "Noto Serif KR", serif; word-break: keep-all; }
-.score { flex: none; font: 600 14px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.score { flex: none; margin-left: auto; font: 600 14px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.peek { flex: none; margin-left: auto; padding: 5px 12px; border-radius: 999px; background: var(--surface-2); color: var(--ink-2); font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; }
+.score + .peek { margin-left: 0; }
+.orig { padding: 0 0 12px; font-size: 14.5px; word-break: keep-all; overflow-x: auto; }
+.orig table { border-collapse: collapse; margin: 4px 0 10px; }
+.orig th, .orig td { border: 1px solid var(--hair); padding: 5px 8px; text-align: left; vertical-align: top; }
+.orig th { font-weight: 600; color: var(--ink-2); }
+.orig td.rl { font-weight: 600; }
+.orig table.plain td { border: 0; border-bottom: 1px solid var(--hair); }
+.orig td.ar, .orig .to { color: var(--ink-2); }
+.orig ul { margin: 4px 0; padding-left: 18px; list-style: disc; }
+.orig li { display: list-item; margin: 4px 0; padding: 0; border: 0; }
+.orig h4 { margin: 10px 0 3px; font-size: 14.5px; color: var(--ink-2); }
+.orig .flow { display: flex; flex-wrap: wrap; gap: 5px 7px; align-items: baseline; margin: 4px 0 8px; }
+.orig .f.end { font-weight: 600; }
+.orig img { display: block; max-width: 100%; }
 ul { list-style: none; margin: 0; padding: 0; }
 li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--hair); }
 .q { flex: 1; min-width: 0; word-break: keep-all; }
 .q b { font-weight: 500; }
+li details { flex: 1; min-width: 0; }
+li summary { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; list-style: none; }
+li summary::-webkit-details-marker { display: none; }
+.count { flex: none; padding: 1px 9px; border-radius: 999px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.miss { padding: 10px 0 2px; }
+.miss div { display: flex; gap: 8px; align-items: flex-start; padding: 4px 0; font-size: 14.5px; color: var(--ink-2); word-break: keep-all; }
+.miss .mark { width: 20px; height: 20px; font-size: 12px; font-style: normal; }
 .mark { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; line-height: 1; }
 .m-O { background: var(--b-soft); color: var(--b); }
 .m-T { background: var(--accent-soft); color: var(--accent); }
@@ -1939,6 +1962,7 @@ li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-
 #msg { margin: 0 4px 12px; color: var(--a); font-size: 14px; text-align: center; }
 #said { margin: 0 4px 12px; color: var(--ink-2); font-size: 14px; }
 #said summary { width: fit-content; margin: 0 auto; padding: 2px 8px; cursor: pointer; }
+.reset { display: block; margin: 16px auto 0; padding: 6px 12px; font-size: 13.5px; color: var(--ink-2); }
 #said div { margin-top: 6px; font: 400 15px/1.7 "Gowun Batang", AppleMyungjo, "Noto Serif KR", serif; }
 #mic { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); margin-left: -36px; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--surface); box-shadow: var(--shadow); transition: transform .1s, background-color .15s; }
 #mic[hidden] { display: none; }
@@ -1954,14 +1978,15 @@ li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--a) 45%, transparent); } 100% { box-shadow: 0 0 0 22px transparent; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 </style></head><body>
-<div class="top"><div class="wrap"><div class="bar"><select id="sel" aria-label="과목"></select><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+<div class="top"><div class="wrap"><div class="bar"><span id="prog"></span><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+<select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
 <div id="qv"></div><button id="mic" aria-label="말하기" hidden></button>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
 const mic = document.getElementById("mic");
-let deck = [], at = 0, cur = null, recorder = null, run = 0;
+let deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, peek = false, done = null;
 const ICON = {
   mic: '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
   stop: '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>',
@@ -1971,93 +1996,158 @@ function setMic(state) {
   mic.innerHTML = state === "retry" ? "재시도" : ICON[state];
   mic.classList.toggle("rec", state === "stop"); mic.classList.toggle("retry", state === "retry"); mic.disabled = state === "wait";
 }
-function row(text, mark) {
-  const li = document.createElement("li"), q = document.createElement("div"); q.className = "q";
-  const i = mark ? text.indexOf(": ") : -1;   // 채점 결과: "표면 · 부종성: 매끈"이면 앞부분을 진하게
-  if (i > 0) { const b = document.createElement("b"); b.textContent = text.slice(0, i); q.append(b, text.slice(i)); } else q.textContent = text;
+const allRight = c => c.best && c.points.every((_, k) => c.best[k] === "O");
+function fitMic(c) {   // 다 맞은 카드는 버튼을 치우되, 카드를 보는 중이거나 녹음·받아쓰기 중이면 둔다
+  mic.hidden = !tb.listen || !c.points.length || (allRight(c) && !peek && !recorder && !mic.disabled);
+}
+function drawProg() {   // 채점받은 카드 수. 목록에 cards가 없으면(올리기 전) 과목 이름만
+  [...sel.options].forEach((o, i) => { const s = tb.subjects[i]; o.textContent = s.name + (done && s.cards ? " " + (done[s.id] || 0) + " / " + s.cards : ""); });
+  const main = tb.subjects.filter(s => s.id !== "CPX");   // CPX는 다른 과목 카드를 모은 사본이라 전체에 넣지 않는다
+  document.getElementById("prog").textContent = done && main.every(s => s.cards) ? "전체 " + main.reduce((a, s) => a + (done[s.id] || 0), 0).toLocaleString() + " / " + main.reduce((a, s) => a + s.cards, 0).toLocaleString() : "";
+}
+function row(text) {
+  const li = document.createElement("li"), q = document.createElement("div"); q.className = "q"; q.textContent = text;
   li.append(q);
-  if (mark) { const m = document.createElement("i"), k = mark === "O" ? "O" : mark === "△" ? "T" : "X"; m.className = "mark m-" + k; m.style.fontStyle = "normal"; m.textContent = k === "O" ? "○" : k === "T" ? "△" : "×"; li.append(m); }
   return li;
 }
 function clean(el) { return el.textContent.split(/ +/).join(" ").trim(); }
 function cut(t) { return t.split(/ = |: | → /)[0].trim(); }   // "A = 설명", "A: 설명", "A → 결과"의 앞부분
-function parseCard(card) {   // topics = 말하기 전에 보이는 주제, points = 채점 기준인 카드 내용 전체
-  const topics = [], points = [];
-  const topic = t => { if (t && !topics.includes(t)) topics.push(t) }, point = t => { if (t && !points.includes(t)) points.push(t) };
+function parseCard(card) {   // groups = 주제별 내용 (말하기 전엔 주제 이름만, 채점은 내용 전체). 주제 없는 줄은 "그 밖의 내용"
+  const groups = [], other = { name: "그 밖의 내용", points: [] }, seen = new Set();
+  const groupOf = name => { let g = groups.find(x => x.name === name); if (!g) { g = { name, points: [] }; groups.push(g); } return g };
+  const point = (g, t) => { if (t && !seen.has(t)) { seen.add(t); g.points.push(t); } };
   card.querySelectorAll(".b table, .b li, .b .ln").forEach(el => {
     if (el.tagName === "TABLE") {
       const rows = [...el.rows], hasHead = rows[0].cells[0].tagName === "TH" || rows[0].cells[1]?.tagName === "TH";
-      const heads = hasHead ? [...rows[0].cells].map(c => clean(c)) : [], body = hasHead ? rows.slice(1) : rows, labels = [];
+      const heads = hasHead ? [...rows[0].cells].map(c => clean(c)) : [], body = hasHead ? rows.slice(1) : rows;
+      const labels = body.map(r => { const rl = r.querySelector("td.rl"); return rl ? clean(rl) : "" }).filter(Boolean);
+      const cols = heads.slice(1).map(cut).filter(Boolean);
+      const name = cols.length && labels.length ? (heads[0] ? labels.join(", ") + ": " + cols.join(", ") : cols.join(" vs ") + ": " + labels.join(", ")) : labels.join(", ");
+      const g = name ? groupOf(name) : other;
       body.forEach(r => {
         const rl = r.querySelector("td.rl"), label = rl ? clean(rl) : "";
-        if (label) labels.push(label);
         const cells = [...r.cells].filter(c => c.querySelector(".ln")), texts = cells.map(clean).filter(t => t && t !== "-");
-        if (el.classList.contains("plain")) return point((label ? [label, ...texts] : texts).join(" → "));
+        if (el.classList.contains("plain")) return point(g, (label ? [label, ...texts] : texts).join(" → "));
         cells.forEach(c => {
           const text = clean(c), head = heads[c.cellIndex];
-          if (text && text !== "-") point((label ? label + (head ? " · " + head : "") + ": " : head ? head + ": " : "") + text);
+          if (text && text !== "-") point(g, (label ? label + (head ? " · " + head : "") + ": " : head ? head + ": " : "") + text);
         });
       });
-      const cols = heads.slice(1).map(cut).filter(Boolean);
-      if (cols.length && labels.length) topic(heads[0] ? labels.join(", ") + ": " + cols.join(", ") : cols.join(" vs ") + ": " + labels.join(", "));
-      else if (labels.length) topic(labels.join(", "));
       return;
     }
     if (el.tagName === "LI") {
       const top = el.querySelector(":scope > .ct .ln, :scope > .ln"); if (!top) return;
       const text = clean(top), kids = [...el.querySelectorAll(":scope > .cs .ln")], nested = el.querySelector(":scope > ul"), head = cut(text), parent = el.parentElement.closest("li");
-      if (!parent && (kids.length || nested || head !== text)) topic(head);
-      if (head !== text || text.length > 12 || !(kids.length || nested)) point(text);
-      kids.forEach(k => point(head + " — " + clean(k)));
+      const g = parent ? (parent.tbGroup || other) : (kids.length || nested || head !== text) ? groupOf(head) : other;
+      el.tbGroup = g;
+      if (head !== text || text.length > 12 || !(kids.length || nested)) point(g, text);
+      kids.forEach(k => point(g, head + " — " + clean(k)));
       return;
     }
     if (el.closest("table, li")) return;   // 표·목록 칸은 위에서 처리
     const flow = el.closest(".flow");
-    if (flow) { if (flow.querySelector(".ln") === el) point([...flow.querySelectorAll(".ln")].map(clean).join(" → ")); return; }
-    point(clean(el));
+    if (flow) { if (flow.querySelector(".ln") === el) point(other, [...flow.querySelectorAll(".ln")].map(clean).join(" → ")); return; }
+    point(other, clean(el));
   });
-  return { topics, points };
+  const used = groups.filter(g => g.points.length);
+  const all = other.points.length ? [...used, other] : used;
+  return { groups: all, topics: used.map(g => g.name), points: all.flatMap(g => g.points) };
 }
 const termsOf = c => [...new Set(c.points.flatMap(x => x.split(/[,/;→=()·:—]/)).map(t => t.trim()).filter(t => t.length > 1))].slice(0, 100);
-function drawMarks(c) {
-  const ul = qv.querySelector("ul"); ul.textContent = "";
-  c.points.forEach((x, i) => ul.append(row(x, c.best[i] || "X")));
+function drawMarks(c) {   // 주제별 맞은 개수만 보여 주고, 주제를 누르면 안 말한 내용이 펼쳐진다
+  const ul = qv.querySelector(".card > ul"); ul.textContent = "";
+  let at = 0;
+  c.groups.forEach(g => {
+    const start = at; at += g.points.length;
+    const marks = g.points.map((_, k) => c.best[start + k] || "X");
+    const right = marks.filter(m => m === "O").length, li = document.createElement("li"), name = document.createElement("div");
+    name.className = "q"; name.textContent = g.name;
+    const n = document.createElement("span"); n.className = "count " + (right === marks.length ? "m-O" : right ? "m-T" : "m-X"); n.textContent = right + " / " + marks.length;
+    if (right === marks.length) { li.append(name, n); ul.append(li); return; }
+    const d = document.createElement("details"), sum = document.createElement("summary"), miss = document.createElement("div");
+    sum.append(name, n); miss.className = "miss";
+    g.points.forEach((t, k) => {
+      if (marks[k] === "O") return;
+      const line = document.createElement("div"), m = document.createElement("i");
+      m.className = "mark m-" + (marks[k] === "△" ? "T" : "X"); m.textContent = marks[k] === "△" ? "△" : "×";
+      const shown = t.startsWith(g.name + " — ") ? t.slice(g.name.length + 3) : t, w = document.createElement("span"); w.textContent = shown;
+      line.append(m, w); miss.append(line);
+    });
+    d.append(sum, miss); li.append(d); ul.append(li);
+  });
   let n = qv.querySelector(".score");
-  if (!n) { n = document.createElement("span"); n.className = "score"; qv.querySelector("h2").append(n); }
+  if (!n) { n = document.createElement("span"); n.className = "score"; qv.querySelector(".peek").before(n); }
   n.textContent = c.points.filter((_, i) => c.best[i] === "O").length + " / " + c.points.length;
+}
+function record(c) {   // 카드별 결과를 계정에 저장: 받아쓰기 s, 줄별 결과 m ("O△X-" 한 글자씩, 내용이 바뀌면 n이 달라져 버림)
+  if (c.best || c.said) store[c.key] = { s: c.said || [], n: c.points.length, m: c.best ? c.points.map((_, i) => c.best[i] || "-").join("") : "" };
+  else delete store[c.key];
+  tb.save(cur, store);
+  if (done) { done[cur] = deck.filter(x => x.best).length; drawProg(); }
+}
+function restore(c) {
+  const v = store[c.key]; if (!v) return;
+  c.said = v.s?.length ? v.s : null;
+  if (v.m && v.n === c.points.length) { c.best = {}; [...v.m].forEach((m, i) => { if (m !== "-") c.best[i] = m }); }
+}
+function addReset(c) {
+  if (qv.querySelector(".reset") || !(c.best || c.said)) return;
+  const b = document.createElement("button"); b.className = "reset"; b.textContent = "처음부터";
+  b.onclick = () => { stopRecording(true); run++; c.best = null; c.said = null; record(c); show(at); };
+  qv.append(b);
+}
+function togglePeek() {   // 카드 원문을 주제 목록 자리에 펼친다. 녹음 중에 열면 그 녹음은 채점하지 않는다
+  const c = deck[at], box = qv.querySelector(".card");
+  peek = !peek;
+  if (peek && recorder) recorder.looked = true;
+  box.querySelector(":scope > ul").hidden = peek;
+  box.querySelector(".orig")?.remove();
+  if (peek) { const o = document.createElement("div"); o.className = "orig"; o.append(c.body.cloneNode(true)); box.append(o); }
+  box.querySelector(".peek").textContent = peek ? "닫기" : "보기";
+  fitMic(c);
 }
 function show(i) {
   stopRecording(true); run++;
-  at = i; const c = deck[i]; c.best = null;
+  at = i; peek = false; const c = deck[i];
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   const h = document.createElement("h2"); h.textContent = c.title; box.append(h);
+  const eye = document.createElement("button"); eye.className = "peek"; eye.textContent = "보기"; eye.onclick = togglePeek; h.append(eye);
   const ul = document.createElement("ul");
   c.topics.forEach(x => ul.append(row(x)));
   box.append(ul); qv.append(box);
-  mic.hidden = !tb.listen || !c.points.length; setMic("mic");
+  setMic(c.best || c.said ? "retry" : "mic"); fitMic(c);
+  if (c.said) showSaid(c.said);
+  if (c.best) drawMarks(c);
+  addReset(c);
   showCode();
   prev.disabled = i === 0; next.disabled = i === deck.length - 1;
   scrollTo(0, 0); tb.pos(cur, c.key);
 }
 async function open_(id) {
   qv.textContent = ""; deck = [];
-  const d = await tb.load(id), box = document.createElement("div");
+  const [d, st] = await Promise.all([tb.load(id), tb.state(id)]), box = document.createElement("div");
+  store = st;
   box.innerHTML = d.body;
   box.querySelectorAll(".chap").forEach(sec => {   // 코드 = PDF의 장 번호 두 자리 + 카드 번호 두 자리 (16장 3번 → 1603, 1장 1번 → 0101)
     const ch = sec.querySelector("h2 span").textContent;
     sec.querySelectorAll(".card").forEach(c => {
       const n = c.querySelector(".n").textContent;
       const title = c.querySelector(".t").textContent, code = ch && n ? ch.padStart(2, "0") + n.padStart(2, "0") : "";   // PDF에 번호가 없는 + 카드는 코드 없음
-      deck.push({ code, key: code || title, title, ...parseCard(c) });
+      const one = { code, key: code || title, title, body: c.querySelector(".b"), ...parseCard(c) };
+      restore(one); deck.push(one);
     });
   });
   cur = id; tb.last(id);
+  if (done) { done[id] = deck.filter(x => x.best).length; drawProg(); }
   show(Math.max(0, deck.findIndex(c => c.key === tb.posOf(id))));
 }
 function stopRecording(discard) {
   if (!recorder) return;
-  recorder.discard = discard; recorder.stop();
+  const r = recorder;
+  r.discard = discard;
+  if (discard) recorder = null;
+  r.stop();
 }
 async function startRecording() {
   let stream;
@@ -2068,9 +2158,11 @@ async function startRecording() {
   r.ondataavailable = e => chunks.push(e.data);
   r.onstop = () => {
     stream.getTracks().forEach(t => t.stop());
+    if (r.discard) return;
     recorder = null; setMic("mic");
-    if (!r.discard) check(new Blob(chunks, { type: r.mimeType }), card, mine);
+    check(new Blob(chunks, { type: r.mimeType }), card, mine, r.looked);
   };
+  r.looked = peek;
   r.start(); setMic("stop");
   setTimeout(() => { if (recorder === r) stopRecording(false) }, 180000);
 }
@@ -2079,18 +2171,22 @@ function note(text) {
   if (!p) { p = document.createElement("div"); p.id = "msg"; qv.prepend(p); }
   p.textContent = text;
 }
-function showSaid(text) {   // 받아 적은 글은 눌러야 펼쳐짐
-  const d = document.createElement("details"), s = document.createElement("summary"), p = document.createElement("div");
-  d.id = "said"; s.textContent = "받아쓰기"; p.textContent = text; d.append(s, p); qv.prepend(d);
+function showSaid(list) {   // 받아 적은 글은 눌러야 펼쳐짐. 말한 차례대로 줄을 나눔
+  document.getElementById("said")?.remove();
+  const d = document.createElement("details"), s = document.createElement("summary");
+  d.id = "said"; s.textContent = "받아쓰기"; d.append(s);
+  list.forEach(t => { const p = document.createElement("div"); p.textContent = t; d.append(p); });
+  qv.prepend(d);
 }
-async function check(blob, card, mine) {
+async function check(blob, card, mine, looked) {
   setMic("wait");
-  document.getElementById("said")?.remove(); document.getElementById("msg")?.remove();
+  document.getElementById("msg")?.remove();
   try {
     const said = await tb.listen(blob, termsOf(card));
     if (mine !== run) return;
     if (!said) return note("들리지 않았어요");
-    showSaid(said);
+    card.said = [...(card.said || []), said]; showSaid(card.said); record(card); addReset(card);
+    if (looked) return;
     // 다시 말하면 ○가 아닌 것만 채점하고, 이미 받은 결과는 내려가지 않는다
     const left = card.points.map((_, i) => i).filter(i => card.best?.[i] !== "O");
     if (!left.length) return;
@@ -2100,14 +2196,11 @@ async function check(blob, card, mine) {
     const rank = { X: 0, "△": 1, O: 2 };
     card.best ||= {};
     left.forEach((i, j) => { const m = marks[j] || "X"; if ((rank[m] ?? 0) >= (rank[card.best[i]] ?? 0)) card.best[i] = m; });
-    drawMarks(card);
-    scrollTo(0, 0);
+    drawMarks(card); record(card);
+    if (!peek) scrollTo(0, 0);
   } catch { if (mine === run) note("받아쓰기 실패") }
   finally {
-    if (mine === run) {   // 한 번 말한 뒤에는 재시도, 다 맞으면 버튼을 치운다
-      if (card.best && card.points.every((_, i) => card.best[i] === "O")) mic.hidden = true;
-      else setMic("retry");
-    }
+    if (mine === run) { setMic("retry"); fitMic(card); }   // 한 번 말한 뒤에는 재시도, 다 맞으면 버튼을 치운다
   }
 }
 mic.onclick = () => recorder ? stopRecording(false) : startRecording();
@@ -2133,6 +2226,11 @@ document.getElementById("out").onclick = () => { stopRecording(true); tb.close()
 for (const s of tb.subjects) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; sel.append(o); }
 const first = tb.subjects.some(s => s.id === tb.lastId()) ? tb.lastId() : tb.subjects[0].id;
 sel.value = first; open_(first);
+Promise.all(tb.subjects.map(s => tb.state(s.id).then(st => [s.id, Object.values(st).filter(v => v.m).length]))).then(rows => {
+  done = Object.fromEntries(rows);
+  if (cur) done[cur] = deck.filter(x => x.best).length;
+  drawProg();
+});
 <\/script></body></html>`;
 
 (() => {
@@ -2171,7 +2269,10 @@ sel.value = first; open_(first);
     const [c, u, listen, sample] = window.claude?.use ? await Promise.all(["db", "user", "stt", "sample"].map(n => window.claude.use(n))).catch(() => []) : [];
     if (!c || !u) return resolveReady(null);
     const id = await u.id().catch(() => null);
-    const col = "textbook";
+    const col = "textbook", stCol = `users/${id}/textbook_state`, timers = {}, pending = {};
+    const flush = sub => { clearTimeout(timers[sub]); if (pending[sub]) { c.collection(stCol).doc(sub).set({ cards: pending[sub] }).catch(() => {}); delete pending[sub] } };
+    addEventListener("pagehide", () => Object.keys(pending).forEach(flush));
+    addEventListener("visibilitychange", () => { if (document.hidden) Object.keys(pending).forEach(flush) });
     const idx = id ? await c.collection(col).doc("index").get().catch(() => null) : null;
     if (!idx?.exists || !idx.data()?.subjects?.length){
       try { localStorage.removeItem(FLAG) } catch {}
@@ -2183,6 +2284,8 @@ sel.value = first; open_(first);
       load: sub => c.collection(col).doc(sub).get().then(d => d.data()),
       last: sub => lsSet("hito.textbook.last", sub),
       lastId: () => lsGet("hito.textbook.last"),
+      state: sub => c.collection(stCol).doc(sub).get().then(d => d.data()?.cards || {}).catch(() => ({})),
+      save(sub, cards){ pending[sub] = { ...cards }; clearTimeout(timers[sub]); timers[sub] = setTimeout(() => flush(sub), 800) },
       pos: (sub, code) => lsSet("hito.textbook.pos." + sub, code),
       posOf: sub => lsGet("hito.textbook.pos." + sub),
       listen: listen && sample ? listen : null,
@@ -2193,7 +2296,7 @@ O = 핵심을 다 말함, △ = 일부만 말함, X = 안 말했거나 틀림.
 {"marks":["O","△","X"]} 형식으로 items 순서대로 답해라.
 <said>${said}</said>
 <items>${JSON.stringify(items)}</items>`, { modelTier: "quick", label: "textbook_grade" }).catch(() => null))?.marks || null,
-      close(){ frame?.remove(); frame = null; gate?.remove(); gate = null; showGate(openBook) },
+      close(){ Object.keys(pending).forEach(flush); frame?.remove(); frame = null; gate?.remove(); gate = null; showGate(openBook) },
     };
     resolveReady(ready);
     if (!skip) showGate(openBook);
