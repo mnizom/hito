@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793860513723">
+<meta name="hito-build" content="1793871776529">
   <script type="module" crossorigin src="./assets/index-DE-pbsuW.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1944,8 +1944,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .orig .flow { display: flex; flex-wrap: wrap; gap: 5px 7px; align-items: baseline; margin: 4px 0 8px; }
 .orig .f.end { font-weight: 600; }
 .orig img { display: block; max-width: 100%; }
-.blanks .bk:not(.on) { display: inline-block; width: 4.5em; height: 1.25em; overflow: hidden; vertical-align: -.25em; border-radius: 5px; background: var(--surface-2); color: transparent; white-space: nowrap; user-select: none; -webkit-user-select: none; }
-.blanks .bk.part:not(.on) { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
+.blanks .bk:not(.on):not(.seen) { display: inline-block; width: 4.5em; height: 1.25em; overflow: hidden; vertical-align: -.25em; border-radius: 5px; background: var(--surface-2); color: transparent; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.blanks .bk { cursor: pointer; }
+.blanks .bk.part:not(.on):not(.seen) { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
 .blanks .bk.on { padding: 0 3px; border-radius: 5px; background: var(--b-soft); color: var(--b); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 #msg { margin: 0 4px 12px; color: var(--a); font-size: 14px; text-align: center; }
 #said { margin: 0 4px 12px; color: var(--ink-2); font-size: 14px; }
@@ -2052,7 +2053,17 @@ function togglePeek() {   // 빈칸을 모두 연다. 녹음 중에 열면 그 �
   peek = !peek;
   if (peek && recorder) recorder.looked = true;
   qv.querySelector(".orig").classList.toggle("blanks", !peek);
+  if (!peek) qv.querySelectorAll(".orig .seen").forEach(k => k.classList.remove("seen"));
   qv.querySelector(".peek").textContent = peek ? "닫기" : "보기";
+  fitMic(deck[at]);
+}
+function peekOne(e) {   // 녹음 중이 아닐 때 빈칸을 누르면 그 칸만 연다. 보기와 같아서 닫기를 눌러야 다음 녹음이 채점된다
+  const k = e.target.closest(".bk");
+  if (!k || recorder || k.classList.contains("on") || !e.currentTarget.classList.contains("blanks")) return;
+  k.classList.add("seen");
+  if (peek) return;
+  peek = true;
+  qv.querySelector(".peek").textContent = "닫기";
   fitMic(deck[at]);
 }
 function show(i) {
@@ -2062,7 +2073,7 @@ function show(i) {
   const box = document.createElement("div"); box.className = "card";
   const h = document.createElement("h2"); h.textContent = c.title; box.append(h);
   const eye = document.createElement("button"); eye.className = "peek"; eye.textContent = "보기"; eye.onclick = togglePeek; h.append(eye);
-  const o = document.createElement("div"); o.className = "orig blanks"; o.append(c.body.cloneNode(true)); box.append(o); qv.append(box);
+  const o = document.createElement("div"); o.className = "orig blanks"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o); qv.append(box);
   setMic(c.best || c.said ? "retry" : "mic"); fitMic(c);
   if (c.said) showSaid(c.said);
   paint(c);
