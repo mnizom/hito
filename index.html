@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793936253633">
-  <script type="module" crossorigin src="./assets/index-DE-pbsuW.js"></script>
+<meta name="hito-build" content="1793936440713">
+  <script type="module" crossorigin src="./assets/index-CcFsvVj5.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
 <script>
@@ -2182,7 +2182,7 @@ async function check(blob, card, mine, looked, hand) {   // hand = 빈칸에 쓴
     if (!todo.length) return;
     const marks = await tb.grade(said, todo.map(i => hand ? (i + 1) + ") " + card.points[i] : card.points[i]), hand);
     if (mine !== run) return;
-    if (!marks) return note("채점 실패");
+    if (!marks) return note("채점 실패" + (tb.why ? " (" + tb.why + ")" : ""));
     const rank = { X: 0, "△": 1, O: 2 };
     card.best ||= {};
     todo.forEach((i, j) => { const m = marks[j] || "X"; if ((rank[m] ?? 0) >= (rank[card.best[i]] ?? 0)) card.best[i] = m; });
@@ -2316,7 +2316,7 @@ Promise.all(tb.subjects.map(s => tb.state(s.id).then(st => [s.id, Object.values(
 ${hand ? "O = 핵심을 다 씀, △ = 일부만 씀, X = 안 썼거나 틀림." : "O = 핵심을 다 말함, △ = 일부만 말함, X = 안 말했거나 틀림."}
 {"marks":["O","△","X"]} 형식으로 items 순서대로 답해라.
 <said>${said}</said>
-<items>${JSON.stringify(items)}</items>`, { modelTier: "quick", label: "textbook_grade" }).catch(() => null))?.marks || null,
+<items>${JSON.stringify(items)}</items>`, { modelTier: "quick", label: "textbook_grade" }).then(r => (ready.why = r?.marks ? "" : "답 형식", r), e => { ready.why = String(e?.message || e?.code || e).slice(0, 80); return null }))?.marks || null,
       close(){ Object.keys(pending).forEach(flush); frame?.remove(); frame = null; gate?.remove(); gate = null; showGate(openBook) },
     };
     resolveReady(ready);
