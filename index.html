@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793871776529">
+<meta name="hito-build" content="1793931600998">
   <script type="module" crossorigin src="./assets/index-DE-pbsuW.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1966,6 +1966,18 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 @media (prefers-reduced-motion: no-preference) { #mic.rec { animation: pulse 1.6s ease-out infinite; } }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--a) 45%, transparent); } 100% { box-shadow: 0 0 0 22px transparent; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@media (min-width: 760px) and (pointer: fine), (min-width: 900px) {
+  body { font-size: 16.5px; }
+  .wrap, #qv { max-width: 860px; }
+  .top { padding-left: 32px; padding-right: 32px; }
+  #qv { padding-left: 32px; padding-right: 32px; }
+  .card { padding: 30px 36px 16px; border-radius: 26px; }
+  h2 { font-size: 23px; }
+  .orig { font-size: 15.5px; }
+  .orig h4 { font-size: 15.5px; }
+  #said div { font-size: 16.5px; }
+}
+@media (min-width: 1280px) { .wrap, #qv { max-width: 1000px; } }
 </style></head><body>
 <div class="top"><div class="wrap"><div class="bar"><span id="prog"></span><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
 <select id="sel" aria-label="과목"></select>
