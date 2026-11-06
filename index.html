@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793936976008">
+<meta name="hito-build" content="1793937386384">
   <script type="module" crossorigin src="./assets/index-CcFsvVj5.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1946,6 +1946,7 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .orig img { display: block; max-width: 100%; }
 .blanks .bk:not(.on):not(.seen) { display: inline-block; width: 4.5em; height: 1.25em; overflow: hidden; vertical-align: -.25em; border-radius: 5px; background: var(--surface-2); color: transparent; white-space: nowrap; user-select: none; -webkit-user-select: none; }
 .blanks .bk { cursor: pointer; }
+.blanks .bk.miss:not(.on):not(.seen):not(.part) { box-shadow: inset 0 0 0 1.5px var(--a); background: var(--a-soft); }
 .blanks .bk.part:not(.on):not(.seen) { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
 .blanks .bk.on { padding: 0 3px; border-radius: 5px; background: var(--b-soft); color: var(--b); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 #msg { margin: 0 4px 12px; color: var(--a); font-size: 14px; text-align: center; }
@@ -2181,14 +2182,14 @@ async function check(blob, card, mine, looked, hand) {   // hand = 빈칸에 쓴
     // 다시 말하면 ○가 아닌 것만 채점하고, 이미 받은 결과는 내려가지 않는다
     const todo = left(card);
     if (!todo.length) return;
-    const marks = hand ? await tb.gradeWritten(todo.map(i => ({ 정답: card.points[i], 쓴답: blob.got[i] || "" })))
-      : await tb.grade(said, todo.map(i => card.points[i]));
+    const marks = hand ? await gradeWritten(card, todo, blob.got) : await tb.grade(said, todo.map(i => card.points[i]));
     if (mine !== run) return;
     if (!marks) return note("채점 실패" + (tb.why ? " (" + tb.why + ")" : ""));
     const rank = { X: 0, "△": 1, O: 2 };
     card.best ||= {};
     todo.forEach((i, j) => { const m = marks[j] || "X"; if ((rank[m] ?? 0) >= (rank[card.best[i]] ?? 0)) card.best[i] = m; });
     paint(card); record(card);
+    if (hand) { const ks = qv.querySelectorAll(".orig .bk"); todo.forEach(i => ks[i].classList.toggle("miss", !!blob.got[i] && card.best[i] === "X")); }   // 쓴 답이 틀린 칸
     if (!peek) scrollTo(0, 0);
   } catch { if (mine === run) note(hand ? "채점 실패" : "받아쓰기 실패") }
   finally {
@@ -2196,6 +2197,24 @@ async function check(blob, card, mine, looked, hand) {   // hand = 빈칸에 쓴
   }
 }
 mic.onclick = () => recorder ? stopRecording(false) : startRecording();
+// 쓴 답 채점: 안 쓴 칸은 X, 정답과 글자가 같으면(띄어쓰기·기호 무시) 바로 O, 나머지만 Claude가 칸별로 견준다
+const bare = t => String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g, "");
+const MARK = { O: "O", o: "O", "○": "O", "◯": "O", "△": "△", X: "X", x: "X", "×": "X", "✕": "X" };
+async function gradeWritten(card, todo, got) {
+  const out = {}, ask = [];
+  todo.forEach(i => {
+    if (!got[i]) return;
+    const p = card.points[i], answer = p.includes(" | ") ? p.slice(p.lastIndexOf(" | ") + 3) : p;
+    if (bare(got[i]) === bare(answer)) out[i] = "O"; else ask.push(i);
+  });
+  if (ask.length) {
+    const m = await tb.gradeWritten(ask.map(i => ({ 정답: card.points[i], 쓴답: got[i] })));
+    if (!m) return null;
+    const list = Array.isArray(m) ? m : Object.values(m);
+    ask.forEach((i, j) => { out[i] = MARK[String(list[j] ?? "").trim()] || "X"; });
+  }
+  return todo.map(i => out[i] || "X");
+}
 // 쓰기: ○ 아닌 빈칸마다 입력칸을 끼운다. 아이패드 펜슬은 시스템 손글씨 입력(Scribble)이 글자로 바꿔 준다
 const left = c => c.points.map((_, i) => i).filter(i => c.best?.[i] !== "O");   // 채점할 칸: ○ 아닌 것
 function openPad() {
