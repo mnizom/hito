@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793937386384">
+<meta name="hito-build" content="1793937761157">
   <script type="module" crossorigin src="./assets/index-CcFsvVj5.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1946,7 +1946,7 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .orig img { display: block; max-width: 100%; }
 .blanks .bk:not(.on):not(.seen) { display: inline-block; width: 4.5em; height: 1.25em; overflow: hidden; vertical-align: -.25em; border-radius: 5px; background: var(--surface-2); color: transparent; white-space: nowrap; user-select: none; -webkit-user-select: none; }
 .blanks .bk { cursor: pointer; }
-.blanks .bk.miss:not(.on):not(.seen):not(.part) { box-shadow: inset 0 0 0 1.5px var(--a); background: var(--a-soft); }
+.blanks .bk.miss:not(.on):not(.seen):not(.part) { box-shadow: inset 0 -2px 0 var(--a); }
 .blanks .bk.part:not(.on):not(.seen) { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
 .blanks .bk.on { padding: 0 3px; border-radius: 5px; background: var(--b-soft); color: var(--b); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 #msg { margin: 0 4px 12px; color: var(--a); font-size: 14px; text-align: center; }
@@ -1954,30 +1954,24 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #said summary { width: fit-content; margin: 0 auto; padding: 2px 8px; cursor: pointer; }
 .reset { display: block; margin: 16px auto 0; padding: 6px 12px; font-size: 13.5px; color: var(--ink-2); }
 #said div { margin-top: 6px; font: 400 15px/1.7 "Gowun Batang", AppleMyungjo, "Noto Serif KR", serif; }
-#mic { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); margin-left: -36px; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--surface); box-shadow: var(--shadow); transition: transform .1s, background-color .15s; }
-#mic[hidden] { display: none; }
-#mic:active { transform: scale(.94); }
-#mic svg { width: 28px; height: 28px; }
+#dock { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 3; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; }
+#mic, #pen, #pad button { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; flex: none; box-shadow: var(--shadow); transition: transform .1s, background-color .15s; }
+#mic[hidden], #pen[hidden], #pad[hidden] { display: none; }
+#mic:active, #pen:active, #pad button:active { transform: scale(.94); }
+#mic svg, #pen svg, #pad svg { width: 26px; height: 26px; }
+#mic { background: var(--ink); color: var(--surface); }
+#pen, #pad button { background: var(--surface); color: var(--ink); }
 #mic.rec { background: var(--a); color: #fff; }
 #mic.rec svg { fill: currentColor; }
-#mic.retry { left: 50%; width: auto; height: 46px; margin-left: 0; padding: 0 24px; border-radius: 999px; transform: translateX(-50%); background: var(--surface); color: var(--ink); font-size: 15px; font-weight: 600; }
-#mic.retry:active { transform: translateX(-50%) scale(.96); }
-#mic:disabled { background: var(--surface-2); color: var(--ink-2); cursor: default; }
-#mic:disabled svg { animation: spin 1s linear infinite; }
+#mic:disabled, #pen:disabled { background: var(--surface-2); color: var(--ink-2); cursor: default; box-shadow: none; }
+#mic:disabled svg, #pen:disabled svg { animation: spin 1s linear infinite; }
 @media (prefers-reduced-motion: no-preference) { #mic.rec { animation: pulse 1.6s ease-out infinite; } }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--a) 45%, transparent); } 100% { box-shadow: 0 0 0 22px transparent; } }
 @keyframes spin { to { transform: rotate(360deg); } }
-#pen { position: fixed; left: 50%; bottom: calc(max(24px, env(safe-area-inset-bottom)) + 10px); margin-left: 58px; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); transition: transform .1s; }
-#pen[hidden] { display: none; }
-#pen:active { transform: scale(.94); }
-#pen:disabled { color: var(--ink-2); cursor: default; }
-#pen:disabled svg { animation: spin 1s linear infinite; }
-#pad { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 3; transform: translateX(-50%); display: flex; gap: 4px; padding: 6px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
-#pad[hidden] { display: none; }
-#pad button { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); }
+#pad { display: flex; align-items: center; gap: 16px; }
 #pad button.ok { background: var(--ink); color: var(--surface); }
-.orig input.wr { width: 7em; min-width: 4.5em; max-width: 100%; padding: 0 4px; border: 0; border-bottom: 1.5px solid var(--a); border-radius: 0; background: var(--a-soft); color: var(--ink); font: inherit; line-height: 1.4; }
-.orig input.wr:focus { outline: none; background: var(--surface-2); }
+.orig input.wr { width: 6em; max-width: 100%; padding: 0 6px; border: 0; border-radius: 5px; background: var(--surface-2); color: var(--ink); font: inherit; line-height: 1.4; vertical-align: baseline; }
+.orig input.wr:focus { outline: none; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink-2); }
 .orig.blanks.writing .bk.w { display: none; }
 @media (min-width: 760px) and (pointer: fine), (min-width: 900px) {
   body { font-size: 16.5px; }
@@ -1995,8 +1989,8 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 <div class="top"><div class="wrap"><div class="bar"><span id="prog"></span><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button>
-<div id="pad" hidden><button id="pad-x" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><button id="pad-ok" class="ok" aria-label="채점"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></button></div>
+<div id="qv"></div><div id="dock"><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button>
+<div id="pad" hidden><button id="pad-x" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button><button id="pad-ok" class="ok" aria-label="채점"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></button></div></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
@@ -2010,7 +2004,7 @@ const ICON = {
   wait: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/></svg>',
 };
 function setMic(state) {
-  mic.innerHTML = state === "retry" ? "재시도" : ICON[state];
+  mic.innerHTML = ICON[state === "retry" ? "mic" : state];
   mic.classList.toggle("rec", state === "stop"); mic.classList.toggle("retry", state === "retry"); mic.disabled = state === "wait";
 }
 function setPen(state) { pen.innerHTML = ICON[state]; pen.disabled = state === "wait"; }
@@ -2018,7 +2012,7 @@ const allRight = c => c.best && c.points.every((_, k) => c.best[k] === "O");
 function fitMic(c) {   // 다 맞은 카드는 버튼을 치우되, 카드를 보는 중이거나 녹음·쓰기·채점 중이면 둔다. 한쪽을 쓰는 동안 다른 쪽은 치운다
   const off = !c.points.length || (allRight(c) && !peek && !recorder && !mic.disabled && !pen.disabled && !writing);
   mic.hidden = !tb.listen || off || !!writing || pen.disabled;
-  pen.hidden = !tb.write || off || !!writing || !!recorder || mic.disabled;
+  pen.hidden = !tb.write || Math.min(screen.width, screen.height) < 600 || off || !!writing || !!recorder || mic.disabled;
 }
 function drawProg() {   // 채점받은 카드 수. 목록에 cards가 없으면(올리기 전) 과목 이름만
   [...sel.options].forEach((o, i) => { const s = tb.subjects[i]; o.textContent = s.name + (done && s.cards ? " " + (done[s.id] || 0) + " / " + s.cards : ""); });
