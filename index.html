@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793938473148">
+<meta name="hito-build" content="1793939106142">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1977,9 +1977,10 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 @keyframes spin { to { transform: rotate(360deg); } }
 #pad { display: flex; align-items: center; gap: 16px; }
 #pad button.ok { background: var(--ink); color: var(--surface); }
-.orig input.wr { width: 6em; max-width: 100%; padding: 0 6px; border: 0; border-radius: 5px; background: var(--surface-2); color: var(--ink); font: inherit; line-height: 1.4; vertical-align: baseline; }
-.orig input.wr:focus { outline: none; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+.orig .wr { display: block; width: 100%; min-width: 8em; margin: 1px 0; resize: none; overflow: hidden; padding: 1px 6px; border: 0; border-radius: 5px; background: var(--surface-2); color: var(--ink); font: inherit; line-height: 1.4; vertical-align: baseline; }
+.orig .wr:focus { outline: none; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink-2); }
 .orig.blanks.writing .bk.w { display: none; }
+.orig.writing table:not(.plain) { width: 100%; }
 @media (min-width: 760px) and (pointer: fine), (min-width: 900px) {
   body { font-size: 16.5px; }
   .wrap, #qv { max-width: 860px; }
@@ -2049,14 +2050,27 @@ function where(k) {   // 빈칸의 위치: 표는 행·열 이름, 목록은 윗
   const line = k.closest(".ln");
   return line && line.querySelectorAll(".bk").length === 1 && clean(line) !== clean(k) ? clean(line).replace(clean(k), "").trim() : "";
 }
-// 빈칸은 짧은 용어만: 괄호 안·띄어쓰기·가운뎃점 빼고 10자 넘는 문장형은 글로 보인다 (다 길면 카드 그대로)
-const SHORT = 10;
-const coreLen = k => clean(k).replace(/[(（][^)）]*[)）]/g, "").replace(/[ ·]/g, "").length;   // 가운뎃점으로 이은 용어 목록은 짧게 침
-function parseCard(body) {   // points = 빈칸마다 "위치 | 답". 순서는 화면의 빈칸 순서와 같다. all·keep = 줄이기 전 빈칸 수와 남긴 칸 (예전 기록 옮기기용)
+// 빈칸은 한 줄(표 칸·목록 한 줄)에 한 칸: 쉼표·빗금으로 쪼개진 조각을 합친다. 문장형 답은 채점에서 핵심어로 본다
+function merge(body) {   // → 합친 칸마다 원래 조각 번호 묶음 (예전 기록 옮기기용)
+  const ks = [...body.querySelectorAll(".bk")], groups = [];
+  let last = null;
+  ks.forEach((k, i) => {
+    const ln = k.closest(".ln") || k.parentElement;
+    if (last && last.ln === ln) last.ids.push(i); else groups.push(last = { ln, ids: [i] });
+  });
+  groups.forEach(g => {
+    if (g.ids.length < 2) return;
+    const r = document.createRange(), one = document.createElement("span");
+    r.setStartBefore(ks[g.ids[0]]); r.setEndAfter(ks[g.ids[g.ids.length - 1]]);
+    one.className = "bk"; one.textContent = r.toString();
+    r.deleteContents(); r.insertNode(one);
+  });
+  return groups.map(g => g.ids);
+}
+function parseCard(body) {   // points = 빈칸마다 "위치 | 답". 순서는 화면의 빈칸 순서와 같다. all·groups = 합치기 전 조각 수와 묶음
   cues(body);
-  const ks = [...body.querySelectorAll(".bk")], keep = ks.map((k, i) => i).filter(i => coreLen(ks[i]) <= SHORT);
-  if (keep.length && keep.length < ks.length) ks.forEach((k, i) => { if (!keep.includes(i)) k.replaceWith(k.textContent) });
-  return { all: ks.length, keep: keep.length ? keep : ks.map((k, i) => i), points: [...body.querySelectorAll(".bk")].map(k => { const w = where(k); return (w ? w + " | " : "") + clean(k) }) };
+  const all = body.querySelectorAll(".bk").length, groups = merge(body);
+  return { all, groups, points: [...body.querySelectorAll(".bk")].map(k => { const w = where(k); return (w ? w + " | " : "") + clean(k) }) };
 }
 const termsOf = c => [...new Set(c.points.flatMap(x => x.split(/[,/;→=()·:—|]/)).map(t => t.trim()).filter(t => t.length > 1))].slice(0, 100);
 function paint(c) {   // ○는 답을 채우고, △는 답을 가린 채 테두리만
@@ -2079,7 +2093,10 @@ function restore(c) {
   const v = store[c.key]; if (!v) return;
   c.said = v.s?.length ? v.s : null;
   if (v.m && v.b === c.points.length) { c.best = {}; [...v.m].forEach((m, i) => { if (m !== "-") c.best[i] = m }); }
-  else if (v.m && v.b === c.all) { c.best = {}; c.keep.forEach((o, i) => { const m = v.m[o]; if (m && m !== "-") c.best[i] = m }); }   // 빈칸 줄이기 전 기록 → 남긴 칸으로
+  else if (v.m && v.b === c.all) {   // 조각별 기록 → 합친 칸: 다 O면 O, 일부라도 O·△면 △
+    c.best = {};
+    c.groups.forEach((ids, i) => { const ms = ids.map(o => v.m[o]); if (ms.every(m => m === "O")) c.best[i] = "O"; else if (ms.some(m => m === "O" || m === "△")) c.best[i] = "△"; else if (ms.some(m => m === "X")) c.best[i] = "X"; });
+  }
 }
 function addReset(c) {
   if (qv.querySelector(".reset") || !(c.best || c.said)) return;
@@ -2243,9 +2260,10 @@ function openPad() {
   const c = deck[at], o = qv.querySelector(".orig"), ks = [...o.querySelectorAll(".bk")];
   writing = { card: c, looked: peek };
   left(c).forEach(i => {
-    const f = document.createElement("input");
-    f.className = "wr"; f.type = "text"; f.autocomplete = "off"; f.spellcheck = false; f.setAttribute("autocapitalize", "off"); f.dataset.i = i;
-    f.onkeydown = e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); const n = [...o.querySelectorAll("input.wr")], k = n.indexOf(f); (n[k + 1] || f).focus(); } };
+    const f = document.createElement("textarea");   // 길게 쓰면 아래로 늘어남, 엔터는 다음 칸
+    f.className = "wr"; f.rows = 1; f.autocomplete = "off"; f.spellcheck = false; f.setAttribute("autocapitalize", "off"); f.dataset.i = i;
+    f.oninput = () => { f.style.height = "auto"; f.style.height = f.scrollHeight + "px"; };
+    f.onkeydown = e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); const n = [...o.querySelectorAll(".wr")], k = n.indexOf(f); (n[k + 1] || f).focus(); } };
     ks[i].classList.add("w"); ks[i].after(f);
   });
   o.classList.add("writing"); pad.hidden = false; fitMic(c);
@@ -2254,14 +2272,14 @@ function closePad() {
   if (!writing) return;
   writing = null;
   const o = qv.querySelector(".orig");
-  o?.querySelectorAll("input.wr").forEach(f => f.remove()); o?.querySelectorAll(".bk.w").forEach(k => k.classList.remove("w")); o?.classList.remove("writing");
+  o?.querySelectorAll(".wr").forEach(f => f.remove()); o?.querySelectorAll(".bk.w").forEach(k => k.classList.remove("w")); o?.classList.remove("writing");
   pad.hidden = true;
 }
 pen.onclick = openPad;
 document.getElementById("pad-x").onclick = () => { closePad(); fitMic(deck[at]); };
 document.getElementById("pad-ok").onclick = () => {   // 답 앞 번호 = 카드 안 빈칸 번호 (1부터)
   const w = writing, todo = left(w.card), got = {};
-  qv.querySelectorAll(".orig input.wr").forEach(f => { const v = f.value.trim(); if (v) got[f.dataset.i] = v; });
+  qv.querySelectorAll(".orig .wr").forEach(f => { const v = f.value.trim(); if (v) got[f.dataset.i] = v; });
   const text = todo.filter(i => got[i]).map(i => (i + 1) + ": " + got[i]).join(" / ");
   if (!text) return;
   closePad();
