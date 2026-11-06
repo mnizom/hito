@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1793939774929">
+<meta name="hito-build" content="1793939883072">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1925,7 +1925,7 @@ select { appearance: none; -webkit-appearance: none; background: none; border: 0
 #code:focus { outline: none; background: var(--surface-2); }
 #code.no { color: var(--a); }
 #code.bonus { font-size: 24px; }
-#qv { max-width: 520px; margin: 0 auto; padding: 0 18px calc(116px + env(safe-area-inset-bottom)); }
+#qv { max-width: 520px; margin: 0 auto; padding: 0 18px calc(40px + env(safe-area-inset-bottom)); }
 .card { background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 22px 20px 10px; }
 h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 12px; font: 700 20px/1.4 "Gowun Batang", AppleMyungjo, "Noto Serif KR", serif; word-break: keep-all; }
 .score { flex: none; margin-left: auto; font: 600 14px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -1956,16 +1956,13 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #said summary { width: fit-content; margin: 0 auto; padding: 2px 8px; cursor: pointer; }
 .reset { display: block; margin: 16px auto 0; padding: 6px 12px; font-size: 13.5px; color: var(--ink-2); }
 #said div { margin-top: 6px; font: 400 15px/1.7 "Gowun Batang", AppleMyungjo, "Noto Serif KR", serif; }
-#dock { position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); z-index: 3; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; }
-#dock[hidden], #mic[hidden], #pen[hidden] { display: none; }
-#ok { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); transition: transform .1s, background-color .15s, opacity .15s; }
+#mic[hidden], #pen[hidden], #ok[hidden] { display: none; }
 #ok:active, #mic:active, #pen:active { transform: scale(.94); }
-#ok svg { width: 26px; height: 26px; }
 .ctl { flex: none; display: flex; align-items: center; gap: 6px; }
 .score + .ctl { margin-left: 0; }
 .ctl .mode { margin-left: 0; }
-#mic, #pen { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); transition: transform .1s, background-color .15s, opacity .15s; }
-#mic svg, #pen svg { width: 18px; height: 18px; }
+#mic, #pen, #ok { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); transition: transform .1s, background-color .15s, opacity .15s; }
+#mic svg, #pen svg, #ok svg { width: 18px; height: 18px; }
 #mic.rec { background: var(--a); color: #fff; }
 #mic.rec svg { fill: currentColor; }
 #pen.on { background: var(--ink); color: var(--surface); }
@@ -2001,11 +1998,11 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 <div class="top"><div class="wrap"><div class="bar"><span id="prog"></span><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div><div id="dock" hidden><button id="ok" aria-label="채점"></button></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button>
+<div id="qv"></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
-const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok"), dock = document.getElementById("dock");
+const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok");
 let deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null;
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
 // seen = 이번에 눌러 열어 본 칸(채점에서 뺌), res = 이번 채점 결과(칸 아래 표시), writingOn = 입력칸 켜 둠
@@ -2021,10 +2018,9 @@ const phone = Math.min(screen.width, screen.height) < 600;   // 폰은 녹음만
 const allRight = c => c.best && c.points.every((_, k) => c.best[k] === "O");
 const left = c => c.points.map((_, i) => i).filter(i => c.best?.[i] !== "O" && !seen.has(i));   // 채점할 수 있는 칸: ○ 아니고 이번에 열어 보지 않은 것
 const pending = () => Object.values(draft).some(v => v.trim()) || heard.length > 0;
-function fitDock() {   // 학습 모드에서만. 다 맞은 카드는 치운다
-  const c = deck[at];
-  dock.hidden = !c || !study || !c.points.length || (allRight(c) && !recorder && !hearing && !grading);
-  mic.hidden = dock.hidden || !tb.listen; pen.hidden = dock.hidden || !tb.write || phone;
+function fitDock() {   // 머리줄의 마이크·펜·채점: 학습 모드에서만. 다 맞은 카드는 치운다
+  const c = deck[at], off = !c || !study || !c.points.length || (allRight(c) && !recorder && !hearing && !grading);
+  ok.hidden = off; mic.hidden = off || !tb.listen; pen.hidden = off || !tb.write || phone;
   mic.innerHTML = ICON[hearing ? "wait" : recorder ? "stop" : "mic"]; mic.classList.toggle("rec", !!recorder); mic.classList.toggle("busy", hearing); mic.disabled = hearing || grading;
   pen.innerHTML = ICON.pen; pen.classList.toggle("on", writingOn); pen.disabled = grading;
   ok.innerHTML = ICON[grading ? "wait" : "ok"]; ok.classList.toggle("busy", grading); ok.disabled = grading || hearing || !!recorder || !pending();
@@ -2161,12 +2157,12 @@ function show(i) {
   stopRecording(true); run++;
   at = i; const c = deck[i];
   draft = {}; heard = []; seen = new Set(); res = {}; hearing = false; grading = false;
-  document.body.append(mic, pen); qv.textContent = "";
+  qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   const h = document.createElement("h2"); h.textContent = c.title; box.append(h);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => setMode(m === "study"); sw.append(b); });
-  const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, sw); h.append(ctl);
+  const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
   const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o); qv.append(box);
   if (c.said) showSaid(c.said);
   paint(c);
