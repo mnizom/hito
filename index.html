@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794199326559">
+<meta name="hito-build" content="1794199636423">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1998,7 +1998,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #hd { display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 18px 4px 22px; }
 #dday { font: 700 24px/1.2 "Gowun Batang", AppleMyungjo, serif; font-variant-numeric: tabular-nums; }
 #dday small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
-#app { display: grid; grid-template-columns: 118px 218px minmax(0, 1fr); align-items: start; }
+#app { display: grid; grid-template-columns: 118px 240px minmax(0, 1fr); align-items: start; }
+#exs { overflow-x: hidden; }
+#tabsw { display: inline-flex; }
 #subs, #exs { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
 #subs button { display: block; width: 100%; text-align: left; padding: 7px 10px; margin: 1px 0; border-radius: 10px; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
 #subs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
@@ -2014,20 +2016,28 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .ex.cur .go { color: var(--ink); }
 #view { min-width: 0; }
 #view .wrap, #view #qv { max-width: 920px; }
-#tabs { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; max-width: 920px; margin: 0 auto 4px; }
+#tabs { display: block; max-width: 920px; margin: 0 auto 4px; }
+#tabs .row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-top: 6px; padding-bottom: 2px; }
+#tabs .row::-webkit-scrollbar { display: none; }
+#tabs .row:empty { display: none; }
+#tabs .row button { flex: none; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); font-size: 13px; color: var(--ink-2); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tabs .row button.on { background: var(--ink); color: var(--surface); }
+#tabs button.hit:not(.on) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--ink); }
 #tabs[hidden] { display: none; }
-#pills { display: flex; gap: 6px; flex-wrap: wrap; }
-#pills button { padding: 3px 10px; border-radius: 999px; background: var(--surface-2); font-size: 13px; color: var(--ink-2); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#pills button.on { background: var(--ink); color: var(--surface); }
-.solo #subs, .solo #exs { display: none; }
+.solo #subs, .solo #exs, .solo #exT { display: none; }
+#hd .r { display: flex; align-items: center; gap: 10px; }
+#exT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.noex #exT { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
+.noex #exs { display: none; }
+.noex #app { grid-template-columns: 118px minmax(0, 1fr); }
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<div id="hd"><span id="dday"></span><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+<div id="hd"><span id="dday"></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><main id="view">
-<div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><div id="pills"></div></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
+<div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><div class="row" id="chs"></div><div class="row" id="cds"></div></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
 <div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button>
@@ -2035,7 +2045,7 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
 const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok");
-let deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null;
+let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null;
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
 // seen = 이번에 눌러 열어 본 칸(채점에서 뺌), res = 이번 채점 결과(칸 아래 표시), writingOn = 입력칸 켜 둠
@@ -2205,18 +2215,21 @@ function show(i) {
   prev.disabled = i === 0; next.disabled = i === deck.length - 1;
   setMode(study);
   scrollTo(0, 0); tb.pos(cur, c.key);
+  drawToc();
 }
 async function open_(id) {
-  qv.textContent = ""; deck = [];
+  qv.textContent = ""; deck = []; chaps = [];
   const [d, st] = await Promise.all([load(id), tb.state(id)]), box = document.createElement("div");
   store = st;
   box.innerHTML = d.body;
   box.querySelectorAll(".chap").forEach(sec => {   // 코드 = PDF의 장 번호 두 자리 + 카드 번호 두 자리 (16장 3번 → 1603, 1장 1번 → 0101)
-    const ch = sec.querySelector("h2 span").textContent;
+    const ch = sec.querySelector("h2 span").textContent, g = { ch, title: sec.querySelector("h2").textContent.slice(ch.length).trim(), cards: [] };
+    chaps.push(g);   // 공부 홈 목차 탭: 장마다 카드 번호 목록
     sec.querySelectorAll(".card").forEach(c => {
       const n = c.querySelector(".n").textContent;
       const title = c.querySelector(".t").textContent, code = ch && n ? ch.padStart(2, "0") + n.padStart(2, "0") : "";   // PDF에 번호가 없는 + 카드는 코드 없음
       const body = c.querySelector(".b"), one = { code, key: code || title, title, body, ...parseCard(body) };
+      one.ch = ch; g.cards.push(deck.length);
       restore(one); deck.push(one);
     });
   });
@@ -2347,15 +2360,17 @@ function startSolo() {   // 공부 홈 데이터가 없으면 예전 화면 (과
 // 데이터: 공부홈 {subjects:[{sub,name,deep,basic,n}]}, 기출_<sub> {items:[{k,a,c:[심화 코드],b:[기초노트 소제목 data-s]}]}. 고른 번호는 textbook_state 의 기출_<sub>
 const EXAM_DAY = new Date(2027, 0, 14);
 (() => { const t = new Date(); t.setHours(0, 0, 0, 0); const d = Math.round((EXAM_DAY - t) / 864e5); document.getElementById("dday").innerHTML = (d > 0 ? "D-" + d : d === 0 ? "D-day" : "D+" + -d) + "<small>1.14</small>"; })();
-const subsEl = document.getElementById("subs"), exsEl = document.getElementById("exs"), tabs = document.getElementById("tabs"), pills = document.getElementById("pills"), tabsw = document.getElementById("tabsw");
+const subsEl = document.getElementById("subs"), exsEl = document.getElementById("exs"), tabs = document.getElementById("tabs"), tabsw = document.getElementById("tabsw"), chsEl = document.getElementById("chs"), cdsEl = document.getElementById("cds");
 let home = null, hs = null, items = [], picks = {}, act = null, tab = "deep", hop = 0;
 const isRight = (it, n) => String(it.a).split(/[^0-9]+/).includes(String(n));
+const bySec = x => "[data-s=\\"" + x + "\\"]";
+const linked = t => !act ? [] : t === "basic" ? act.b : act.c;   // »로 연 기출과 연결된 것 (기초노트 소제목 / 심화 카드 코드)
 function drawSubs() {
   subsEl.textContent = "";
   home.subjects.forEach(s => { const b = document.createElement("button"); b.textContent = s.name; b.onclick = () => pickSub(s); b.classList.toggle("on", s === hs); subsEl.append(b); });
 }
 async function pickSub(s) {
-  hs = s; act = null; tabs.hidden = true; tb.pos("공부홈", s.sub); drawSubs();
+  hs = s; act = null; tb.pos("공부홈", s.sub); drawSubs();
   exsEl.textContent = "";
   const [e, st] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub)]);
   if (hs !== s) return;
@@ -2368,7 +2383,7 @@ async function pickSub(s) {
     paintRow(it, row); exsEl.append(row);
   });
   exsEl.scrollTop = 0;
-  if (cur !== s.deep) await open_(s.deep);
+  await goTab(tab === "basic" && s.basic ? "basic" : "deep", false);
 }
 function paintRow(it, row) {   // 고른 번호: 맞으면 청록, 틀리면 분홍 + 정답에 테두리
   const p = picks[it.k];
@@ -2385,33 +2400,57 @@ function choose(it, n, row) {
 function openEx(it, row) {
   act = it;
   exsEl.querySelectorAll(".ex.cur").forEach(r => r.classList.remove("cur")); row.classList.add("cur");
-  tabs.hidden = false;
-  goTab(hs.basic && it.b.length ? "basic" : "deep", 0);
+  goTab(hs.basic && it.b.length ? "basic" : "deep", true);
 }
-async function goTab(t, j) {
-  const mine = ++hop, s = hs, it = act;
+// 탭: 기초노트 = 장 → 큰 제목(누르면 그 자리로), 심화카드 = 장 → 카드 제목. jump면 연결된 첫 곳으로
+async function goTab(t, jump) {
+  const mine = ++hop, s = hs;
+  const id = t === "basic" ? s.basic : s.deep;
+  if (!id) return t === "basic" ? goTab("deep", jump) : undefined;
   tab = t;
-  tabsw.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.t === t); b.disabled = b.dataset.t === "basic" ? !(s.basic && it.b.length) : !it.c.length; });
-  const id = t === "basic" ? s.basic : s.deep, list = t === "basic" ? it.b : it.c;
-  pills.textContent = "";
-  if (!id || !list.length) return;
   if (cur !== id) await open_(id);
   if (mine !== hop) return;
-  const cardOf = x => t === "basic" ? deck.findIndex(c => c.code === x.split(".")[0].padStart(2, "0") + "01") : deck.findIndex(c => c.code === x);
-  list.forEach((x, i) => {
-    const b = document.createElement("button"), c = deck[cardOf(x)];
-    b.textContent = t === "basic" ? (c?.body.querySelector("[data-s=\\"" + x + "\\"]")?.textContent.trim() || x) : x;
-    b.title = t === "basic" ? x : c?.title || "";
-    b.classList.toggle("on", i === j); b.onclick = () => goTab(t, i); pills.append(b);
-  });
-  const i = cardOf(list[j]); if (i < 0) return;
-  show(i);
-  if (t !== "basic") return;
-  const el = qv.querySelector("[data-s=\\"" + list[j] + "\\"]"); if (!el) return;
+  const x = jump ? linked(t)[0] : null;
+  if (!x) return drawToc();
+  if (t === "deep") { const i = deck.findIndex(c => c.code === x); return i >= 0 ? show(i) : drawToc(); }
+  const i = deck.findIndex(c => c.ch === x.split(".")[0]);
+  if (i < 0) return drawToc();
+  show(i); toSec(x);
+}
+function toSec(x) {
+  const el = qv.querySelector(bySec(x)); if (!el) return;
   scrollTo(0, el.getBoundingClientRect().top + scrollY - document.querySelector("#view .top").offsetHeight - 14);
   el.classList.remove("here"); void el.offsetWidth; el.classList.add("here");
 }
-tabsw.querySelectorAll("button").forEach(b => b.onclick = () => act && goTab(b.dataset.t, 0));
+function tabBtn(text, on, hit, fn) {
+  const b = document.createElement("button"); b.textContent = text; b.title = text;
+  b.classList.toggle("on", on); b.classList.toggle("hit", hit); b.onclick = fn; return b;
+}
+function center(row) { const b = row.querySelector(".on") || row.querySelector(".hit"); if (b) row.scrollLeft = b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2; }
+function drawToc() {
+  if (!home || !hs || (cur !== hs.basic && cur !== hs.deep)) return;
+  const t = cur === hs.basic ? "basic" : "deep", list = linked(t);
+  tab = t; tabs.hidden = false;
+  tabsw.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.t === t); b.disabled = b.dataset.t === "basic" && !hs.basic; b.classList.toggle("hit", linked(b.dataset.t).length > 0); });
+  chsEl.textContent = ""; cdsEl.textContent = "";
+  chaps.forEach(g => {
+    const hit = list.some(x => t === "basic" ? x.split(".")[0] === g.ch : g.cards.some(i => deck[i].code === x));
+    chsEl.append(tabBtn(g.title, g.cards.includes(at), hit, () => show(g.cards[0])));
+  });
+  if (t === "deep") {
+    chaps.find(g => g.cards.includes(at))?.cards.forEach(i => cdsEl.append(tabBtn(deck[i].title, i === at, list.includes(deck[i].code), () => show(i))));
+  } else {
+    qv.querySelectorAll(".orig [data-s]").forEach(h => {
+      const sid = h.dataset.s; if (sid.split(".").length !== 2) return;
+      cdsEl.append(tabBtn(h.textContent.trim(), false, list.some(x => x === sid || x.startsWith(sid + ".")), () => toSec(sid)));
+    });
+  }
+  center(chsEl); center(cdsEl);
+}
+tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
+// 기출 칸 열기·닫기 (기기마다 기억)
+document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
+document.getElementById("exT").onclick = () => tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림");
 load("공부홈").then(h => {
   if (!h?.subjects?.length) return startSolo();
   home = h;
