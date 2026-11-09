@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794216284190">
+<meta name="hito-build" content="1794216594152">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2004,7 +2004,8 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #exs { overflow-x: hidden; }
 #tabsw { display: inline-flex; }
 #tabsw[hidden] { display: none; }
-#chs, #cds { display: none; }   /* 공부 홈: 카드 위 드롭다운 없음 (접는 목차가 대신, 사용자 2026-11-09) */
+#chs, #cds { display: none; }
+body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 없음 */   /* 공부 홈: 카드 위 드롭다운 없음 (접는 목차가 대신, 사용자 2026-11-09) */
 #subs, #exs, #ol { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
 #subs button { display: block; width: 100%; text-align: left; padding: 7px 10px; margin: 1px 0; border-radius: 10px; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
 #subs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
@@ -2032,9 +2033,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .noex #exs { display: none; }
 #ol { display: none; border-left: 1px solid var(--hair); }
 .noex #ol { display: block; }   /* 기출을 끄면 그 자리에 접는 목차 (Workflowy 처럼) */
-.ol-n { display: flex; align-items: baseline; gap: 5px; padding: 3px 6px; border-radius: 8px; font-size: 13.5px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
+.ol-n { display: flex; align-items: baseline; gap: 5px; padding: 5px 6px; user-select: none; -webkit-user-select: none; border-radius: 8px; font-size: 13.5px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
 .ol-n:hover { background: var(--surface-2); }
-.ol-n i { flex: none; width: 12px; font-style: normal; color: var(--ink-2); }
+.ol-n i { flex: none; width: 14px; font-size: 12px; font-style: normal; color: var(--ink-2); }
 .ol-n.lv0 { color: var(--ink); font-weight: 600; }
 .ol-n.lv1, .ol-n.lv2 { color: var(--ink); }
 .ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
@@ -2478,10 +2479,11 @@ document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음"
 document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); drawOutline(); };
 // 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
 const olEl = document.getElementById("ol"), olOpen = new Set();
+let olAt = null;   // 자동 펼치기는 카드가 바뀔 때 한 번만 (그 뒤엔 사용자가 접은 대로)
 function drawOutline() {
   if (!document.body.classList.contains("noex") || !deck.length) return;
-  const c0 = deck[at];
-  if (c0) { olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }
+  const c0 = deck[at], k0 = cur + "|" + at;
+  if (c0 && olAt !== k0) { olAt = k0; olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }
   const top = olEl.scrollTop; olEl.textContent = "";
   const node = (lv, text, key, kids) => {
     const d = document.createElement("div"); d.className = "ol-n lv" + lv; d.style.paddingLeft = (6 + lv * 14) + "px";
