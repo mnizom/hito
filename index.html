@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794217928593">
+<meta name="hito-build" content="1794218367614">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2057,6 +2057,7 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
 const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok");
+const HOME_STUDY = false;   // 공부 홈에서 학습(빈칸·쓰기·말하기·채점) 켜기. 사용자 2026-11-09: 기능은 저장해 두고 지금은 카드만 → true 로 바꾸면 기출 끈 상태에서 다시 학습 가능
 let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null, tbCss = "", extraNext = [];   // tbCss = 과목 데이터 공통 css(심화판), extraNext = 다음 show 에서 함께 보일 카드(기출 하나가 여러 ● 주제에 걸칠 때)
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
@@ -2236,7 +2237,7 @@ function show(i) {
   addReset(c);
   showCode();
   prev.disabled = i === 0; next.disabled = i === deck.length - 1;
-  const exOn = !!home && !document.body.classList.contains("noex");   // 공부 홈에서 기출을 켠 상태: 학습 모드 없음, 답이 다 보임 (사용자 2026-11-09)
+  const exOn = !!home && (!HOME_STUDY || !document.body.classList.contains("noex"));   // 공부 홈: 기출을 켠 상태(또는 HOME_STUDY 꺼짐)면 학습 모드 없음, 답이 다 보임 (사용자 2026-11-09)
   document.body.classList.toggle("exmode", exOn);
   setMode(exOn ? false : studyPref);
   scrollTo(0, 0); tb.pos(cur, c.key);
@@ -2482,7 +2483,7 @@ cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
 document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length) olShow(olSel.length ? olSel : [at]); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
+document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length && olSel.length) olShow(olSel); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
 // 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
 const olEl = document.getElementById("ol"), olOpen = new Set();
 let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
@@ -2492,13 +2493,13 @@ function olShow(list, focus) {   // 열 카드 목록 → 첫 카드가 위(채�
 }
 function olToggle(j) {   // 주제: 누르면 추가, 다시 누르면 닫기 (마지막 한 장은 남김)
   const has = olSel.includes(j);
-  if (has && olSel.length === 1) return;
+  if (has && olSel.length === 1) { stopRecording(true); olSel = []; qv.textContent = ""; ok.hidden = mic.hidden = pen.hidden = true; drawOutline(); return; }   // 마지막 한 장도 닫을 수 있음 (빈 화면)
   olShow(has ? olSel.filter(x => x !== j) : olSel.concat(j), has ? -1 : j);
 }
 let olAt = null;   // 자동 펼치기는 카드가 바뀔 때 한 번만 (그 뒤엔 사용자가 접은 대로)
 function drawOutline() {
   if (!document.body.classList.contains("noex") || !deck.length) return;
-  const sel = olSel.length ? olSel : [at], k0 = cur + "|" + sel.join(",");
+  const sel = olSel, k0 = cur + "|" + sel.join(",");
   if (olAt !== k0) { olAt = k0; sel.forEach(j => { const c0 = deck[j]; if (!c0) return; olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }); }   // 열린 카드 전부의 자리를 펼침
   const top = olEl.scrollTop; olEl.textContent = "";
   const node = (lv, text, key, kids, onText) => {
