@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794234675338">
+<meta name="hito-build" content="1794234947426">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2000,7 +2000,7 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #hd { display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 18px 4px 22px; }
 #dday { font: 700 24px/1.2 "Gowun Batang", AppleMyungjo, serif; font-variant-numeric: tabular-nums; }
 #dday small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
-#app { display: grid; grid-template-columns: 212px minmax(0, 1fr); align-items: start; }
+#app { display: grid; grid-template-columns: 212px minmax(0, 1fr) 340px; align-items: start; }
 #subs { display: none !important; }   /* 과목은 디데이 옆 드롭박스로 (사용자 2026-11-09) */
 #hd .l { display: flex; align-items: center; gap: 12px; min-width: 0; }
 #subdd { padding: 5px 28px 5px 12px; border-radius: 999px; border: 0; background-color: var(--surface); background-position: right 15px center, right 10px center; color: var(--ink); font-size: 14px; font-weight: 600; box-shadow: var(--shadow); max-width: 46vw; text-overflow: ellipsis; }
@@ -2048,10 +2048,8 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .ex.cur .go { color: var(--ink); }
 #view { min-width: 0; }
 #view .wrap { max-width: 920px; }
-#view #qv { max-width: 1220px; }
-.crow { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }   /* 카드 + 오른쪽 포스트잇 칸 (사용자 2026-11-09) */
-.crow.more { margin-top: 18px; }
-.crow .card.more { margin-top: 0; }
+#view #qv { max-width: 920px; }
+#notes { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 8px 16px 90px 4px; overscroll-behavior: contain; }   /* 포스트잇 칸: 카드와 따로 (사용자 2026-11-09) */
 .notes { display: flex; flex-direction: column; gap: 12px; }
 .note { position: relative; height: 260px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
 .note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
@@ -2062,8 +2060,8 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
 .nadd { align-self: flex-start; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: 24px; line-height: 1; box-shadow: var(--shadow); }
-@media (max-width: 1000px) { .crow { grid-template-columns: minmax(0, 1fr); } .notes { flex-direction: row; flex-wrap: wrap; } .note { width: 340px; } }
-@media (max-width: 700px) { .notes { display: none; } }
+@media (max-width: 1000px) { #app { grid-template-columns: 212px minmax(0, 1fr) 230px; } .noex #app { grid-template-columns: 210px minmax(0, 1fr) 230px; } .solo #app { grid-template-columns: minmax(0, 1fr) 230px; } }
+@media (max-width: 700px) { #notes { display: none !important; } }
 #tabs { display: flex; align-items: center; gap: 8px; max-width: 920px; margin: 0 auto 4px; }
 #tabs select { flex: 0 1 auto; min-width: 0; max-width: 38%; padding: 5px 24px 5px 12px; border-radius: 999px; background-color: var(--surface); color: var(--ink); font-size: 13.5px; text-overflow: ellipsis; background-position: right 13px center, right 8px center; }
 #tabs select:empty { display: none; }
@@ -2082,8 +2080,8 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .ol-n.lv0 { color: var(--ink); font-weight: 600; }
 .ol-n.lv1, .ol-n.lv2 { color: var(--ink); }
 .ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
-.noex #app { grid-template-columns: 210px minmax(0, 1fr); }
-.solo #app { grid-template-columns: minmax(0, 1fr); }
+.noex #app { grid-template-columns: 210px minmax(0, 1fr) 340px; }
+.solo #app { grid-template-columns: minmax(0, 1fr) 340px; }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
 .card.more { margin-top: 18px; }
 #qv .card { position: relative; }
@@ -2103,7 +2101,7 @@ body.inked #inkbar { display: flex; }
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
+<div id="qv"></div></main><aside id="notes" class="notes"><button class="nadd" aria-label="포스트잇">+</button></aside></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
@@ -2384,9 +2382,9 @@ function noteEl(id) {
       n.style.visibility = "hidden"; const t = document.elementFromPoint(ev.clientX, ev.clientY); n.style.visibility = "";   // 놓은 자리 아래에 무엇이 있나 (끌던 포스트잇은 빼고)
       n.style.transform = ""; n.classList.remove("drag");
       INK.penAt = Date.now();
-      const olj = t?.closest(".ol-n")?.dataset.j, row = t?.closest(".crow"), card = t?.closest(".card");
+      const olj = t?.closest(".ol-n")?.dataset.j, card = t?.closest(".card");
       if (olj != null && olj !== "") pinTo(deck[+olj], id);
-      else if (row && card) { const r = card.getBoundingClientRect(); pinTo(row._c, id, (ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height); }
+      else if (card?._c) { const r = card.getBoundingClientRect(); pinTo(card._c, id, (ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height); }
       else if (NOTE.free && (t?.closest(".notes") || t?.closest("#view"))) { if (NOTE.free.includes(id)) return; unlink(id); NOTE.free.push(id); saveFree(); drawNotes(); }
     };
     n.addEventListener("pointermove", mv); n.addEventListener("pointerup", up); n.addEventListener("pointercancel", up);
@@ -2397,38 +2395,32 @@ function unlink(id) {   // 어디에 있든(자유 목록·카드 마커) 빼고
   if (NOTE.free?.includes(id)) NOTE.free = NOTE.free.filter(v => v !== id);
   deck.forEach(c => { if (c.notes?.some(v => v.i === id)) { c.notes = c.notes.filter(v => v.i !== id); c.nopen?.delete(id); saveCard(c); } });
 }
-function drawNotes() {   // 열린 카드마다: 카드 위 마커 + 칸에는 펼친 마커 포스트잇(맨 위) → 첫 카드 칸에만 자유 포스트잇 → + (맨 아래)
-  const rows = [...qv.querySelectorAll(".crow")];
-  rows.forEach((row, k) => {
-    const col = row.querySelector(".notes"); if (!col) return;
-    const c = row._c, box = row.querySelector(".card");
-    noteIds(c, items => {
-      if (!row.isConnected) return;
-      c.nopen = c.nopen || new Set();
+function drawNotes() {   // 카드마다 위에 마커. 포스트잇 칸(카드와 따로): 펼친 마커 포스트잇(맨 위) → 자유 포스트잇 → + (맨 아래)
+  const col = document.getElementById("notes"); if (!col || !tb.ink) return;
+  const boxes = [...qv.querySelectorAll(".card")].filter(b => b._c), me = cur;
+  Promise.all(boxes.map(b => new Promise(r => noteIds(b._c, r)))).then(() => {
+    if (me !== cur) return;
+    const opened = [];
+    boxes.forEach(box => {
+      if (!box.isConnected) return;
+      const c = box._c; c.nopen = c.nopen || new Set();
       box.querySelectorAll(".nmark").forEach(m => m.remove());
-      items.forEach(it => {
+      c.notes.forEach(it => {
+        if (c.nopen.has(it.i)) opened.push(it.i);
         const m = document.createElement("button"); m.className = "nmark" + (c.nopen.has(it.i) ? " on" : ""); m.setAttribute("aria-label", "포스트잇");
         m.style.left = "calc(" + (it.x * 100) + "% - 11px)"; m.style.top = "calc(" + (it.y * 100) + "% - 11px)";
         m.addEventListener("pointerdown", e => e.stopPropagation());
         m.onclick = e => { e.stopPropagation(); if (c.nopen.has(it.i)) c.nopen.delete(it.i); else c.nopen.add(it.i); drawNotes(); };
         box.append(m);
       });
-      const opened = items.filter(it => c.nopen.has(it.i)).map(it => it.i);
-      const want = opened.concat(k === 0 && NOTE.free ? NOTE.free : []);
-      [...col.querySelectorAll(".note")].forEach(n => { if (!want.includes(n.dataset.id)) n.remove(); });
-      want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", opened.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });
     });
+    const want = opened.concat(NOTE.free || []);
+    [...col.querySelectorAll(".note")].forEach(n => { if (!want.includes(n.dataset.id)) n.remove(); });
+    want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", opened.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });
   });
 }
-function crow(box, c) {
-  const row = document.createElement("div"); row.className = "crow"; row.append(box); row._c = c;
-  if (!tb.ink || !tb.inkSave) return row;
-  const col = document.createElement("aside"); col.className = "notes";
-  const add = document.createElement("button"); add.className = "nadd"; add.textContent = "+"; add.setAttribute("aria-label", "포스트잇");
-  add.onclick = () => { if (!NOTE.free) return; NOTE.free.push(Date.now().toString(36)); saveFree(); drawNotes(); };
-  col.append(add); row.append(col);
-  return row;
-}
+function crow(box, c) { box._c = c; return box; }   // 카드 상자에 카드 정보 (포스트잇 마커·놓기에 씀)
+document.querySelector("#notes .nadd").onclick = () => { if (!NOTE.free) return; NOTE.free.push(Date.now().toString(36)); saveFree(); drawNotes(); };
 function show(i) {
   stopRecording(true); run++;
   INK.ros.forEach(r => r.disconnect()); INK.ros = []; INK.hist = [];
@@ -2449,7 +2441,7 @@ function show(i) {
     const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
-    o2.append(d.body.cloneNode(true)); b2.append(o2); const r2 = crow(b2, d); r2.classList.add("more"); qv.append(r2);
+    o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(crow(b2, d));
     inkOn(b2, d);
   });
   inkOn(box, c);
