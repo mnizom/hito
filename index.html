@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794236580701">
+<meta name="hito-build" content="1794236782842">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2061,7 +2061,7 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .nmark.on { outline: 2px solid var(--ink); outline-offset: 2px; opacity: 1; }
 .note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
-#nbox { align-self: stretch; padding: 8px 14px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow); }
+#nbox { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }   /* 포스트잇박스: 기출 버튼 왼쪽 (사용자 2026-11-10) */
 #boxpg { position: fixed; inset: 0; z-index: 12; background: var(--bg); display: none; flex-direction: column; }   /* 포스트잇박스: 전체 화면 (사용자 2026-11-09) */
 #boxpg.on { display: flex; }
 #boxpg .bh { display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 18px 10px 22px; }
@@ -2115,12 +2115,12 @@ body.inked #inkbar { display: flex; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><select id="subdd" aria-label="과목"></select></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><select id="subdd" aria-label="과목"></select></span><span class="r"><button id="nbox">박스</button><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><nav id="ol"></nav><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div></main><aside id="notes" class="notes"><button id="nbox">포스트잇박스</button><button class="nadd" aria-label="포스트잇">+</button></aside></div><div id="boxpg"><div class="bh"><button id="bback" class="round" aria-label="미분류로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="btitle">포스트잇박스</b><button id="bcatadd">+ 카테고리</button><button id="bclose" class="round" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="bbody"><nav id="blist"></nav><div id="bgrid"></div></div></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
+<div id="qv"></div></main><aside id="notes" class="notes"><button class="nadd" aria-label="포스트잇">+</button></aside></div><div id="boxpg"><div class="bh"><button id="bback" class="round" aria-label="미분류로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><b id="btitle">포스트잇박스</b><button id="bcatadd">+ 카테고리</button><button id="bclose" class="round" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div class="bbody"><nav id="blist"></nav><div id="bgrid"></div></div></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
