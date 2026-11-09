@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794216594152">
+<meta name="hito-build" content="1794216704434">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2005,6 +2005,7 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #tabsw { display: inline-flex; }
 #tabsw[hidden] { display: none; }
 #chs, #cds { display: none; }
+body.exmode .card .mode { display: none; }
 body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 없음 */   /* 공부 홈: 카드 위 드롭다운 없음 (접는 목차가 대신, 사용자 2026-11-09) */
 #subs, #exs, #ol { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
 #subs button { display: block; width: 100%; text-align: left; padding: 7px 10px; margin: 1px 0; border-radius: 10px; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
@@ -2060,7 +2061,7 @@ let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store =
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
 // seen = 이번에 눌러 열어 본 칸(채점에서 뺌), res = 이번 채점 결과(칸 아래 표시), writingOn = 입력칸 켜 둠
-let study = true, writingOn = false, draft = {}, heard = [], seen = new Set(), res = {}, hearing = false, grading = false;
+let study = true, studyPref = true, writingOn = false, draft = {}, heard = [], seen = new Set(), res = {}, hearing = false, grading = false;
 const ICON = {
   mic: '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
   pen: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
@@ -2217,7 +2218,7 @@ function show(i) {
   const box = document.createElement("div"); box.className = "card";
   const h = document.createElement("h2"); h.textContent = c.title; box.append(h);
   const sw = document.createElement("div"); sw.className = "mode";
-  [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => setMode(m === "study"); sw.append(b); });
+  [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
   const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o);
   if (tbCss) { const st = document.createElement("style"); st.textContent = tbCss; qv.append(st); }
@@ -2235,7 +2236,9 @@ function show(i) {
   addReset(c);
   showCode();
   prev.disabled = i === 0; next.disabled = i === deck.length - 1;
-  setMode(study);
+  const exOn = !!home && !document.body.classList.contains("noex");   // 공부 홈에서 기출을 켠 상태: 학습 모드 없음, 답이 다 보임 (사용자 2026-11-09)
+  document.body.classList.toggle("exmode", exOn);
+  setMode(exOn ? false : studyPref);
   scrollTo(0, 0); tb.pos(cur, c.key);
   drawToc(); drawOutline();
 }
@@ -2476,7 +2479,7 @@ cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
 document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); drawOutline(); };
+document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length) show(at); else drawOutline(); };
 // 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
 const olEl = document.getElementById("ol"), olOpen = new Set();
 let olAt = null;   // 자동 펼치기는 카드가 바뀔 때 한 번만 (그 뒤엔 사용자가 접은 대로)
