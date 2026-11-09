@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794199636423">
+<meta name="hito-build" content="1794201062046">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2016,12 +2016,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .ex.cur .go { color: var(--ink); }
 #view { min-width: 0; }
 #view .wrap, #view #qv { max-width: 920px; }
-#tabs { display: block; max-width: 920px; margin: 0 auto 4px; }
-#tabs .row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-top: 6px; padding-bottom: 2px; }
-#tabs .row::-webkit-scrollbar { display: none; }
-#tabs .row:empty { display: none; }
-#tabs .row button { flex: none; padding: 3px 10px; border-radius: 999px; background: var(--surface-2); font-size: 13px; color: var(--ink-2); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#tabs .row button.on { background: var(--ink); color: var(--surface); }
+#tabs { display: flex; align-items: center; gap: 8px; max-width: 920px; margin: 0 auto 4px; }
+#tabs select { flex: 0 1 auto; min-width: 0; max-width: 38%; padding: 5px 24px 5px 12px; border-radius: 999px; background-color: var(--surface); color: var(--ink); font-size: 13.5px; text-overflow: ellipsis; background-position: right 13px center, right 8px center; }
+#tabs select:empty { display: none; }
 #tabs button.hit:not(.on) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--ink); }
 #tabs[hidden] { display: none; }
 .solo #subs, .solo #exs, .solo #exT { display: none; }
@@ -2037,7 +2034,7 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 </style></head><body>
 <div id="hd"><span id="dday"></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><main id="view">
-<div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><div class="row" id="chs"></div><div class="row" id="cds"></div></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
+<div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
 <div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button>
@@ -2419,34 +2416,34 @@ async function goTab(t, jump) {
 }
 function toSec(x) {
   const el = qv.querySelector(bySec(x)); if (!el) return;
+  tocSec = x.split(".").slice(0, 2).join("."); if (cdsEl.querySelector("option[value=\\"" + tocSec + "\\"]")) cdsEl.value = tocSec;
   scrollTo(0, el.getBoundingClientRect().top + scrollY - document.querySelector("#view .top").offsetHeight - 14);
   el.classList.remove("here"); void el.offsetWidth; el.classList.add("here");
 }
-function tabBtn(text, on, hit, fn) {
-  const b = document.createElement("button"); b.textContent = text; b.title = text;
-  b.classList.toggle("on", on); b.classList.toggle("hit", hit); b.onclick = fn; return b;
-}
-function center(row) { const b = row.querySelector(".on") || row.querySelector(".hit"); if (b) row.scrollLeft = b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2; }
-function drawToc() {
+function opt(sel, value, text, hit) { const o = document.createElement("option"); o.value = value; o.textContent = (hit ? "● " : "") + text; sel.append(o); }
+let tocSec = null;   // 기초노트에서 지금 보는 큰 제목
+function drawToc() {   // 목차 = 드롭다운 두 개: 장 / (심화) 카드 제목, (기초노트) 큰 제목. ● = »로 연 기출과 연결된 것
   if (!home || !hs || (cur !== hs.basic && cur !== hs.deep)) return;
   const t = cur === hs.basic ? "basic" : "deep", list = linked(t);
   tab = t; tabs.hidden = false;
   tabsw.querySelectorAll("button").forEach(b => { b.classList.toggle("on", b.dataset.t === t); b.disabled = b.dataset.t === "basic" && !hs.basic; b.classList.toggle("hit", linked(b.dataset.t).length > 0); });
   chsEl.textContent = ""; cdsEl.textContent = "";
-  chaps.forEach(g => {
-    const hit = list.some(x => t === "basic" ? x.split(".")[0] === g.ch : g.cards.some(i => deck[i].code === x));
-    chsEl.append(tabBtn(g.title, g.cards.includes(at), hit, () => show(g.cards[0])));
-  });
+  const gi = chaps.findIndex(g => g.cards.includes(at));
+  chaps.forEach((g, i) => opt(chsEl, i, g.title, list.some(x => t === "basic" ? x.split(".")[0] === g.ch : g.cards.some(j => deck[j].code === x))));
+  chsEl.value = gi;
   if (t === "deep") {
-    chaps.find(g => g.cards.includes(at))?.cards.forEach(i => cdsEl.append(tabBtn(deck[i].title, i === at, list.includes(deck[i].code), () => show(i))));
+    chaps[gi]?.cards.forEach(i => opt(cdsEl, i, deck[i].title, list.includes(deck[i].code)));
+    cdsEl.value = at;
   } else {
     qv.querySelectorAll(".orig [data-s]").forEach(h => {
       const sid = h.dataset.s; if (sid.split(".").length !== 2) return;
-      cdsEl.append(tabBtn(h.textContent.trim(), false, list.some(x => x === sid || x.startsWith(sid + ".")), () => toSec(sid)));
+      opt(cdsEl, sid, h.textContent.trim(), list.some(x => x === sid || x.startsWith(sid + ".")));
     });
+    if (tocSec && cdsEl.querySelector("option[value=\\"" + tocSec + "\\"]")) cdsEl.value = tocSec;
   }
-  center(chsEl); center(cdsEl);
 }
+chsEl.onchange = () => { tocSec = null; show(chaps[+chsEl.value].cards[0]); };
+cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
 document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
