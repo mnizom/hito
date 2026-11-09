@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794232797786">
+<meta name="hito-build" content="1794233246991">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2000,7 +2000,11 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #hd { display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 18px 4px 22px; }
 #dday { font: 700 24px/1.2 "Gowun Batang", AppleMyungjo, serif; font-variant-numeric: tabular-nums; }
 #dday small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
-#app { display: grid; grid-template-columns: 118px 240px minmax(0, 1fr); align-items: start; }
+#app { display: grid; grid-template-columns: 240px minmax(0, 1fr); align-items: start; }
+#subs { display: none !important; }   /* 과목은 디데이 옆 드롭박스로 (사용자 2026-11-09) */
+#hd .l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+#subdd { padding: 5px 28px 5px 12px; border-radius: 999px; border: 0; background-color: var(--surface); background-position: right 15px center, right 10px center; color: var(--ink); font-size: 14px; font-weight: 600; box-shadow: var(--shadow); max-width: 46vw; text-overflow: ellipsis; }
+.solo #subdd { display: none; }
 #exs { overflow-x: hidden; }
 #tabsw { display: inline-flex; }
 #tabsw[hidden] { display: none; }
@@ -2062,7 +2066,7 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .ol-n.lv0 { color: var(--ink); font-weight: 600; }
 .ol-n.lv1, .ol-n.lv2 { color: var(--ink); }
 .ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
-.noex #app { grid-template-columns: 118px 260px minmax(0, 1fr); }
+.noex #app { grid-template-columns: 260px minmax(0, 1fr); }
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
 .card.more { margin-top: 18px; }
@@ -2072,15 +2076,18 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 body.inked #inkbar { display: flex; }
 #inkbar button { width: 42px; height: 42px; border-radius: 50%; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); display: grid; place-items: center; }
 #inkbar button.on { background: var(--ink); color: var(--surface); }
+#inkcols { display: flex; gap: 6px; align-items: center; padding: 0 8px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
+#inkcols button { width: 26px; height: 26px; box-shadow: none; border: 2px solid transparent; }
+#inkcols button.on { border-color: var(--ink); background: inherit; outline: 2px solid var(--surface); outline-offset: -4px; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span id="dday"></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><select id="subdd" aria-label="과목"></select></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><nav id="ol"></nav><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
+<div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
@@ -2241,7 +2248,9 @@ function placeRes() {   // 이번 채점 결과를 칸 바로 아래에: 표시 
 }
 // 손필기 (사용자 2026-11-09, 아이패드+애플펜슬): 카드마다 투명 필기층. 펜만 그림, 손가락은 그대로 스크롤·누르기
 // 좌표는 카드 폭에 대한 비율로 저장 (폭이 다른 기기에서는 비율대로). 저장은 카드마다 tb.inkSave
-const INK = { tool: "pen", hist: [], ros: [], penAt: 0 }, INK_COLOR = "#2f6fdf", INK_W = 2.2;
+const INK = { tool: "pen", hist: [], ros: [], penAt: 0, color: "#2f6fdf" }, INK_W = 2.2;
+const INK_COLORS = [["파랑", "#2f6fdf"], ["빨강", "#e5383b"], ["초록", "#1f9d55"], ["노랑", "#f2c200"], ["핑크", "#ff5fa2"], ["검정", "#1f1b24"]];
+try { INK.color = localStorage.getItem("hito.ink.color") || INK.color; } catch {}
 const inkEnc = s => ({ c: s.c, w: Math.round(s.w * 100000), p: s.p.map(v => Math.round(v * 10000)).join(",") });
 const inkDec = s => ({ c: s.c, w: s.w / 100000, p: String(s.p).split(",").map(v => +v / 10000) });
 function inkStroke(g, s, w) {
@@ -2288,7 +2297,7 @@ function inkOn(box, card) {
     };
     let s = null;
     if (INK.tool === "erase") erase(e);
-    else { s = { c: INK_COLOR, w: INK_W / box.offsetWidth, p: at_(e) }; st.strokes.push(s); INK.hist.push({ st, s }); draw(); }
+    else { s = { c: INK.color, w: INK_W / box.offsetWidth, p: at_(e) }; st.strokes.push(s); INK.hist.push({ st, s }); draw(); }
     const move = ev => {
       INK.penAt = Date.now();
       const ce = ev.getCoalescedEvents ? ev.getCoalescedEvents() : [], evs = ce.length ? ce : [ev];
@@ -2304,7 +2313,14 @@ function inkOn(box, card) {
     box.addEventListener("pointermove", move); box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
   });
 }
-document.getElementById("inkerase").onclick = e => { INK.tool = INK.tool === "erase" ? "pen" : "erase"; e.currentTarget.classList.toggle("on", INK.tool === "erase"); };
+function inkTool(t, col) {
+  INK.tool = t; if (col) { INK.color = col; try { localStorage.setItem("hito.ink.color", col); } catch {} }
+  document.getElementById("inkerase").classList.toggle("on", t === "erase");
+  document.querySelectorAll("#inkcols button").forEach(b => b.classList.toggle("on", t === "pen" && b.dataset.c === INK.color));
+}
+INK_COLORS.forEach(([n, c]) => { const b = document.createElement("button"); b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", n); b.onclick = () => inkTool("pen", c); document.getElementById("inkcols").append(b); });
+inkTool("pen");
+document.getElementById("inkerase").onclick = () => inkTool(INK.tool === "erase" ? "pen" : "erase");
 document.getElementById("inkundo").onclick = () => {
   const h = INK.hist.pop(); if (!h || !h.st.box.isConnected) return;
   if (h.del) h.st.strokes.splice(Math.min(h.i, h.st.strokes.length), 0, h.s);
@@ -2500,6 +2516,9 @@ const linked = t => !act ? [] : t === "basic" ? act.b : act.c;   // »로 연 �
 function drawSubs() {
   subsEl.textContent = "";
   home.subjects.forEach(s => { const b = document.createElement("button"); b.textContent = s.name; b.onclick = () => pickSub(s); b.classList.toggle("on", s === hs); subsEl.append(b); });
+  const dd = document.getElementById("subdd");
+  if (dd.options.length !== home.subjects.length) { dd.textContent = ""; home.subjects.forEach((s, i) => { const o = document.createElement("option"); o.value = i; o.textContent = s.name; dd.append(o); }); dd.onchange = () => pickSub(home.subjects[+dd.value]); }
+  dd.value = home.subjects.indexOf(hs);
 }
 async function pickSub(s) {
   hs = s; act = null; tb.pos("공부홈", s.sub); drawSubs();
