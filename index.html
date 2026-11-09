@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794217777731">
+<meta name="hito-build" content="1794217928593">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2311,7 +2311,9 @@ async function hear(blob, card, mine) {   // 받아 적기만 하고 채점은 �
   finally { if (mine === run) { hearing = false; fitDock(); } }
 }
 mic.onclick = () => recorder ? stopRecording(false) : startRecording();
-pen.onclick = () => { writingOn = !writingOn; showPads(writingOn); fitDock(); if (writingOn) qv.querySelector(".orig .wr")?.focus(); };
+pen.onclick = () => { writingOn = !writingOn;
+  if (writingOn) { seen.clear(); qv.querySelectorAll(".orig .bk.seen").forEach(k => k.classList.remove("seen")); }   // 쓰기로 가면 눌러 열어 본 칸도 다시 가리고 입력칸을 줌
+  showPads(writingOn); fitDock(); if (writingOn) qv.querySelector(".orig .wr")?.focus(); };
 // 채점: 입력한 칸만. 쓴 칸은 칸별로(글자가 정답과 같으면 바로 O), 말한 것은 나머지 칸 중 말한 칸만. 이미 받은 결과는 내려가지 않는다
 const bare = t => String(t).toLowerCase().replace(/[^0-9a-z가-힣]/g, "");
 const MARK = { O: "O", o: "O", "○": "O", "◯": "O", "△": "△", X: "X", x: "X", "×": "X", "✕": "X" };
