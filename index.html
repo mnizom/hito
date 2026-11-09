@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794233246991">
+<meta name="hito-build" content="1794233637319">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2047,7 +2047,18 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .ex .go { margin-left: auto; width: 30px; height: 25px; flex: none; border-radius: 8px; color: var(--ink-2); font-weight: 700; letter-spacing: -2px; }
 .ex.cur .go { color: var(--ink); }
 #view { min-width: 0; }
-#view .wrap, #view #qv { max-width: 920px; }
+#view .wrap { max-width: 920px; }
+#view #qv { max-width: 1220px; }
+.crow { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 18px; align-items: start; }   /* 카드 + 오른쪽 포스트잇 칸 (사용자 2026-11-09) */
+.crow.more { margin-top: 18px; }
+.crow .card.more { margin-top: 0; }
+.notes { display: flex; flex-direction: column; gap: 12px; }
+.note { position: relative; height: 260px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
+.note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
+.note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
+.nadd { align-self: flex-start; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: 24px; line-height: 1; box-shadow: var(--shadow); }
+@media (max-width: 1000px) { .crow { grid-template-columns: minmax(0, 1fr); } .notes { flex-direction: row; flex-wrap: wrap; } .note { width: 270px; } }
+@media (max-width: 700px) { .notes { display: none; } }
 #tabs { display: flex; align-items: center; gap: 8px; max-width: 920px; margin: 0 auto 4px; }
 #tabs select { flex: 0 1 auto; min-width: 0; max-width: 38%; padding: 5px 24px 5px 12px; border-radius: 999px; background-color: var(--surface); color: var(--ink); font-size: 13.5px; text-overflow: ellipsis; background-position: right 13px center, right 8px center; }
 #tabs select:empty { display: none; }
@@ -2327,6 +2338,26 @@ document.getElementById("inkundo").onclick = () => {
   else { const k = h.st.strokes.indexOf(h.s); if (k >= 0) h.st.strokes.splice(k, 1); }
   h.st.draw(); inkSave(h.st);
 };
+// 포스트잇: 카드마다 오른쪽 칸. + 로 하나씩, 펜으로 씀. 목록은 "<카드>-notes" 문서(id 목록), 각 포스트잇 필기는 "<카드>-n<id>" 문서
+function crow(box, c) {
+  const row = document.createElement("div"); row.className = "crow"; row.append(box);
+  if (!tb.ink || !tb.inkSave) return row;
+  const col = document.createElement("aside"); col.className = "notes";
+  const add = document.createElement("button"); add.className = "nadd"; add.textContent = "+"; add.setAttribute("aria-label", "포스트잇");
+  col.append(add); row.append(col);
+  const me = cur, saveIds = () => tb.inkSave(cur, c.key + "-notes", c.notes);
+  const put = id => {
+    const n = document.createElement("div"); n.className = "note";
+    const x = document.createElement("button"); x.className = "nx"; x.textContent = "×"; x.setAttribute("aria-label", "포스트잇 지우기");
+    x.onclick = () => { c.notes = c.notes.filter(v => v !== id); saveIds(); tb.inkSave(cur, c.key + "-n" + id, []); n.remove(); };
+    n.append(x); col.insertBefore(n, add.nextSibling);   // 새 포스트잇은 + 바로 아래 (맨 위)
+    inkOn(n, { key: c.key + "-n" + id });
+  };
+  add.onclick = () => { if (!c.notes) return; const id = Date.now().toString(36); c.notes = c.notes.concat(id); saveIds(); put(id); };   // + 는 칸 맨 위 (오른쪽 아래 필기 도구와 안 겹치게)
+  if (c.notes) c.notes.slice().reverse().forEach(put);
+  else tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur || !row.isConnected) return; c.notes = (ids || []).map(String); c.notes.slice().reverse().forEach(put); });
+  return row;
+}
 function show(i) {
   stopRecording(true); run++;
   INK.ros.forEach(r => r.disconnect()); INK.ros = []; INK.hist = [];
@@ -2340,14 +2371,14 @@ function show(i) {
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
   const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o);
   if (tbCss) { const st = document.createElement("style"); st.textContent = tbCss; qv.append(st); }
-  qv.append(box);
+  qv.append(crow(box, c));
   const ex = extraNext; extraNext = []; olSel = [i].concat(ex);
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
     const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
-    o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(b2);
+    o2.append(d.body.cloneNode(true)); b2.append(o2); const r2 = crow(b2, d); r2.classList.add("more"); qv.append(r2);
     inkOn(b2, d);
   });
   inkOn(box, c);
