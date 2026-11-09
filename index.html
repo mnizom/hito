@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794235439479">
+<meta name="hito-build" content="1794235854131">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2051,7 +2051,7 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 #view #qv { max-width: 920px; }
 #notes { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 8px 16px 90px 4px; overscroll-behavior: contain; }   /* 포스트잇 칸: 카드와 따로 (사용자 2026-11-09) */
 .notes { display: flex; flex-direction: column; gap: 12px; }
-.note { position: relative; height: 260px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
+.note { position: relative; flex: none; aspect-ratio: 34 / 26; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
 .note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
 .ngrip { position: absolute; left: 0; right: 0; top: 0; height: 34px; z-index: 4; cursor: grab; touch-action: none; border-radius: 22px 22px 0 0; }
 .ngrip::before { content: ""; position: absolute; left: 50%; top: 12px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--hair); }
@@ -2062,8 +2062,15 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
 #nbox { align-self: stretch; padding: 8px 14px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow); }
-#nbox.on { background: var(--ink); color: var(--surface); }
-#notes.boxmode .nadd { display: none; }
+#boxpg { position: fixed; inset: 0; z-index: 12; background: var(--bg); display: none; flex-direction: column; }   /* 포스트잇박스: 전체 화면 (사용자 2026-11-09) */
+#boxpg.on { display: flex; }
+#boxpg .bh { display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 18px 10px 22px; }
+#boxpg .bh b { margin-right: auto; font: 700 22px/1.2 "Gowun Batang", AppleMyungjo, serif; }
+#bcatadd { padding: 7px 16px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); font-size: 14px; font-weight: 600; }
+#bcats { flex: 1; min-height: 0; display: flex; gap: 16px; overflow-x: auto; padding: 6px 18px 90px; align-items: stretch; }
+.bcol { flex: none; width: 290px; display: flex; flex-direction: column; gap: 12px; padding: 10px; border-radius: 24px; background: var(--surface-2); overflow-y: auto; overscroll-behavior: contain; }
+.bcol .bname { flex: none; border: 0; background: none; padding: 4px 8px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.bcol.over { box-shadow: inset 0 0 0 2px var(--accent); }
 .nadd { align-self: flex-start; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: 24px; line-height: 1; box-shadow: var(--shadow); }
 @media (max-width: 1000px) { #app { grid-template-columns: 212px minmax(0, 1fr) 230px; } .noex #app { grid-template-columns: 210px minmax(0, 1fr) 230px; } .solo #app { grid-template-columns: minmax(0, 1fr) 230px; } }
 @media (max-width: 700px) { #notes { display: none !important; } }
@@ -2106,7 +2113,7 @@ body.inked #inkbar { display: flex; }
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div></main><aside id="notes" class="notes"><button id="nbox">포스트잇박스</button><button class="nadd" aria-label="포스트잇">+</button></aside></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
+<div id="qv"></div></main><aside id="notes" class="notes"><button id="nbox">포스트잇박스</button><button class="nadd" aria-label="포스트잇">+</button></aside></div><div id="boxpg"><div class="bh"><b>포스트잇박스</b><button id="bcatadd">+ 카테고리</button><button id="bclose" class="round" aria-label="닫기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="bcats"></div></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><span id="inkcols"></span><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
@@ -2356,7 +2363,7 @@ function noteIds(c, then) {   // 카드의 마커 목록 (처음이면 받아 �
   if (c.notes) return then(c.notes);
   const me = cur; tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur) return; if (!c.notes) c.notes = (ids || []).map(noteItem); then(c.notes); });
 }
-const saveCard = c => tb.inkSave(cur, c.key + "-notes", c.notes), saveFree = () => tb.inkSave("공통", "free-notes", NOTE.free), saveBox = () => tb.inkSave("공통", "box-notes", NOTE.box);
+const saveCard = c => tb.inkSave(cur, c.key + "-notes", c.notes), saveFree = () => tb.inkSave("공통", "free-notes", NOTE.free), saveBox = () => tb.inkSave("공통", "box-notes", NOTE.box), saveCats = () => tb.inkSave("공통", "box-cats", NOTE.cats);
 function pinTo(c, id, x, y) {   // 카드에 마커로 붙임 (목록에서는 사라짐)
   noteIds(c, () => {
     unlink(id);
@@ -2378,17 +2385,18 @@ function noteEl(id) {
     const mv = ev => {
       const dx = ev.clientX - x0, dy = ev.clientY - y0;
       if (!moved && Math.hypot(dx, dy) < 6) return;
+      if (NOTE.boxOn) { n.style.visibility = "hidden"; const o = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".bcol"); n.style.visibility = ""; document.querySelectorAll(".bcol.over").forEach(b => b !== o && b.classList.remove("over")); o?.classList.add("over"); }
       moved = true; n.classList.add("drag"); n.style.transform = "translate(" + dx + "px," + dy + "px) rotate(2deg)";
     };
     const up = ev => {
       n.removeEventListener("pointermove", mv); n.removeEventListener("pointerup", up); n.removeEventListener("pointercancel", up);
       if (!moved) return;
       n.style.visibility = "hidden"; const t = document.elementFromPoint(ev.clientX, ev.clientY); n.style.visibility = "";   // 놓은 자리 아래에 무엇이 있나 (끌던 포스트잇은 빼고)
-      n.style.transform = ""; n.classList.remove("drag");
+      n.style.transform = ""; n.classList.remove("drag"); document.querySelectorAll(".bcol.over").forEach(b => b.classList.remove("over"));
       INK.penAt = Date.now();
       const olj = t?.closest(".ol-n")?.dataset.j, card = t?.closest(".card"), dx = ev.clientX - x0, dy = ev.clientY - y0;
-      if (!NOTE.boxOn && dx > 60 && dx > Math.abs(dy)) { if (!NOTE.box) return; unlink(id); NOTE.box.unshift(id); saveBox(); saveFree(); drawNotes(); }   // 오른쪽으로 끌기 = 포스트잇박스에 보관
-      else if (NOTE.boxOn && t?.closest("#notes")) return;   // 박스 안에서 움직인 것은 그대로
+      if (NOTE.boxOn) { const bc = t?.closest(".bcol"); if (bc) toCat(id, bc.dataset.k); return; }   // 박스 화면: 카테고리 칸에 놓으면 그리로
+      if (dx > 60 && dx > Math.abs(dy)) { if (!NOTE.box) return; unlink(id); NOTE.box.unshift(id); saveBox(); saveFree(); drawNotes(); }   // 오른쪽으로 끌기 = 포스트잇박스(미분류)에 보관
       else if (olj != null && olj !== "") pinTo(deck[+olj], id);
       else if (card?._c) { const r = card.getBoundingClientRect(); pinTo(card._c, id, (ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height); }
       else if (NOTE.free && (t?.closest(".notes") || t?.closest("#view"))) { if (NOTE.free.includes(id)) return; unlink(id); NOTE.free.push(id); saveFree(); drawNotes(); }
@@ -2400,6 +2408,7 @@ function noteEl(id) {
 function unlink(id) {   // 어디에 있든(자유 목록·박스·카드 마커) 빼고, 빠진 곳은 저장
   if (NOTE.free?.includes(id)) NOTE.free = NOTE.free.filter(v => v !== id);
   if (NOTE.box?.includes(id)) { NOTE.box = NOTE.box.filter(v => v !== id); saveBox(); }
+  (NOTE.cats || []).forEach(k => { if (k.ids.includes(id)) { k.ids = k.ids.filter(v => v !== id); saveCats(); } });
   deck.forEach(c => { if (c.notes?.some(v => v.i === id)) { c.notes = c.notes.filter(v => v.i !== id); c.nopen?.delete(id); saveCard(c); } });
 }
 function drawNotes() {   // 카드마다 위에 마커. 포스트잇 칸(카드와 따로): 펼친 마커 포스트잇(맨 위) → 자유 포스트잇 → + (맨 아래)
@@ -2421,13 +2430,49 @@ function drawNotes() {   // 카드마다 위에 마커. 포스트잇 칸(카드�
         box.append(m);
       });
     });
-    const want = NOTE.boxOn ? NOTE.box || [] : opened.concat(NOTE.free || []);   // 포스트잇박스를 열면 보관한 것만
+    if (NOTE.boxOn) return drawBox();
+    const want = opened.concat(NOTE.free || []);
     [...col.querySelectorAll(".note")].forEach(n => { if (!want.includes(n.dataset.id)) n.remove(); });
     want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", opened.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });
   });
 }
 function crow(box, c) { box._c = c; return box; }   // 카드 상자에 카드 정보 (포스트잇 마커·놓기에 씀)
-document.getElementById("nbox").onclick = () => { NOTE.boxOn = !NOTE.boxOn; document.getElementById("notes").classList.toggle("boxmode", NOTE.boxOn); document.getElementById("nbox").classList.toggle("on", NOTE.boxOn); drawNotes(); };
+// 포스트잇박스 전체 화면: 미분류(box-notes) + 카테고리 칸들(box-cats [{n 이름, ids}]). 칸에 끌어 놓으면 그리로
+function toCat(id, k) {
+  if (k === "_") { if (NOTE.box.includes(id)) return; unlink(id); NOTE.box.unshift(id); saveBox(); }
+  else { const c = NOTE.cats[+k]; if (!c || c.ids.includes(id)) return; unlink(id); c.ids.unshift(id); saveCats(); }
+  drawBox();
+}
+function drawBox() {
+  const wrap = document.getElementById("bcats"); if (!NOTE.box || !NOTE.cats) return;
+  const cols = [{ n: "미분류", ids: NOTE.box, k: "_" }].concat(NOTE.cats.map((c, i) => ({ n: c.n, ids: c.ids, k: String(i) })));
+  [...wrap.children].forEach((el, i) => { if (i >= cols.length) el.remove(); });
+  cols.forEach((c, i) => {
+    let el = wrap.children[i];
+    if (!el) {
+      el = document.createElement("div"); el.className = "bcol";
+      const nm = document.createElement(i === 0 ? "div" : "input"); nm.className = "bname"; el.append(nm); wrap.append(el);
+    }
+    el.dataset.k = c.k;
+    const nm = el.querySelector(".bname");
+    if (nm.tagName === "INPUT") { if (document.activeElement !== nm) nm.value = c.n; nm.onchange = () => { NOTE.cats[+c.k].n = nm.value.trim(); saveCats(); }; }
+    else nm.textContent = c.n;
+    [...el.querySelectorAll(".note")].forEach(n => { if (!c.ids.includes(n.dataset.id)) n.remove(); });
+    c.ids.forEach(id => { const n = noteEl(id); n.classList.remove("linked"); el.append(n); });
+  });
+}
+function boxOpen(on) {
+  NOTE.boxOn = on; document.getElementById("boxpg").classList.toggle("on", on);
+  if (on) drawBox(); else { [...document.querySelectorAll("#bcats .note")].forEach(n => n.remove()); drawNotes(); }
+}
+document.getElementById("nbox").onclick = () => boxOpen(true);
+document.getElementById("bclose").onclick = () => boxOpen(false);
+document.getElementById("bcatadd").onclick = () => {
+  if (!NOTE.cats) return;
+  NOTE.cats.push({ n: "", ids: [] }); saveCats(); drawBox();
+  const ins = document.querySelectorAll("#bcats input.bname"); ins[ins.length - 1]?.focus();
+  document.getElementById("bcats").scrollLeft = 1e6;
+};
 document.querySelector("#notes .nadd").onclick = () => { if (!NOTE.free) return; NOTE.free.push(Date.now().toString(36)); saveFree(); drawNotes(); };
 function show(i) {
   stopRecording(true); run++;
@@ -2453,7 +2498,7 @@ function show(i) {
     inkOn(b2, d);
   });
   inkOn(box, c);
-  if (tb.ink && NOTE.free === null) { NOTE.free = undefined; Promise.all(["free-notes", "box-notes"].map(k => tb.ink("공통", k))).then(([f, b]) => { NOTE.free = (f || []).map(String); NOTE.box = (b || []).map(String); drawNotes(); }); }
+  if (tb.ink && NOTE.free === null) { NOTE.free = undefined; Promise.all(["free-notes", "box-notes", "box-cats"].map(k => tb.ink("공통", k))).then(([f, b, c]) => { NOTE.free = (f || []).map(String); NOTE.box = (b || []).map(String); NOTE.cats = (c || []).map(x => ({ n: x.n || "", ids: (x.ids || []).map(String) })); drawNotes(); }); }
   drawNotes();
   if (c.said) showSaid(c.said);
   paint(c);
