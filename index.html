@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794233637319">
+<meta name="hito-build" content="1794234261190">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2055,6 +2055,9 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .notes { display: flex; flex-direction: column; gap: 12px; }
 .note { position: relative; height: 260px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
 .note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
+.note { touch-action: none; }
+.note.linked { box-shadow: inset 4px 0 0 var(--accent), var(--shadow); }
+.note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
 .nadd { align-self: flex-start; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: 24px; line-height: 1; box-shadow: var(--shadow); }
 @media (max-width: 1000px) { .crow { grid-template-columns: minmax(0, 1fr); } .notes { flex-direction: row; flex-wrap: wrap; } .note { width: 270px; } }
@@ -2272,7 +2275,7 @@ function inkStroke(g, s, w) {
   for (let k = 2; k < p.length; k += 2) g.lineTo(p[k] * w, p[k + 1] * w);
   g.stroke();
 }
-function inkSave(st) { if (tb.inkSave && cur) tb.inkSave(cur, st.card.key, st.strokes.map(inkEnc)); }
+function inkSave(st) { if (tb.inkSave && cur) tb.inkSave(st.card.sub || cur, st.card.key, st.strokes.map(inkEnc)); }
 function inkOn(box, card) {
   if (!tb.ink) return;
   const cv = document.createElement("canvas"); cv.className = "ink"; box.append(cv);
@@ -2284,10 +2287,10 @@ function inkOn(box, card) {
     st.strokes.forEach(s => inkStroke(g, s, w));
   };
   st.draw = draw; card.inkSt = st;
-  const ro = new ResizeObserver(draw); ro.observe(box); INK.ros.push(ro);
+  const ro = new ResizeObserver(draw); ro.observe(box); if (!card.keep) INK.ros.push(ro);
   if (!card.ink) {   // 처음 여는 카드만 받아 옴. 받기 전에 쓴 획은 받은 획 뒤에 이어 붙임
     const me = cur; card.ink = st.strokes;
-    tb.ink(cur, card.key).then(list => { if (me !== cur || !list?.length) return; card.ink.unshift(...list.map(inkDec)); card.inkSt.draw(); });
+    tb.ink(card.sub || cur, card.key).then(list => { if (me !== cur || !list?.length) return; card.ink.unshift(...list.map(inkDec)); card.inkSt.draw(); });
   }
   draw();
   const stylus = e => [...e.touches].some(t => t.touchType === "stylus");
@@ -2338,24 +2341,69 @@ document.getElementById("inkundo").onclick = () => {
   else { const k = h.st.strokes.indexOf(h.s); if (k >= 0) h.st.strokes.splice(k, 1); }
   h.st.draw(); inkSave(h.st);
 };
-// 포스트잇: 카드마다 오른쪽 칸. + 로 하나씩, 펜으로 씀. 목록은 "<카드>-notes" 문서(id 목록), 각 포스트잇 필기는 "<카드>-n<id>" 문서
+// 포스트잇 (사용자 2026-11-09): + 로 무한정 만듦(어느 카드에도 안 붙은 "자유" 포스트잇). 손가락·마우스로 끌어 카드(또는 목차 주제) 위에 놓으면 그 카드에 연결
+// → 그 카드를 열면 오른쪽 칸 맨 위에. 카드 밖(칸)에 놓으면 다시 자유. 펜은 쓰기, 손은 옮기기
+// 저장: 필기 = "공통" 과목의 "n<id>" 문서(옮겨도 그대로), 자유 목록 = "공통"/"free-notes", 카드 연결 = <과목>/"<카드>-notes"
+const NOTE = { free: null, el: {}, obj: {} };
+function noteIds(c, then) {   // 카드에 연결된 포스트잇 id 목록 (처음이면 받아 옴)
+  if (c.notes) return then(c.notes);
+  const me = cur; tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur) return; if (!c.notes) c.notes = (ids || []).map(String); then(c.notes); });
+}
+const saveCard = c => tb.inkSave(cur, c.key + "-notes", c.notes), saveFree = () => tb.inkSave("공통", "free-notes", NOTE.free);
+function noteEl(id) {
+  if (NOTE.el[id]) return NOTE.el[id];
+  const n = document.createElement("div"); n.className = "note"; n.dataset.id = id;
+  const x = document.createElement("button"); x.className = "nx"; x.textContent = "×"; x.setAttribute("aria-label", "포스트잇 지우기");
+  x.onclick = () => { unlink(id); saveFree(); tb.inkSave("공통", "n" + id, []); n.remove(); delete NOTE.el[id]; };
+  n.append(x); NOTE.el[id] = n;
+  inkOn(n, NOTE.obj[id] = { key: "n" + id, sub: "공통", keep: true });
+  n.addEventListener("pointerdown", e => {   // 손가락·마우스로 끌기
+    if (e.pointerType === "pen" || e.target.closest(".nx")) return;
+    const x0 = e.clientX, y0 = e.clientY; let moved = false;
+    try { n.setPointerCapture(e.pointerId); } catch {}
+    const mv = ev => {
+      const dx = ev.clientX - x0, dy = ev.clientY - y0;
+      if (!moved && Math.hypot(dx, dy) < 6) return;
+      moved = true; n.classList.add("drag"); n.style.transform = "translate(" + dx + "px," + dy + "px) rotate(2deg)";
+    };
+    const up = ev => {
+      n.removeEventListener("pointermove", mv); n.removeEventListener("pointerup", up); n.removeEventListener("pointercancel", up);
+      if (!moved) return;
+      n.style.visibility = "hidden"; const t = document.elementFromPoint(ev.clientX, ev.clientY); n.style.visibility = "";   // 놓은 자리 아래에 무엇이 있나 (끌던 포스트잇은 빼고)
+      n.style.transform = ""; n.classList.remove("drag");
+      INK.penAt = Date.now();
+      const olj = t?.closest(".ol-n")?.dataset.j, row = t?.closest(".crow"), onCard = t?.closest(".card");
+      if (olj != null && olj !== "") { const c = deck[+olj]; noteIds(c, () => { unlink(id); c.notes.unshift(id); saveCard(c); saveFree(); drawNotes(); }); }
+      else if (row && onCard) { const c = row._c; noteIds(c, () => { if (c.notes[0] === id) return; unlink(id); c.notes.unshift(id); saveCard(c); saveFree(); drawNotes(); }); }
+      else if (NOTE.free && (t?.closest(".notes") || t?.closest("#view"))) { if (NOTE.free.includes(id)) return; unlink(id); NOTE.free.push(id); saveFree(); drawNotes(); }
+    };
+    n.addEventListener("pointermove", mv); n.addEventListener("pointerup", up); n.addEventListener("pointercancel", up);
+  });
+  return n;
+}
+function unlink(id) {   // 어디에 있든(자유 목록·카드) 빼고, 빠진 카드는 저장
+  if (NOTE.free?.includes(id)) NOTE.free = NOTE.free.filter(v => v !== id);
+  deck.forEach(c => { if (c.notes?.includes(id)) { c.notes = c.notes.filter(v => v !== id); saveCard(c); } });
+}
+function drawNotes() {   // 열린 카드마다: 연결된 포스트잇(맨 위) → 첫 카드 칸에만 자유 포스트잇 → + (맨 아래)
+  const rows = [...qv.querySelectorAll(".crow")];
+  rows.forEach((row, k) => {
+    const col = row.querySelector(".notes"); if (!col) return;
+    noteIds(row._c, ids => {
+      if (!row.isConnected) return;
+      const want = ids.concat(k === 0 && NOTE.free ? NOTE.free : []);
+      [...col.querySelectorAll(".note")].forEach(n => { if (!want.includes(n.dataset.id)) n.remove(); });
+      want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", ids.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });   // 연결된 것은 왼쪽 색 띠
+    });
+  });
+}
 function crow(box, c) {
-  const row = document.createElement("div"); row.className = "crow"; row.append(box);
+  const row = document.createElement("div"); row.className = "crow"; row.append(box); row._c = c;
   if (!tb.ink || !tb.inkSave) return row;
   const col = document.createElement("aside"); col.className = "notes";
   const add = document.createElement("button"); add.className = "nadd"; add.textContent = "+"; add.setAttribute("aria-label", "포스트잇");
+  add.onclick = () => { if (!NOTE.free) return; NOTE.free.push(Date.now().toString(36)); saveFree(); drawNotes(); };
   col.append(add); row.append(col);
-  const me = cur, saveIds = () => tb.inkSave(cur, c.key + "-notes", c.notes);
-  const put = id => {
-    const n = document.createElement("div"); n.className = "note";
-    const x = document.createElement("button"); x.className = "nx"; x.textContent = "×"; x.setAttribute("aria-label", "포스트잇 지우기");
-    x.onclick = () => { c.notes = c.notes.filter(v => v !== id); saveIds(); tb.inkSave(cur, c.key + "-n" + id, []); n.remove(); };
-    n.append(x); col.insertBefore(n, add.nextSibling);   // 새 포스트잇은 + 바로 아래 (맨 위)
-    inkOn(n, { key: c.key + "-n" + id });
-  };
-  add.onclick = () => { if (!c.notes) return; const id = Date.now().toString(36); c.notes = c.notes.concat(id); saveIds(); put(id); };   // + 는 칸 맨 위 (오른쪽 아래 필기 도구와 안 겹치게)
-  if (c.notes) c.notes.slice().reverse().forEach(put);
-  else tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur || !row.isConnected) return; c.notes = (ids || []).map(String); c.notes.slice().reverse().forEach(put); });
   return row;
 }
 function show(i) {
@@ -2382,6 +2430,8 @@ function show(i) {
     inkOn(b2, d);
   });
   inkOn(box, c);
+  if (tb.ink && NOTE.free === null) { NOTE.free = undefined; tb.ink("공통", "free-notes").then(ids => { NOTE.free = (ids || []).map(String); drawNotes(); }); }
+  drawNotes();
   if (c.said) showSaid(c.said);
   paint(c);
   addReset(c);
@@ -2681,7 +2731,7 @@ function drawOutline() {
       }
       if (c.h3t && !olOpen.has(kc + "|" + c.h2t + "|" + c.h3t)) return;
       const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false);
-      d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j);
+      d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j); d.dataset.j = j;
     });
   });
   olEl.scrollTop = top;
