@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794236325676">
+<meta name="hito-build" content="1794236580701">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2281,7 +2281,7 @@ function placeRes() {   // 이번 채점 결과를 칸 바로 아래에: 표시 
 }
 // 손필기 (사용자 2026-11-09, 아이패드+애플펜슬): 카드마다 투명 필기층. 펜만 그림, 손가락은 그대로 스크롤·누르기
 // 좌표는 카드 폭에 대한 비율로 저장 (폭이 다른 기기에서는 비율대로). 저장은 카드마다 tb.inkSave
-const INK = { tool: "pen", hist: [], ros: [], penAt: 0, color: "#2f6fdf" }, INK_W = 2.2;
+const INK = { tool: "pen", hist: [], ros: [], penAt: 0, color: "#2f6fdf" }, INK_W = 1.6;
 const INK_COLORS = [["파랑", "#2f6fdf"], ["빨강", "#e5383b"], ["초록", "#1f9d55"], ["노랑", "#f2c200"], ["핑크", "#ff5fa2"], ["검정", "#1f1b24"]];
 try { INK.color = localStorage.getItem("hito.ink.color") || INK.color; } catch {}
 const inkEnc = s => ({ c: s.c, w: Math.round(s.w * 100000), p: s.p.map(v => Math.round(v * 10000)).join(",") });
