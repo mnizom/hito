@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794216704434">
+<meta name="hito-build" content="1794217081229">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2223,7 +2223,7 @@ function show(i) {
   const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o);
   if (tbCss) { const st = document.createElement("style"); st.textContent = tbCss; qv.append(st); }
   qv.append(box);
-  const ex = extraNext; extraNext = [];
+  const ex = extraNext; extraNext = []; olSel = [i].concat(ex);
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
     const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3);
@@ -2240,6 +2240,7 @@ function show(i) {
   document.body.classList.toggle("exmode", exOn);
   setMode(exOn ? false : studyPref);
   scrollTo(0, 0); tb.pos(cur, c.key);
+  if (olFocus >= 0) { const k = olSel.indexOf(olFocus), bx = qv.querySelectorAll(".card")[k]; olFocus = -1; if (bx && k > 0) setTimeout(() => scrollTo(0, bx.getBoundingClientRect().top + scrollY - 20), 0); }
   drawToc(); drawOutline();
 }
 async function open_(id) {
@@ -2479,19 +2480,30 @@ cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
 document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length) show(at); else drawOutline(); };
+document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length) olShow(olSel.length ? olSel : [at]); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
 // 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
 const olEl = document.getElementById("ol"), olOpen = new Set();
+let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
+function olShow(list, focus) {   // 열 카드 목록 → 첫 카드가 위(채점 대상), 나머지 아래로
+  list = [...new Set(list)].sort((a, b) => a - b); if (!list.length) return;
+  olFocus = focus ?? -1; extraNext = list.slice(1); show(list[0]);
+}
+function olToggle(j) {   // 주제: 누르면 추가, 다시 누르면 닫기 (마지막 한 장은 남김)
+  const has = olSel.includes(j);
+  if (has && olSel.length === 1) return;
+  olShow(has ? olSel.filter(x => x !== j) : olSel.concat(j), has ? -1 : j);
+}
 let olAt = null;   // 자동 펼치기는 카드가 바뀔 때 한 번만 (그 뒤엔 사용자가 접은 대로)
 function drawOutline() {
   if (!document.body.classList.contains("noex") || !deck.length) return;
-  const c0 = deck[at], k0 = cur + "|" + at;
-  if (c0 && olAt !== k0) { olAt = k0; olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }
+  const sel = olSel.length ? olSel : [at], k0 = cur + "|" + sel.join(",");
+  if (olAt !== k0) { olAt = k0; sel.forEach(j => { const c0 = deck[j]; if (!c0) return; olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }); }   // 열린 카드 전부의 자리를 펼침
   const top = olEl.scrollTop; olEl.textContent = "";
-  const node = (lv, text, key, kids) => {
+  const node = (lv, text, key, kids, onText) => {
     const d = document.createElement("div"); d.className = "ol-n lv" + lv; d.style.paddingLeft = (6 + lv * 14) + "px";
     const i = document.createElement("i");
-    if (kids) { i.textContent = olOpen.has(key) ? "▾" : "▸"; d.onclick = () => { olOpen.has(key) ? olOpen.delete(key) : olOpen.add(key); drawOutline(); }; }
+    const fold = () => { olOpen.has(key) ? olOpen.delete(key) : olOpen.add(key); drawOutline(); };
+    if (kids) { i.textContent = olOpen.has(key) ? "▾" : "▸"; d.onclick = onText ? (e => e.target === i ? fold() : onText()) : fold; }
     else i.textContent = "";   // 주제 줄에는 표시 없음 (사용자 2026-11-09)
     const t = document.createElement("span"); t.textContent = text; d.append(i, t); olEl.append(d); return d;
   };
@@ -2503,10 +2515,13 @@ function drawOutline() {
       const c = deck[j];
       if (c.h2t && c.h2t !== h2) { h2 = c.h2t; h3 = null; node(1, h2, kc + "|" + h2, true); }
       if (c.h2t && !olOpen.has(kc + "|" + c.h2t)) return;
-      if (c.h3t && c.h3t !== h3) { h3 = c.h3t; node(2, h3, kc + "|" + c.h2t + "|" + h3, true); }
+      if (c.h3t && c.h3t !== h3) {   // 소제목: ▸ 는 접기, 이름을 누르면 그 안의 주제 카드 전부 열기
+        h3 = c.h3t; const k3 = kc + "|" + c.h2t + "|" + h3, h2c = c.h2t, h3c = h3;
+        node(2, h3, k3, true, () => { olOpen.add(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); });
+      }
       if (c.h3t && !olOpen.has(kc + "|" + c.h2t + "|" + c.h3t)) return;
       const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false);
-      d.classList.toggle("cur", j === at); d.onclick = () => show(j);
+      d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j);
     });
   });
   olEl.scrollTop = top;
