@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794234947426">
+<meta name="hito-build" content="1794235311766">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2053,7 +2053,9 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .notes { display: flex; flex-direction: column; gap: 12px; }
 .note { position: relative; height: 260px; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); }
 .note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
-.note { touch-action: none; }
+.ngrip { position: absolute; left: 0; right: 40px; top: 0; height: 34px; z-index: 4; cursor: grab; touch-action: none; border-radius: 22px 0 0 0; }
+.ngrip::before { content: ""; position: absolute; left: calc(50% + 20px); top: 12px; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: var(--hair); }
+.note.drag .ngrip { cursor: grabbing; }
 .note.linked { box-shadow: inset 4px 0 0 var(--accent), var(--shadow); }
 .nmark { position: absolute; z-index: 5; width: 22px; height: 22px; border-radius: 5px 5px 5px 1px; background: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.25); opacity: .9; }
 .nmark.on { outline: 2px solid var(--ink); outline-offset: 2px; opacity: 1; }
@@ -2365,10 +2367,11 @@ function noteEl(id) {
   const n = document.createElement("div"); n.className = "note"; n.dataset.id = id;
   const x = document.createElement("button"); x.className = "nx"; x.textContent = "×"; x.setAttribute("aria-label", "포스트잇 지우기");
   x.onclick = () => { unlink(id); saveFree(); tb.inkSave("공통", "n" + id, []); n.remove(); delete NOTE.el[id]; drawNotes(); };
-  n.append(x); NOTE.el[id] = n;
+  const g = document.createElement("div"); g.className = "ngrip";   // 끌기 손잡이 (윗부분만, 사용자 2026-11-09)
+  n.append(g, x); NOTE.el[id] = n;
   inkOn(n, NOTE.obj[id] = { key: "n" + id, sub: "공통", keep: true });
   n.addEventListener("pointerdown", e => {   // 손가락·마우스로 끌기
-    if (e.pointerType === "pen" || e.target.closest(".nx")) return;
+    if (e.pointerType === "pen" || !e.target.closest(".ngrip")) return;
     const x0 = e.clientX, y0 = e.clientY; let moved = false;
     try { n.setPointerCapture(e.pointerId); } catch {}
     const mv = ev => {
