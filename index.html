@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794234382857">
+<meta name="hito-build" content="1794234675338">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2057,6 +2057,8 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .note > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
 .note { touch-action: none; }
 .note.linked { box-shadow: inset 4px 0 0 var(--accent), var(--shadow); }
+.nmark { position: absolute; z-index: 5; width: 22px; height: 22px; border-radius: 5px 5px 5px 1px; background: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.25); opacity: .9; }
+.nmark.on { outline: 2px solid var(--ink); outline-offset: 2px; opacity: 1; }
 .note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
 .nadd { align-self: flex-start; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); color: var(--ink-2); font-size: 24px; line-height: 1; box-shadow: var(--shadow); }
@@ -2345,16 +2347,26 @@ document.getElementById("inkundo").onclick = () => {
 // → 그 카드를 열면 오른쪽 칸 맨 위에. 카드 밖(칸)에 놓으면 다시 자유. 펜은 쓰기, 손은 옮기기
 // 저장: 필기 = "공통" 과목의 "n<id>" 문서(옮겨도 그대로), 자유 목록 = "공통"/"free-notes", 카드 연결 = <과목>/"<카드>-notes"
 const NOTE = { free: null, el: {}, obj: {} };
-function noteIds(c, then) {   // 카드에 연결된 포스트잇 id 목록 (처음이면 받아 옴)
+// 카드에 놓은 포스트잇 = 카드 위 마커 {i: id, x, y (카드 폭·높이 비율)}. 마커를 누르면 목록 맨 위에 펼침, 다시 누르면 접음 (사용자 2026-11-09)
+const noteItem = v => typeof v === "string" ? { i: v, x: 0.95, y: 0.03 } : v;
+function noteIds(c, then) {   // 카드의 마커 목록 (처음이면 받아 옴)
   if (c.notes) return then(c.notes);
-  const me = cur; tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur) return; if (!c.notes) c.notes = (ids || []).map(String); then(c.notes); });
+  const me = cur; tb.ink(cur, c.key + "-notes").then(ids => { if (me !== cur) return; if (!c.notes) c.notes = (ids || []).map(noteItem); then(c.notes); });
 }
 const saveCard = c => tb.inkSave(cur, c.key + "-notes", c.notes), saveFree = () => tb.inkSave("공통", "free-notes", NOTE.free);
+function pinTo(c, id, x, y) {   // 카드에 마커로 붙임 (목록에서는 사라짐)
+  noteIds(c, () => {
+    unlink(id);
+    if (x == null) { x = 0.95; y = 0.03 + 0.06 * c.notes.length; }
+    c.notes.push({ i: id, x: Math.min(0.97, Math.max(0, x)), y: Math.min(0.98, Math.max(0, y)) });
+    saveCard(c); saveFree(); drawNotes();
+  });
+}
 function noteEl(id) {
   if (NOTE.el[id]) return NOTE.el[id];
   const n = document.createElement("div"); n.className = "note"; n.dataset.id = id;
   const x = document.createElement("button"); x.className = "nx"; x.textContent = "×"; x.setAttribute("aria-label", "포스트잇 지우기");
-  x.onclick = () => { unlink(id); saveFree(); tb.inkSave("공통", "n" + id, []); n.remove(); delete NOTE.el[id]; };
+  x.onclick = () => { unlink(id); saveFree(); tb.inkSave("공통", "n" + id, []); n.remove(); delete NOTE.el[id]; drawNotes(); };
   n.append(x); NOTE.el[id] = n;
   inkOn(n, NOTE.obj[id] = { key: "n" + id, sub: "공통", keep: true });
   n.addEventListener("pointerdown", e => {   // 손가락·마우스로 끌기
@@ -2372,28 +2384,39 @@ function noteEl(id) {
       n.style.visibility = "hidden"; const t = document.elementFromPoint(ev.clientX, ev.clientY); n.style.visibility = "";   // 놓은 자리 아래에 무엇이 있나 (끌던 포스트잇은 빼고)
       n.style.transform = ""; n.classList.remove("drag");
       INK.penAt = Date.now();
-      const olj = t?.closest(".ol-n")?.dataset.j, row = t?.closest(".crow"), onCard = t?.closest(".card");
-      if (olj != null && olj !== "") { const c = deck[+olj]; noteIds(c, () => { unlink(id); c.notes.unshift(id); saveCard(c); saveFree(); drawNotes(); }); }
-      else if (row && onCard) { const c = row._c; noteIds(c, () => { if (c.notes[0] === id) return; unlink(id); c.notes.unshift(id); saveCard(c); saveFree(); drawNotes(); }); }
+      const olj = t?.closest(".ol-n")?.dataset.j, row = t?.closest(".crow"), card = t?.closest(".card");
+      if (olj != null && olj !== "") pinTo(deck[+olj], id);
+      else if (row && card) { const r = card.getBoundingClientRect(); pinTo(row._c, id, (ev.clientX - r.left) / r.width, (ev.clientY - r.top) / r.height); }
       else if (NOTE.free && (t?.closest(".notes") || t?.closest("#view"))) { if (NOTE.free.includes(id)) return; unlink(id); NOTE.free.push(id); saveFree(); drawNotes(); }
     };
     n.addEventListener("pointermove", mv); n.addEventListener("pointerup", up); n.addEventListener("pointercancel", up);
   });
   return n;
 }
-function unlink(id) {   // 어디에 있든(자유 목록·카드) 빼고, 빠진 카드는 저장
+function unlink(id) {   // 어디에 있든(자유 목록·카드 마커) 빼고, 빠진 카드는 저장
   if (NOTE.free?.includes(id)) NOTE.free = NOTE.free.filter(v => v !== id);
-  deck.forEach(c => { if (c.notes?.includes(id)) { c.notes = c.notes.filter(v => v !== id); saveCard(c); } });
+  deck.forEach(c => { if (c.notes?.some(v => v.i === id)) { c.notes = c.notes.filter(v => v.i !== id); c.nopen?.delete(id); saveCard(c); } });
 }
-function drawNotes() {   // 열린 카드마다: 연결된 포스트잇(맨 위) → 첫 카드 칸에만 자유 포스트잇 → + (맨 아래)
+function drawNotes() {   // 열린 카드마다: 카드 위 마커 + 칸에는 펼친 마커 포스트잇(맨 위) → 첫 카드 칸에만 자유 포스트잇 → + (맨 아래)
   const rows = [...qv.querySelectorAll(".crow")];
   rows.forEach((row, k) => {
     const col = row.querySelector(".notes"); if (!col) return;
-    noteIds(row._c, ids => {
+    const c = row._c, box = row.querySelector(".card");
+    noteIds(c, items => {
       if (!row.isConnected) return;
-      const want = ids.concat(k === 0 && NOTE.free ? NOTE.free : []);
+      c.nopen = c.nopen || new Set();
+      box.querySelectorAll(".nmark").forEach(m => m.remove());
+      items.forEach(it => {
+        const m = document.createElement("button"); m.className = "nmark" + (c.nopen.has(it.i) ? " on" : ""); m.setAttribute("aria-label", "포스트잇");
+        m.style.left = "calc(" + (it.x * 100) + "% - 11px)"; m.style.top = "calc(" + (it.y * 100) + "% - 11px)";
+        m.addEventListener("pointerdown", e => e.stopPropagation());
+        m.onclick = e => { e.stopPropagation(); if (c.nopen.has(it.i)) c.nopen.delete(it.i); else c.nopen.add(it.i); drawNotes(); };
+        box.append(m);
+      });
+      const opened = items.filter(it => c.nopen.has(it.i)).map(it => it.i);
+      const want = opened.concat(k === 0 && NOTE.free ? NOTE.free : []);
       [...col.querySelectorAll(".note")].forEach(n => { if (!want.includes(n.dataset.id)) n.remove(); });
-      want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", ids.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });   // 연결된 것은 왼쪽 색 띠
+      want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", opened.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });
     });
   });
 }
