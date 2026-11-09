@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794215406231">
+<meta name="hito-build" content="1794215806835">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -1946,7 +1946,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 .orig .flow { display: flex; flex-wrap: wrap; gap: 5px 7px; align-items: baseline; margin: 4px 0 8px; }
 .orig .f.end { font-weight: 600; }
 .orig img { display: block; max-width: 100%; }
-.blanks .bk:not(.on):not(.seen) { display: inline-block; width: 4.5em; height: 1.25em; overflow: hidden; vertical-align: -.25em; border-radius: 5px; background: var(--surface-2); color: transparent; white-space: nowrap; user-select: none; -webkit-user-select: none; }
+.blanks .bk:not(.on):not(.seen) { padding: 0 3px; border-radius: 5px; background: var(--surface-2); color: transparent; -webkit-box-decoration-break: clone; box-decoration-break: clone; user-select: none; -webkit-user-select: none; }   /* 처음부터 답 길이 그대로: 열어도 칸 길이가 안 바뀜 (사용자 2026-11-09) */
+.blanks .bk:not(.on):not(.seen) * { color: transparent !important; }
+.blanks .bk.seen { padding: 0 3px; }
 .blanks .bk { cursor: pointer; }
 .blanks .bk.miss:not(.on):not(.seen):not(.part) { box-shadow: inset 0 -2px 0 var(--a); }
 .blanks .bk.part:not(.on):not(.seen) { box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--accent-soft); }
@@ -2002,7 +2004,7 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #exs { overflow-x: hidden; }
 #tabsw { display: inline-flex; }
 #tabsw[hidden] { display: none; }
-#subs, #exs { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
+#subs, #exs, #ol { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
 #subs button { display: block; width: 100%; text-align: left; padding: 7px 10px; margin: 1px 0; border-radius: 10px; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
 #subs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
 #exs { border-left: 1px solid var(--hair); }
@@ -2022,19 +2024,28 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #tabs select:empty { display: none; }
 #tabs button.hit:not(.on) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--ink); }
 #tabs[hidden] { display: none; }
-.solo #subs, .solo #exs, .solo #exT { display: none; }
+.solo #subs, .solo #exs, .solo #exT, .solo #ol { display: none; }
 #hd .r { display: flex; align-items: center; gap: 10px; }
 #exT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .noex #exT { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
 .noex #exs { display: none; }
-.noex #app { grid-template-columns: 118px minmax(0, 1fr); }
+#ol { display: none; border-left: 1px solid var(--hair); }
+.noex #ol { display: block; }   /* 기출을 끄면 그 자리에 접는 목차 (Workflowy 처럼) */
+.ol-n { display: flex; align-items: baseline; gap: 5px; padding: 3px 6px; border-radius: 8px; font-size: 13.5px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
+.ol-n:hover { background: var(--surface-2); }
+.ol-n i { flex: none; width: 12px; font-style: normal; color: var(--ink-2); }
+.ol-n.lv0 { color: var(--ink); font-weight: 600; }
+.ol-n.lv1, .ol-n.lv2 { color: var(--ink); }
+.ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+.noex #app { grid-template-columns: 118px 260px minmax(0, 1fr); }
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
+.card.more { margin-top: 18px; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
 <div id="hd"><span id="dday"></span><span class="r"><button id="exT">기출</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
-<div id="app"><aside id="subs"></aside><section id="exs"></section><main id="view">
+<div id="app"><aside id="subs"></aside><section id="exs"></section><nav id="ol"></nav><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
@@ -2043,7 +2054,7 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
 const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok");
-let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null;
+let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null, tbCss = "", extraNext = [];   // tbCss = 과목 데이터 공통 css(심화판), extraNext = 다음 show 에서 함께 보일 카드(기출 하나가 여러 ● 주제에 걸칠 때)
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
 // seen = 이번에 눌러 열어 본 칸(채점에서 뺌), res = 이번 채점 결과(칸 아래 표시), writingOn = 입력칸 켜 둠
@@ -2154,6 +2165,7 @@ function setMode(on) {   // 보기로 가면 이번에 쓴 답·말한 것은 �
   if (!on) { stopRecording(true); draft = {}; heard = []; }
   seen.clear(); o.querySelectorAll(".seen").forEach(k => k.classList.remove("seen"));
   o.classList.toggle("blanks", on);
+  qv.querySelectorAll(".origx").forEach(x => { x.classList.toggle("blanks", on); x.querySelectorAll(".seen").forEach(k => k.classList.remove("seen")); });
   qv.querySelectorAll(".mode button").forEach(b => b.classList.toggle("on", (b.dataset.m === "study") === on));
   showPads(on && writingOn);
   fitDock();
@@ -2205,7 +2217,17 @@ function show(i) {
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => setMode(m === "study"); sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
-  const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o); qv.append(box);
+  const o = document.createElement("div"); o.className = "orig"; o.onclick = peekOne; o.append(c.body.cloneNode(true)); box.append(o);
+  if (tbCss) { const st = document.createElement("style"); st.textContent = tbCss; qv.append(st); }
+  qv.append(box);
+  const ex = extraNext; extraNext = [];
+  ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
+    const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
+    const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3);
+    const o2 = document.createElement("div"); o2.className = "origx";
+    o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
+    o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(b2);
+  });
   if (c.said) showSaid(c.said);
   paint(c);
   addReset(c);
@@ -2213,12 +2235,12 @@ function show(i) {
   prev.disabled = i === 0; next.disabled = i === deck.length - 1;
   setMode(study);
   scrollTo(0, 0); tb.pos(cur, c.key);
-  drawToc();
+  drawToc(); drawOutline();
 }
 async function open_(id) {
   qv.textContent = ""; deck = []; chaps = [];
   const [d, st] = await Promise.all([load(id), tb.state(id)]), box = document.createElement("div");
-  store = st;
+  store = st; tbCss = d.css || "";
   box.innerHTML = d.body;
   box.querySelectorAll(".chap").forEach(sec => {   // 코드 = PDF의 장 번호 두 자리 + 카드 번호 두 자리 (16장 3번 → 1603, 1장 1번 → 0101)
     const ch = sec.querySelector("h2 span").textContent, g = { ch, title: sec.querySelector("h2").textContent.slice(ch.length).trim(), cards: [] };
@@ -2226,7 +2248,7 @@ async function open_(id) {
     sec.querySelectorAll(".card").forEach(c => {
       const n = c.querySelector(".n").textContent;
       const title = c.querySelector(".t").textContent, code = ch && n ? ch.padStart(2, "0") + n.padStart(2, "0") : "";   // PDF에 번호가 없는 + 카드는 코드 없음
-      const body = c.querySelector(".b"), one = { code, key: code || title, title, body, ...parseCard(body) };
+      const body = c.querySelector(".b"), one = { code, key: code || title, title, body, sid: c.dataset.s || "", h2t: c.dataset.h2 || "", h3t: c.dataset.h3 || "", ...parseCard(body) };
       one.ch = ch; g.cards.push(deck.length);
       restore(one); deck.push(one);
     });
@@ -2410,7 +2432,11 @@ async function goTab(t, jump) {
   if (mine !== hop) return;
   const x = jump ? linked(t)[0] : null;
   if (!x) return drawToc();
-  if (t === "deep") { const i = deck.findIndex(c => c.code === x); return i >= 0 ? show(i) : drawToc(); }
+  if (t === "deep") {   // 연결된 카드가 여럿이면 첫 카드 아래에 나머지도 함께
+    const is = [...new Set(linked(t).map(v => deck.findIndex(c => c.code === v)).filter(i => i >= 0))];
+    if (!is.length) return drawToc();
+    extraNext = is.slice(1); return show(is[0]);
+  }
   const i = deck.findIndex(c => c.ch === x.split(".")[0]);
   if (i < 0) return drawToc();
   show(i); toSec(x);
@@ -2448,7 +2474,37 @@ cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
 document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-document.getElementById("exT").onclick = () => tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림");
+document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); drawOutline(); };
+// 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
+const olEl = document.getElementById("ol"), olOpen = new Set();
+function drawOutline() {
+  if (!document.body.classList.contains("noex") || !deck.length) return;
+  const c0 = deck[at];
+  if (c0) { olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }
+  const top = olEl.scrollTop; olEl.textContent = "";
+  const node = (lv, text, key, kids) => {
+    const d = document.createElement("div"); d.className = "ol-n lv" + lv; d.style.paddingLeft = (6 + lv * 14) + "px";
+    const i = document.createElement("i");
+    if (kids) { i.textContent = olOpen.has(key) ? "▾" : "▸"; d.onclick = () => { olOpen.has(key) ? olOpen.delete(key) : olOpen.add(key); drawOutline(); }; }
+    else i.textContent = "";   // 주제 줄에는 표시 없음 (사용자 2026-11-09)
+    const t = document.createElement("span"); t.textContent = text; d.append(i, t); olEl.append(d); return d;
+  };
+  chaps.forEach(g => {
+    const kc = "c" + g.ch; node(0, g.ch + " " + g.title, kc, true);
+    if (!olOpen.has(kc)) return;
+    let h2 = null, h3 = null;
+    g.cards.forEach(j => {
+      const c = deck[j];
+      if (c.h2t && c.h2t !== h2) { h2 = c.h2t; h3 = null; node(1, h2, kc + "|" + h2, true); }
+      if (c.h2t && !olOpen.has(kc + "|" + c.h2t)) return;
+      if (c.h3t && c.h3t !== h3) { h3 = c.h3t; node(2, h3, kc + "|" + c.h2t + "|" + h3, true); }
+      if (c.h3t && !olOpen.has(kc + "|" + c.h2t + "|" + c.h3t)) return;
+      const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false);
+      d.classList.toggle("cur", j === at); d.onclick = () => show(j);
+    });
+  });
+  olEl.scrollTop = top;
+}
 load("공부홈").then(h => {
   if (!h?.subjects?.length) return startSolo();
   home = h;
