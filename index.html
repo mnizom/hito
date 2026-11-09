@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794218616910">
+<meta name="hito-build" content="1794232797786">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2066,6 +2066,12 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
 .card.more { margin-top: 18px; }
+#qv .card { position: relative; }
+#qv .card > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
+#inkbar { display: none; position: fixed; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); gap: 8px; z-index: 15; }
+body.inked #inkbar { display: flex; }
+#inkbar button { width: 42px; height: 42px; border-radius: 50%; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); display: grid; place-items: center; }
+#inkbar button.on { background: var(--ink); color: var(--surface); }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
@@ -2074,7 +2080,7 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
-<div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button>
+<div id="qv"></div></main></div><button id="mic" aria-label="말하기" hidden></button><button id="pen" aria-label="쓰기" hidden></button><button id="ok" aria-label="채점" hidden></button><div id="inkbar"><button id="inkerase" aria-label="지우개"><svg viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-8 8zM10 10l7 7M3 21h18"/></svg></button><button id="inkundo" aria-label="되돌리기"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button></div>
 <script>
 if (parent.document.documentElement.dataset.theme) document.documentElement.dataset.theme = parent.document.documentElement.dataset.theme;
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
@@ -2233,8 +2239,81 @@ function placeRes() {   // 이번 채점 결과를 칸 바로 아래에: 표시 
     (k.nextElementSibling?.classList.contains("wr") ? k.nextElementSibling : k).after(d);
   });
 }
+// 손필기 (사용자 2026-11-09, 아이패드+애플펜슬): 카드마다 투명 필기층. 펜만 그림, 손가락은 그대로 스크롤·누르기
+// 좌표는 카드 폭에 대한 비율로 저장 (폭이 다른 기기에서는 비율대로). 저장은 카드마다 tb.inkSave
+const INK = { tool: "pen", hist: [], ros: [], penAt: 0 }, INK_COLOR = "#2f6fdf", INK_W = 2.2;
+const inkEnc = s => ({ c: s.c, w: Math.round(s.w * 100000), p: s.p.map(v => Math.round(v * 10000)).join(",") });
+const inkDec = s => ({ c: s.c, w: s.w / 100000, p: String(s.p).split(",").map(v => +v / 10000) });
+function inkStroke(g, s, w) {
+  const p = s.p; if (p.length < 2) return;
+  g.strokeStyle = s.c; g.lineWidth = Math.max(1, s.w * w); g.lineCap = "round"; g.lineJoin = "round";
+  g.beginPath(); g.moveTo(p[0] * w, p[1] * w);
+  if (p.length === 2) g.lineTo(p[0] * w + 0.1, p[1] * w);
+  for (let k = 2; k < p.length; k += 2) g.lineTo(p[k] * w, p[k + 1] * w);
+  g.stroke();
+}
+function inkSave(st) { if (tb.inkSave && cur) tb.inkSave(cur, st.card.key, st.strokes.map(inkEnc)); }
+function inkOn(box, card) {
+  if (!tb.ink) return;
+  const cv = document.createElement("canvas"); cv.className = "ink"; box.append(cv);
+  const st = { box, cv, card, strokes: card.ink || [] };
+  const draw = () => {
+    const w = box.offsetWidth, h = box.offsetHeight, r = devicePixelRatio || 1;
+    if (cv.width !== Math.round(w * r) || cv.height !== Math.round(h * r)) { cv.width = Math.round(w * r); cv.height = Math.round(h * r); cv.style.width = w + "px"; cv.style.height = h + "px"; }
+    const g = cv.getContext("2d"); g.setTransform(r, 0, 0, r, 0, 0); g.clearRect(0, 0, w, h);
+    st.strokes.forEach(s => inkStroke(g, s, w));
+  };
+  st.draw = draw; card.inkSt = st;
+  const ro = new ResizeObserver(draw); ro.observe(box); INK.ros.push(ro);
+  if (!card.ink) {   // 처음 여는 카드만 받아 옴. 받기 전에 쓴 획은 받은 획 뒤에 이어 붙임
+    const me = cur; card.ink = st.strokes;
+    tb.ink(cur, card.key).then(list => { if (me !== cur || !list?.length) return; card.ink.unshift(...list.map(inkDec)); card.inkSt.draw(); });
+  }
+  draw();
+  const stylus = e => [...e.touches].some(t => t.touchType === "stylus");
+  box.addEventListener("touchstart", e => { if (stylus(e)) e.preventDefault(); }, { passive: false });
+  box.addEventListener("touchmove", e => { if (stylus(e)) e.preventDefault(); }, { passive: false });
+  box.addEventListener("click", e => { if (Date.now() - INK.penAt < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
+  box.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "pen") return;
+    e.preventDefault(); e.stopPropagation(); try { box.setPointerCapture(e.pointerId); } catch {}
+    document.body.classList.add("inked"); INK.penAt = Date.now();
+    const at_ = ev => { const rc = box.getBoundingClientRect(), w = box.offsetWidth; return [(ev.clientX - rc.left) / w, (ev.clientY - rc.top) / w]; };
+    const erase = ev => {
+      const [x, y] = at_(ev), lim = 12 / box.offsetWidth;
+      const hit = st.strokes.filter(s => { for (let k = 0; k < s.p.length; k += 2) if (Math.hypot(s.p[k] - x, s.p[k + 1] - y) < lim) return true; return false; });
+      if (!hit.length) return;
+      hit.forEach(s => INK.hist.push({ st, s, del: true, i: st.strokes.indexOf(s) }));
+      st.strokes.splice(0, st.strokes.length, ...st.strokes.filter(s => !hit.includes(s))); draw();
+    };
+    let s = null;
+    if (INK.tool === "erase") erase(e);
+    else { s = { c: INK_COLOR, w: INK_W / box.offsetWidth, p: at_(e) }; st.strokes.push(s); INK.hist.push({ st, s }); draw(); }
+    const move = ev => {
+      INK.penAt = Date.now();
+      const ce = ev.getCoalescedEvents ? ev.getCoalescedEvents() : [], evs = ce.length ? ce : [ev];
+      if (!s) { evs.forEach(erase); return; }
+      evs.forEach(x => s.p.push(...at_(x)));
+      const g = cv.getContext("2d"), w = box.offsetWidth, n = s.p.length;
+      g.strokeStyle = s.c; g.lineWidth = Math.max(1, s.w * w); g.lineCap = "round"; g.lineJoin = "round";
+      g.beginPath(); g.moveTo(s.p[Math.max(0, n - 2 * evs.length - 2)] * w, s.p[Math.max(1, n - 2 * evs.length - 1)] * w);
+      for (let k = Math.max(0, n - 2 * evs.length); k < n; k += 2) g.lineTo(s.p[k] * w, s.p[k + 1] * w);
+      g.stroke();
+    };
+    const up = () => { box.removeEventListener("pointermove", move); box.removeEventListener("pointerup", up); box.removeEventListener("pointercancel", up); INK.penAt = Date.now(); inkSave(st); };
+    box.addEventListener("pointermove", move); box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
+  });
+}
+document.getElementById("inkerase").onclick = e => { INK.tool = INK.tool === "erase" ? "pen" : "erase"; e.currentTarget.classList.toggle("on", INK.tool === "erase"); };
+document.getElementById("inkundo").onclick = () => {
+  const h = INK.hist.pop(); if (!h || !h.st.box.isConnected) return;
+  if (h.del) h.st.strokes.splice(Math.min(h.i, h.st.strokes.length), 0, h.s);
+  else { const k = h.st.strokes.indexOf(h.s); if (k >= 0) h.st.strokes.splice(k, 1); }
+  h.st.draw(); inkSave(h.st);
+};
 function show(i) {
   stopRecording(true); run++;
+  INK.ros.forEach(r => r.disconnect()); INK.ros = []; INK.hist = [];
   at = i; const c = deck[i];
   draft = {}; heard = []; seen = new Set(); res = {}; hearing = false; grading = false;
   qv.textContent = "";
@@ -2253,7 +2332,9 @@ function show(i) {
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
     o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(b2);
+    inkOn(b2, d);
   });
+  inkOn(box, c);
   if (c.said) showSaid(c.said);
   paint(c);
   addReset(c);
@@ -2608,6 +2689,11 @@ Promise.all(tb.subjects.map(s => tb.state(s.id).then(st => [s.id, Object.values(
     const flush = sub => { clearTimeout(timers[sub]); if (pending[sub]) { c.collection(stCol).doc(sub).set({ cards: pending[sub] }).catch(() => {}); delete pending[sub] } };
     addEventListener("pagehide", () => Object.keys(pending).forEach(flush));
     addEventListener("visibilitychange", () => { if (document.hidden) Object.keys(pending).forEach(flush) });
+    const inkCol = `users/${id}/textbook_ink`, inkT = {}, inkP = {};
+    const inkDoc = (sub, key) => (sub + "__" + key).replace(/[^\w가-힣]/g, "_");
+    const inkFlush = k => { clearTimeout(inkT[k]); if (inkP[k]) { c.collection(inkCol).doc(k).set({ s: inkP[k] }).catch(() => {}); delete inkP[k] } };
+    addEventListener("pagehide", () => Object.keys(inkP).forEach(inkFlush));
+    addEventListener("visibilitychange", () => { if (document.hidden) Object.keys(inkP).forEach(inkFlush) });
     const idx = id ? await c.collection(col).doc("index").get().catch(() => null) : null;
     if (!idx?.exists || !idx.data()?.subjects?.length){
       try { localStorage.removeItem(FLAG) } catch {}
@@ -2623,6 +2709,9 @@ Promise.all(tb.subjects.map(s => tb.state(s.id).then(st => [s.id, Object.values(
       save(sub, cards){ pending[sub] = { ...cards }; clearTimeout(timers[sub]); timers[sub] = setTimeout(() => flush(sub), 800) },
       pos: (sub, code) => lsSet("hito.textbook.pos." + sub, code),
       posOf: sub => lsGet("hito.textbook.pos." + sub),
+      // 손필기: 카드마다 문서 하나 (s = 획 목록 {c 색, w 굵기, p "x,y,…" 카드 폭 비율 ×10000})
+      ink: (sub, key) => c.collection(inkCol).doc(inkDoc(sub, key)).get().then(d => d.data()?.s || []).catch(() => []),
+      inkSave(sub, key, s){ const k = inkDoc(sub, key); inkP[k] = s; clearTimeout(inkT[k]); inkT[k] = setTimeout(() => inkFlush(k), 1200) },
       listen: listen && sample ? listen : null,
       write: !!sample,   // 빈칸에 쓰고 채점 (아이패드 펜슬 손글씨 입력)
       // 말한 내용을 카드 정답과 견주어 빈칸마다 O / △ / X / - (말 안 함) + 짚을 점
