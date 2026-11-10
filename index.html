@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794236782842">
+<meta name="hito-build" content="1794270787587">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2061,6 +2061,13 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 .nmark.on { outline: 2px solid var(--ink); outline-offset: 2px; opacity: 1; }
 .note.drag { z-index: 30; box-shadow: 0 12px 30px rgba(0,0,0,.18); transition: none; }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
+#qv .kn td, #qv .kn th { word-break: keep-all; overflow-wrap: anywhere; }   /* 표 칸에서 한글이 한 글자씩 꺾이지 않게 (사용자 2026-11-10) */
+@media (max-width: 1400px) {   /* 포스트잇 칸 때문에 카드가 좁으면 그림은 표 아래로 (표가 쪽 폭 전체) */
+  #qv .kn .k-side { display: block !important; }
+  #qv .kn .k-side > div { width: auto !important; }
+  #qv .kn .k-sf { margin: 8px auto 0; max-width: 100%; }
+  #qv .kn img { max-width: 100%; height: auto; }
+}
 #nbox { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }   /* 포스트잇박스: 기출 버튼 왼쪽 (사용자 2026-11-10) */
 #boxpg { position: fixed; inset: 0; z-index: 12; background: var(--bg); display: none; flex-direction: column; }   /* 포스트잇박스: 전체 화면 (사용자 2026-11-09) */
 #boxpg.on { display: flex; }
