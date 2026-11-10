@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794272874916">
+<meta name="hito-build" content="1794272935215">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2002,7 +2002,9 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #dday small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
 #app { display: grid; grid-template-columns: 212px minmax(0, 1fr) 340px; align-items: start; }
 #subs { display: none !important; }   /* 과목은 디데이 옆 드롭박스로 (사용자 2026-11-09) */
-#hd .l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+#hd .l { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }   /* 과목·기출은 날짜 아래 (사용자 2026-11-10) */
+#hd .l2 { display: flex; align-items: center; gap: 8px; }
+#hd { align-items: flex-start !important; }
 #subdd { padding: 5px 28px 5px 12px; border-radius: 999px; border: 0; background-color: var(--surface); background-position: right 15px center, right 10px center; color: var(--ink); font-size: 14px; font-weight: 600; box-shadow: var(--shadow); max-width: 46vw; text-overflow: ellipsis; }
 .solo #subdd { display: none; }
 #exs { overflow-x: hidden; }
@@ -2130,7 +2132,7 @@ body.inked #inkbar { display: flex; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><select id="subdd" aria-label="과목"></select><button id="exT">기출</button></span><span class="r"><button id="nbox">박스</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">기출</button></span></span><span class="r"><button id="nbox">박스</button><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><nav id="ol"></nav><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
