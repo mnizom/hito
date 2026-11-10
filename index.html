@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794272935215">
+<meta name="hito-build" content="1794272967091">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2690,7 +2690,7 @@ function startSolo() {   // 공부 홈 데이터가 없으면 예전 화면 (과
 // ---------- 공부 홈: D-day · 과목 · 기출 번호(문제 원문 없음) → 기초노트 / 심화카드 ----------
 // 데이터: 공부홈 {subjects:[{sub,name,deep,basic,n}]}, 기출_<sub> {items:[{k,a,c:[심화 코드],b:[기초노트 소제목 data-s]}]}. 고른 번호는 textbook_state 의 기출_<sub>
 const EXAM_DAY = new Date(2027, 0, 14);
-(() => { const t = new Date(); t.setHours(0, 0, 0, 0); const d = Math.round((EXAM_DAY - t) / 864e5); document.getElementById("dday").innerHTML = (d > 0 ? "D-" + d : d === 0 ? "D-day" : "D+" + -d) + "<small>1.14</small>"; })();
+(() => { const t = new Date(); t.setHours(0, 0, 0, 0); const d = Math.round((EXAM_DAY - t) / 864e5); document.getElementById("dday").innerHTML = (d > 0 ? "D-" + d : d === 0 ? "D-day" : "D+" + -d) + "<small>" + (t.getMonth() + 1) + "." + t.getDate() + " " + "일월화수목금토"[t.getDay()] + "</small>"; })();   // 오늘 날짜와 요일 (사용자 2026-11-10)
 const subsEl = document.getElementById("subs"), exsEl = document.getElementById("exs"), tabs = document.getElementById("tabs"), tabsw = document.getElementById("tabsw"), chsEl = document.getElementById("chs"), cdsEl = document.getElementById("cds");
 let home = null, hs = null, items = [], picks = {}, act = null, tab = "deep", hop = 0;
 const isRight = (it, n) => String(it.a).split(/[^0-9]+/).includes(String(n));
