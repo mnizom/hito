@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794273005614">
+<meta name="hito-build" content="1794273520108">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2122,8 +2122,12 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 .card.more { margin-top: 18px; }
 #qv .card { position: relative; }
 #qv .card > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
-#inkbar { display: none; position: fixed; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); gap: 8px; z-index: 15; }
-body.inked #inkbar { display: flex; }
+#inkbar { display: none; position: fixed; left: 0; top: 0; gap: 8px; z-index: 40; }   /* 도구함: 펜을 한 자리에 꾹 누르면 그 자리에 (사용자 2026-11-10) */
+#inkbar.show { display: flex; }
+.inkon { outline: 2px solid var(--accent); outline-offset: 3px; }   /* 펜이 켜진 곳: 펜으로 한 번 터치해야 켜짐 */
+#daily { position: relative; flex: 1; align-self: stretch; min-height: 64px; margin: 0 16px; border-radius: 16px; }   /* 하루 다짐: 보이는 상자 없이 영역만 */
+#daily > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
+@media (max-width: 700px) { #daily { display: none; } }
 #inkbar button { width: 42px; height: 42px; border-radius: 50%; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); display: grid; place-items: center; }
 #inkbar button.on { background: var(--ink); color: var(--surface); }
 #inkcols { display: flex; gap: 6px; align-items: center; padding: 0 8px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
@@ -2132,7 +2136,7 @@ body.inked #inkbar { display: flex; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">기출</button><button id="nbox">박스</button></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">기출</button><button id="nbox">박스</button></span></span><div id="daily"></div><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><section id="exs"></section><nav id="ol"></nav><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
@@ -2311,7 +2315,8 @@ function inkStroke(g, s, w) {
   for (let k = 2; k < p.length; k += 2) g.lineTo(p[k] * w, p[k + 1] * w);
   g.stroke();
 }
-function inkSave(st) { if (tb.inkSave && cur) tb.inkSave(st.card.sub || cur, st.card.key, st.strokes.map(inkEnc)); }
+function inkSave(st) { const sub = st.card.sub || cur; if (tb.inkSave && sub) { tb.inkSave(sub, st.card.key, st.strokes.map(inkEnc)); st.card.onSave?.(); } }
+function inkAct(st) { if (INK.act === st) return; INK.act?.box.classList.remove("inkon"); INK.act = st; st.box.classList.add("inkon"); }
 function inkOn(box, card) {
   if (!tb.ink) return;
   const cv = document.createElement("canvas"); cv.className = "ink"; box.append(cv);
@@ -2326,17 +2331,18 @@ function inkOn(box, card) {
   const ro = new ResizeObserver(draw); ro.observe(box); if (!card.keep) INK.ros.push(ro);
   if (!card.ink) {   // 처음 여는 카드만 받아 옴. 받기 전에 쓴 획은 받은 획 뒤에 이어 붙임
     const me = cur; card.ink = st.strokes;
-    tb.ink(card.sub || cur, card.key).then(list => { if (me !== cur || !list?.length) return; card.ink.unshift(...list.map(inkDec)); card.inkSt.draw(); });
+    tb.ink(card.sub || cur, card.key).then(list => { if ((!card.sub && me !== cur) || !list?.length) return; card.ink.unshift(...list.map(inkDec)); card.inkSt.draw(); });
   }
   draw();
   const stylus = e => [...e.touches].some(t => t.touchType === "stylus");
-  box.addEventListener("touchstart", e => { if (stylus(e)) e.preventDefault(); }, { passive: false });
-  box.addEventListener("touchmove", e => { if (stylus(e)) e.preventDefault(); }, { passive: false });
+  box.addEventListener("touchstart", e => { if (stylus(e) && INK.act === st) e.preventDefault(); }, { passive: false });
+  box.addEventListener("touchmove", e => { if (stylus(e) && INK.act === st) e.preventDefault(); }, { passive: false });
   box.addEventListener("click", e => { if (Date.now() - INK.penAt < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
   box.addEventListener("pointerdown", e => {
     if (e.pointerType !== "pen") return;
+    if (INK.act !== st) { inkAct(st); INK.penAt = Date.now(); e.preventDefault(); return; }   // 펜으로 한 번 터치해야 이 카드(포스트잇)에 써짐 (사용자 2026-11-10)
     e.preventDefault(); e.stopPropagation(); try { box.setPointerCapture(e.pointerId); } catch {}
-    document.body.classList.add("inked"); INK.penAt = Date.now();
+    INK.penAt = Date.now();
     const at_ = ev => { const rc = box.getBoundingClientRect(), w = box.offsetWidth; return [(ev.clientX - rc.left) / w, (ev.clientY - rc.top) / w]; };
     const erase = ev => {
       const [x, y] = at_(ev), lim = 12 / box.offsetWidth;
@@ -2347,9 +2353,11 @@ function inkOn(box, card) {
     };
     let s = null;
     if (INK.tool === "erase") erase(e);
-    else { s = { c: INK.color, w: INK_W / box.offsetWidth, p: at_(e) }; st.strokes.push(s); INK.hist.push({ st, s }); draw(); }
+    else { s = { c: INK.color, w: INK_W / box.offsetWidth, p: at_(e) }; st.strokes.push(s); INK.hist.push({ st, s }); draw(); INK.cur = { st, s }; }
+    const me = INK.cur;
     const move = ev => {
       INK.penAt = Date.now();
+      if (s && me?.cancel) return;   // 꾹 눌러 도구함을 열면 이 획은 버림
       const ce = ev.getCoalescedEvents ? ev.getCoalescedEvents() : [], evs = ce.length ? ce : [ev];
       if (!s) { evs.forEach(erase); return; }
       evs.forEach(x => s.p.push(...at_(x)));
@@ -2359,7 +2367,7 @@ function inkOn(box, card) {
       for (let k = Math.max(0, n - 2 * evs.length); k < n; k += 2) g.lineTo(s.p[k] * w, s.p[k + 1] * w);
       g.stroke();
     };
-    const up = () => { box.removeEventListener("pointermove", move); box.removeEventListener("pointerup", up); box.removeEventListener("pointercancel", up); INK.penAt = Date.now(); inkSave(st); };
+    const up = () => { box.removeEventListener("pointermove", move); box.removeEventListener("pointerup", up); box.removeEventListener("pointercancel", up); INK.penAt = Date.now(); if (INK.cur === me) INK.cur = null; inkSave(st); };
     box.addEventListener("pointermove", move); box.addEventListener("pointerup", up); box.addEventListener("pointercancel", up);
   });
 }
@@ -2368,9 +2376,33 @@ function inkTool(t, col) {
   document.getElementById("inkerase").classList.toggle("on", t === "erase");
   document.querySelectorAll("#inkcols button").forEach(b => b.classList.toggle("on", t === "pen" && b.dataset.c === INK.color));
 }
-INK_COLORS.forEach(([n, c]) => { const b = document.createElement("button"); b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", n); b.onclick = () => inkTool("pen", c); document.getElementById("inkcols").append(b); });
+const bar = document.getElementById("inkbar"), hideTools = () => bar.classList.remove("show");
+function showTools(x, y) {   // 펜을 놓은 자리 위에 도구함
+  bar.classList.add("show");
+  const w = bar.offsetWidth, h = bar.offsetHeight;
+  bar.style.left = Math.max(8, Math.min(innerWidth - w - 8, x - w / 2)) + "px";
+  bar.style.top = (y - h - 18 > 8 ? y - h - 18 : Math.min(innerHeight - h - 8, y + 24)) + "px";
+}
+INK_COLORS.forEach(([n, c]) => { const b = document.createElement("button"); b.dataset.c = c; b.style.background = c; b.setAttribute("aria-label", n); b.onclick = () => { inkTool("pen", c); hideTools(); }; document.getElementById("inkcols").append(b); });
 inkTool("pen");
-document.getElementById("inkerase").onclick = () => inkTool(INK.tool === "erase" ? "pen" : "erase");
+document.getElementById("inkerase").onclick = () => { inkTool(INK.tool === "erase" ? "pen" : "erase"); hideTools(); };
+let lp = null;   // 펜을 한 자리에 꾹(0.55초) 누르면 도구함. 그 사이 그은 점은 지움
+document.addEventListener("pointerdown", e => {
+  if (e.target.closest("#inkbar")) return;
+  hideTools();
+  if (e.pointerType !== "pen") return;
+  clearTimeout(lp?.t);
+  const x0 = e.clientX, y0 = e.clientY;
+  lp = { x0, y0, t: setTimeout(() => {
+    lp = null;
+    const c = INK.cur;
+    if (c) { c.cancel = true; const k = c.st.strokes.indexOf(c.s); if (k >= 0) c.st.strokes.splice(k, 1); INK.hist = INK.hist.filter(h => h.s !== c.s); c.st.draw(); INK.cur = null; }
+    INK.penAt = Date.now(); showTools(x0, y0);
+  }, 550) };
+}, true);
+document.addEventListener("pointermove", e => { if (lp && e.pointerType === "pen" && Math.hypot(e.clientX - lp.x0, e.clientY - lp.y0) > 6) { clearTimeout(lp.t); lp = null; } }, true);
+document.addEventListener("pointerup", () => { if (lp) { clearTimeout(lp.t); lp = null; } }, true);
+document.addEventListener("pointercancel", () => { if (lp) { clearTimeout(lp.t); lp = null; } }, true);
 document.getElementById("inkundo").onclick = () => {
   const h = INK.hist.pop(); if (!h || !h.st.box.isConnected) return;
   if (h.del) h.st.strokes.splice(Math.min(h.i, h.st.strokes.length), 0, h.s);
@@ -2460,7 +2492,25 @@ function drawNotes() {   // 카드마다 위에 마커. 포스트잇 칸(카드�
     want.forEach(id => { const n = noteEl(id); n.classList.toggle("linked", opened.includes(id)); col.insertBefore(n, col.querySelector(".nadd")); });
   });
 }
-function crow(box, c) { box._c = c; return box; }   // 카드 상자에 카드 정보 (포스트잇 마커·놓기에 씀)
+function crow(box, c) { box._c = c; return box; }
+// 하루 다짐 (사용자 2026-11-10): 맨 위 가운데 여백에 펜으로 씀(보이는 상자 없음). 날짜가 바뀌면 지난 날 것은 포스트잇박스 미분류로
+const TODAY = (() => { const t = new Date(); return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"); })();
+NOTE.days = null;
+function dayMark() {   // 오늘 쓴 적 있음을 목록에 (다음에 열 때 보관할 날짜)
+  if (!NOTE.days) NOTE.days = [];
+  if (!NOTE.days.includes(TODAY)) { NOTE.days.push(TODAY); tb.inkSave("공통", "day-list", NOTE.days); }
+}
+async function dayArchive() {
+  const days = (await tb.ink("공통", "day-list") || []).map(String), old = days.filter(d => d !== TODAY);
+  for (const d of old) {
+    const strokes = await tb.ink("공통", "day-" + d);
+    if (strokes && strokes.length) { const id = "d" + d.split("-").join(""); tb.inkSave("공통", "n" + id, strokes); if (!NOTE.box.includes(id)) NOTE.box.unshift(id); saveBox(); }
+    tb.inkSave("공통", "day-" + d, []);
+  }
+  NOTE.days = days.filter(d => d === TODAY).concat(NOTE.days && NOTE.days.includes(TODAY) && !days.includes(TODAY) ? [TODAY] : []);
+  if (old.length) tb.inkSave("공통", "day-list", NOTE.days);
+}
+if (tb.ink && tb.inkSave) inkOn(document.getElementById("daily"), { key: "day-" + TODAY, sub: "공통", keep: true, onSave: dayMark });   // 카드 상자에 카드 정보 (포스트잇 마커·놓기에 씀)
 // 포스트잇박스 전체 화면: 미분류(box-notes) + 카테고리 칸들(box-cats [{n 이름, ids}]). 칸에 끌어 놓으면 그리로
 function toCat(id, k) {
   if (k === "_") { if (NOTE.box.includes(id)) return; unlink(id); NOTE.box.unshift(id); saveBox(); }
@@ -2532,7 +2582,7 @@ function show(i) {
     inkOn(b2, d);
   });
   inkOn(box, c);
-  if (tb.ink && NOTE.free === null) { NOTE.free = undefined; Promise.all(["free-notes", "box-notes", "box-cats"].map(k => tb.ink("공통", k))).then(([f, b, c]) => { NOTE.free = (f || []).map(String); NOTE.box = (b || []).map(String); NOTE.cats = (c || []).map(x => ({ n: x.n || "", ids: (x.ids || []).map(String) })); drawNotes(); }); }
+  if (tb.ink && NOTE.free === null) { NOTE.free = undefined; Promise.all(["free-notes", "box-notes", "box-cats"].map(k => tb.ink("공통", k))).then(([f, b, c]) => { NOTE.free = (f || []).map(String); NOTE.box = (b || []).map(String); NOTE.cats = (c || []).map(x => ({ n: x.n || "", ids: (x.ids || []).map(String) })); drawNotes(); dayArchive(); }); }
   drawNotes();
   if (c.said) showSaid(c.said);
   paint(c);
