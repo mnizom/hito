@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794562899216">
+<meta name="hito-build" content="1794563068636">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2854,11 +2854,18 @@ document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", docu
 // 검색: 궁금한 것을 넣으면 지금 과목 카드 중 관련 카드 최대 5개를 관련 높은 순서로 한 화면에 (claude.ai sample, 사용자 2026-11-13)
 const srT = document.getElementById("srT"), srQ = document.getElementById("srQ");
 srT.hidden = !tb.search;
-srT.onclick = () => { srQ.hidden = !srQ.hidden; srQ.classList.remove("none"); if (!srQ.hidden) srQ.focus(); };
+// 버튼: 닫혀 있으면 입력칸 열기, 열려 있고 글이 있으면 검색 (애플펜슬 손글씨는 Enter 가 없음), 비어 있으면 닫기
+srT.onclick = () => {
+  if (srQ.hidden) { srQ.hidden = false; srQ.classList.remove("none"); srQ.focus(); return; }
+  if (srQ.value.trim()) return srRun();
+  srQ.hidden = true;
+};
 srQ.oninput = () => srQ.classList.remove("none");
-srQ.onkeydown = async e => {
+srQ.onkeydown = e => {
   if (e.key === "Escape") { srQ.hidden = true; return; }
-  if (e.key !== "Enter" || e.isComposing) return;
+  if (e.key === "Enter" && !e.isComposing) srRun();
+};
+async function srRun() {
   const q = srQ.value.trim(), d0 = deck; if (!q || !d0.length || srQ.disabled) return;
   const chOf = {}; chaps.forEach(g => g.cards.forEach(i => chOf[i] = g.title));
   const list = d0.map((c, i) => ({ i, t: [chOf[i], c.h2t, c.h3t, c.title].filter(Boolean).join(" > "), x: c.body.textContent.replace(/\\s+/g, " ").trim().slice(0, 80) }));
@@ -2869,7 +2876,7 @@ srQ.onkeydown = async e => {
   const is = [...new Set((ids || []).map(Number).filter(i => Number.isInteger(i) && i >= 0 && i < deck.length))].slice(0, 5);
   if (!is.length) { srQ.classList.add("none"); srQ.focus(); return; }
   srQ.blur(); extraNext = is.slice(1); show(is[0]); mCard();
-};
+}
 // 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
 const olEl = document.getElementById("ol"), olOpen = new Set();
 const olClose = () => document.body.classList.remove("olp");
