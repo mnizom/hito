@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1794563730026">
+<meta name="hito-build" content="1795177420041">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2000,7 +2000,12 @@ h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 
 #hd { display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 18px 4px 22px; }
 #dday { font: 700 24px/1.2 "Gowun Batang", AppleMyungjo, serif; font-variant-numeric: tabular-nums; }
 #dday small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
-#app { display: grid; grid-template-columns: 212px minmax(0, 1fr); align-items: start; }
+#app { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; }
+body.side #app { grid-template-columns: 220px minmax(0, 1fr) 220px; }   /* JBL·목차는 왼쪽 여백, 오른쪽 같은 폭을 비워 카드는 화면 정중앙 (사용자 2026-11-20) */
+body.side #side { grid-column: 1; grid-row: 1; }
+body.side #view { grid-column: 2; grid-row: 1; }
+#side { display: none; }
+body.side #side { display: flex; flex-direction: column; }
 .card .crumb { font-size: 12px; line-height: 1.4; color: var(--ink-2); opacity: .7; margin: 0 0 4px; white-space: pre-wrap; word-break: keep-all; }
 .card .crumb:empty { display: none; }   /* 포스트잇 칸 없앰 (사용자 2026-11-13) */
 #hd .r { margin-left: auto; }
@@ -2020,12 +2025,14 @@ body.exmode .card .mode { display: none; }
   #app, .noex #app { grid-template-columns: minmax(0, 1fr) !important; }
   #subs { position: static !important; height: auto !important; display: flex; align-items: center; overflow-x: auto; gap: 4px; padding: 2px 10px 6px !important; }
   #subs button { width: auto; flex: none; white-space: nowrap; margin: 0; }
-  #exs, #ol { position: static !important; height: auto !important; overflow: visible !important; border-left: 0 !important; padding: 4px 8px 60px !important; }
+  #side { position: static !important; height: auto !important; }
+  #side, #view { grid-column: auto !important; grid-row: auto !important; }
+  #exs, #ol { position: static !important; flex: none !important; height: auto !important; overflow: visible !important; border-left: 0 !important; padding: 4px 8px 60px !important; }
   body:not(.mcard) #view { display: none; }
-  body.mcard #subs, body.mcard #exs, body.mcard #ol { display: none !important; }
+  body.mcard #subs, body.mcard #side { display: none !important; }
   body.mcard #mback { display: grid; place-items: center; position: fixed; left: 10px; top: max(10px, env(safe-area-inset-top)); z-index: 20; width: 38px; height: 38px; border-radius: 50%; background: var(--surface); color: var(--ink); font-size: 24px; box-shadow: var(--shadow); }
   body.mcard #hd { padding-left: 58px; }
-  body.noex #view { display: block !important; }   /* JBL 끄면 왼쪽 목록이 없으니 카드 화면 그대로 */
+  body:not(.side) #view { display: block !important; }   /* JBL·목차 다 끄면 왼쪽 목록이 없으니 카드 화면 그대로 */
   #view { overflow-x: hidden; }
   #qv .kn .k-side { display: block !important; }   /* 그림은 표 아래로 */
   #qv .kn .k-side > div { width: auto !important; }
@@ -2039,18 +2046,21 @@ body.exmode .card .mode { display: none; }
   #qv .kn td.k-l { white-space: normal !important; }
 }
 body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 없음 */   /* 공부 홈: 카드 위 드롭다운 없음 (접는 목차가 대신, 사용자 2026-11-09) */
-#subs, #exs, #ol { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
+#subs { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
+#side { position: sticky; top: 0; height: 100vh; min-width: 0; }
+#exs, #ol { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
+body.olp:not(.noex) #exs { border-bottom: 1px solid var(--hair); }
 #subs button { display: block; width: 100%; text-align: left; padding: 7px 10px; margin: 1px 0; border-radius: 10px; font-size: 14px; color: var(--ink-2); word-break: keep-all; }
 #subs button.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
-#exs { border-left: 1px solid var(--hair); }
-.ex { display: flex; align-items: center; gap: 2px; padding: 2px 3px 2px 5px; border-radius: 10px; }
+.ex { display: flex; align-items: center; gap: 4px; padding: 2px 3px 2px 5px; border-radius: 10px; }
 .ex.cur { background: var(--surface); box-shadow: var(--shadow); }
 .ex b { width: 50px; flex: none; white-space: nowrap; letter-spacing: -.2px; font: 600 11.5px "IBM Plex Sans KR", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: var(--ink-2); }
-.ex .c { width: 22px; height: 22px; flex: none; border-radius: 50%; font-size: 11px; color: var(--ink-2); background: var(--surface-2); }
-.ex .c.ok { background: var(--b); color: #fff; }
-.ex .c.ng { background: var(--a); color: #fff; }
-.ex .c.ans { box-shadow: inset 0 0 0 2px var(--b); color: var(--b); }
-.ex .go { margin-left: auto; width: 24px; height: 22px; flex: none; border-radius: 8px; color: var(--ink-2); font-weight: 700; letter-spacing: -2px; }
+.ex .c { width: 30px; height: 30px; flex: none; padding: 0; border-radius: 50%; font-size: 10.5px; font-weight: 600; letter-spacing: -.5px; color: var(--ink-2); background: var(--surface-2); overflow: hidden; white-space: nowrap; }   /* 답 · 완료 · 다시 (사용자 2026-11-20) */
+.ex .c.shown { background: var(--surface); color: var(--ink); font-size: 13px; letter-spacing: 0; box-shadow: inset 0 0 0 1.5px var(--ink-2); }
+.ex .c.done { background: var(--b); color: #fff; }
+.ex .c.again { background: #e5484d; color: #fff; }
+.ex .go { margin-left: auto; width: 26px; height: 26px; flex: none; display: grid; place-items: center; border-radius: 8px; color: var(--ink-2); }
+.ex .go svg { width: 13px; height: 13px; fill: currentColor; stroke: none; }
 .ex.cur .go { color: var(--ink); }
 #view { min-width: 0; }
 #view .wrap { max-width: 920px; }
@@ -2107,10 +2117,12 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 #tabs select:empty { display: none; }
 #tabs button.hit:not(.on) { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--ink); }
 #tabs[hidden] { display: none; }
-.solo #subs, .solo #exs, .solo #exT, .solo #ol { display: none; }
+.solo #subs, .solo #side, .solo #exT, .solo #flT { display: none !important; }
 #hd .r { display: flex; align-items: center; gap: 10px; }
 #exT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 .noex #exT { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
+#flT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface-2); color: var(--ink-2); }   /* 흐름: 켜면 손가락 스와이프로 이전·다음 카드 (사용자 2026-11-20) */
+body.flow #flT { background: var(--ink); color: var(--surface); }
 #srT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }   /* 검색: 박스 오른쪽, 누르면 옆에 입력칸 (사용자 2026-11-13) */
 #srT[hidden], #srQ[hidden] { display: none; }
 #srQ { width: min(260px, 40vw); padding: 5px 14px; border-radius: 999px; border: 0; font-size: 14px; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); outline: none; }
@@ -2118,13 +2130,11 @@ body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 
 #srQ.none { box-shadow: inset 0 0 0 1.5px var(--a, #e2457f); }
 .noex #exs { display: none; }
 #ol { display: none; }
-/* 목차 = 머리줄 목차 버튼으로 여는 창 (왼쪽 칸 아님, 사용자 2026-11-13). 바깥·Esc·버튼으로 닫음, 주제는 창을 연 채로 여러 개 추가 */
+body.olp #ol { display: block; }
+/* 목차 = JBL 처럼 왼쪽 여백 칸 (사용자 2026-11-20). 기본은 전부 펼침, 접은 것만 접힘 */
 #olT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 body.olp #olT { background: var(--ink); color: var(--surface); }
 .solo #olT { display: none; }
-#olbg { display: none; }
-body.olp #olbg { display: block; position: fixed; inset: 0; z-index: 59; }
-body.olp #ol { display: block !important; position: fixed !important; z-index: 60; left: 50%; top: 70px; transform: translateX(-50%); width: min(460px, calc(100vw - 32px)); height: auto !important; max-height: calc(100vh - 100px) !important; overflow-y: auto !important; padding: 12px 10px !important; border: 0 !important; border-radius: 18px; background: var(--bg); box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 18px 48px rgba(0,0,0,.18); }
 .ol-n { display: flex; align-items: baseline; gap: 4px; padding: 4px 5px; user-select: none; -webkit-user-select: none; border-radius: 8px; font-size: 12px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
 .ol-n:hover { background: var(--surface-2); }
 .ol-n i { flex: none; width: 12px; font-size: 10.5px; font-style: normal; color: var(--ink-2); }
@@ -2151,8 +2161,8 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
-<div id="app"><aside id="subs"></aside><section id="exs"></section><div id="olbg"></div><nav id="ol"></nav><main id="view">
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<div id="app"><aside id="subs"></aside><div id="side"><section id="exs"></section><nav id="ol"></nav></div><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
 <div class="nav"><button id="prev" class="round" aria-label="이전 카드"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><input id="code" inputmode="numeric" maxlength="4" autocomplete="off" aria-label="카드 코드"><button id="next" class="round" aria-label="다음 카드"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button></div></div></div>
@@ -2635,23 +2645,28 @@ async function pickSub(s) {
   items.forEach(it => {
     const row = document.createElement("div"); row.className = "ex"; row.dataset.k = it.k;
     const b = document.createElement("b"); b.textContent = "[" + it.k + "]"; row.append(b);
-    for (let n = 1; n <= 5; n++) { const c = document.createElement("button"); c.className = "c"; c.textContent = n; c.onclick = () => choose(it, n, row); row.append(c); }
-    const go = document.createElement("button"); go.className = "go"; go.textContent = "»"; go.setAttribute("aria-label", "연관 카드"); go.onclick = () => openEx(it, row); row.append(go);
+    [["ans", "답"], ["o", "완료"], ["x", "다시"]].forEach(([m, t]) => { const c = document.createElement("button"); c.className = "c"; c.dataset.m = m; c.dataset.t = t; c.textContent = t; c.onclick = () => m === "ans" ? (c.classList.toggle("shown"), paintRow(it, row)) : choose(it, m, row); row.append(c); });
+    const go = document.createElement("button"); go.className = "go"; go.innerHTML = "<svg viewBox=\\"0 0 24 24\\"><path d=\\"M7 4v16l13-8z\\"/></svg>"; go.setAttribute("aria-label", "연관 카드"); go.onclick = () => openEx(it, row); row.append(go);
     paintRow(it, row); exsEl.append(row);
   });
   exsEl.scrollTop = 0;
   await goTab(s.merged || (tab === "basic" && s.basic) ? "basic" : "deep", false);
 }
-function paintRow(it, row) {   // 고른 번호: 맞으면 청록, 틀리면 분홍 + 정답에 테두리
+function rowMark(it) {   // 저장값 o = 완료, x = 다시. 예전에 고른 번호는 맞으면 완료, 틀리면 다시로 봄
   const p = picks[it.k];
+  if (p === "o" || p === "x") return p;
+  return p ? (isRight(it, p) ? "o" : "x") : "";
+}
+function paintRow(it, row) {   // 답 = 누르면 정답 번호, 완료 = 청록, 다시 = 빨강
+  const mk = rowMark(it);
   row.querySelectorAll(".c").forEach(c => {
-    const n = +c.textContent;
-    c.classList.toggle("ok", p == n && isRight(it, n)); c.classList.toggle("ng", p == n && !isRight(it, n));
-    c.classList.toggle("ans", !!p && !isRight(it, p) && isRight(it, n));
+    const m = c.dataset.m;
+    if (m === "ans") c.textContent = c.classList.contains("shown") ? String(it.a).replace(/\\s+/g, "") : c.dataset.t;
+    c.classList.toggle("done", m === "o" && mk === "o"); c.classList.toggle("again", m === "x" && mk === "x");
   });
 }
-function choose(it, n, row) {
-  if (picks[it.k] == n) delete picks[it.k]; else picks[it.k] = String(n);
+function choose(it, m, row) {
+  if (rowMark(it) === m) delete picks[it.k]; else picks[it.k] = m;
   tb.save("기출_" + hs.sub, picks); paintRow(it, row);
 }
 function openEx(it, row) {
@@ -2710,8 +2725,12 @@ chsEl.onchange = () => { tocSec = null; show(chaps[+chsEl.value].cards[0]); };
 cdsEl.onchange = () => tab === "deep" ? show(+cdsEl.value) : toSec(cdsEl.value);
 tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.dataset.t, true));
 // 기출 칸 열기·닫기 (기기마다 기억)
-document.body.classList.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", document.body.classList.toggle("noex") ? "닫음" : "열림"); if (deck.length && olSel.length) olShow(olSel); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
+const bc = document.body.classList;
+const sideUpd = () => bc.toggle("side", !bc.contains("noex") || bc.contains("olp"));   // 왼쪽 여백 칸: JBL 이나 목차가 켜져 있으면
+bc.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
+bc.toggle("olp", tb.posOf("공부홈.목차") === "열림");
+sideUpd();
+document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", bc.toggle("noex") ? "닫음" : "열림"); sideUpd(); if (deck.length && olSel.length) olShow(olSel); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
 // 검색: 궁금한 것을 넣으면 지금 과목 카드 중 관련 카드 최대 5개를 관련 높은 순서로 한 화면에 (claude.ai sample, 사용자 2026-11-13)
 const srT = document.getElementById("srT"), srQ = document.getElementById("srQ");
 srT.hidden = !tb.search;
@@ -2738,12 +2757,30 @@ async function srRun() {
   if (!is.length) { srQ.classList.add("none"); srQ.focus(); return; }
   srQ.blur(); extraNext = is.slice(1); show(is[0]); mCard();
 }
-// 접는 목차: 기출을 끄면 가운데 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 누르면 오른쪽에 그 카드
-const olEl = document.getElementById("ol"), olOpen = new Set();
-const olClose = () => document.body.classList.remove("olp");
-document.getElementById("olT").onclick = () => { if (document.body.classList.toggle("olp")) { olAt = null; drawOutline(); } };
-document.getElementById("olbg").onclick = olClose;
-addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("olp")) olClose(); });
+// 흐름: 켜 두면 손가락으로 옆으로 밀어 이전·다음 카드 (애플펜슬은 그대로 필기)
+bc.toggle("flow", tb.posOf("공부홈.흐름") === "켬");
+document.getElementById("flT").onclick = () => tb.pos("공부홈.흐름", bc.toggle("flow") ? "켬" : "끔");
+let sw0 = null;
+const viewEl = document.getElementById("view");
+viewEl.addEventListener("touchstart", e => {
+  sw0 = null;
+  if (!bc.contains("flow") || e.touches.length !== 1) return;
+  const t = e.touches[0];
+  if (t.touchType === "stylus" || e.target.closest("input, textarea, select, .wr")) return;
+  sw0 = { x: t.clientX, y: t.clientY, at: Date.now() };
+}, { passive: true });
+viewEl.addEventListener("touchend", e => {
+  const s = sw0; sw0 = null;
+  if (!s || !deck.length || e.changedTouches.length !== 1) return;
+  const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+  if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6 || Date.now() - s.at > 800) return;
+  const j = at + (dx < 0 ? 1 : -1);
+  if (j >= 0 && j < deck.length) show(j);
+}, { passive: true });
+viewEl.addEventListener("touchcancel", () => { sw0 = null; }, { passive: true });
+// 접는 목차: 왼쪽 여백 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 기본은 전부 펼침, 사용자가 접은 것만 접힘
+const olEl = document.getElementById("ol"), olShut = new Set();
+document.getElementById("olT").onclick = () => { const on = bc.toggle("olp"); tb.pos("공부홈.목차", on ? "열림" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
 let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
 function olShow(list, focus) {   // 열 카드 목록 → 첫 카드가 위(채점 대상), 나머지 아래로
   list = [...new Set(list)].sort((a, b) => a - b); if (!list.length) return;
@@ -2753,43 +2790,45 @@ const isM = () => matchMedia("(max-width: 700px)").matches;   // 휴대폰: 누�
 function mCard() { if (isM()) { document.body.classList.add("mcard"); scrollTo(0, 0); } }
 document.getElementById("mback").onclick = () => { document.body.classList.remove("mcard"); drawOutline(); };
 function olToggle(j) {   // 주제: 누르면 추가, 다시 누르면 닫기 (휴대폰은 그 카드 하나만 화면 전체)
-  if (isM()) { olClose(); olShow([j]); mCard(); return; }
+  if (isM()) { olShow([j]); mCard(); return; }
   const has = olSel.includes(j);
   if (has && olSel.length === 1) { stopRecording(true); olSel = []; qv.textContent = ""; ok.hidden = mic.hidden = pen.hidden = true; drawOutline(); return; }   // 마지막 한 장도 닫을 수 있음 (빈 화면)
   olShow(has ? olSel.filter(x => x !== j) : olSel.concat(j), has ? -1 : j);
 }
-let olAt = null;   // 자동 펼치기는 카드가 바뀔 때 한 번만 (그 뒤엔 사용자가 접은 대로)
+let olAt = null;   // 카드가 바뀌면 목차에서 그 카드가 보이게 한 번 스크롤
 function drawOutline() {
-  if (!document.body.classList.contains("olp") || !deck.length) return;
-  const sel = olSel, k0 = cur + "|" + sel.join(",");
-  if (olAt !== k0) { olAt = k0; sel.forEach(j => { const c0 = deck[j]; if (!c0) return; olOpen.add("c" + c0.ch); olOpen.add("c" + c0.ch + "|" + c0.h2t); olOpen.add("c" + c0.ch + "|" + c0.h2t + "|" + c0.h3t); }); }   // 열린 카드 전부의 자리를 펼침
+  if (!bc.contains("olp") || !deck.length) return;
+  const sel = olSel, k0 = cur + "|" + sel.join(","), moved = olAt !== k0; olAt = k0;
+  const isOpen = k => !olShut.has(k);
   const top = olEl.scrollTop; olEl.textContent = "";
   const node = (lv, text, key, kids, onText) => {
     const d = document.createElement("div"); d.className = "ol-n lv" + lv; d.style.paddingLeft = (6 + lv * 14) + "px";
     const i = document.createElement("i");
-    const fold = () => { olOpen.has(key) ? olOpen.delete(key) : olOpen.add(key); drawOutline(); };
-    if (kids) { i.textContent = olOpen.has(key) ? "▾" : "▸"; d.onclick = onText ? (e => e.target === i ? fold() : onText()) : fold; }
+    const fold = () => { olShut.has(key) ? olShut.delete(key) : olShut.add(key); drawOutline(); };
+    if (kids) { i.textContent = isOpen(key) ? "▾" : "▸"; d.onclick = onText ? (e => e.target === i ? fold() : onText()) : fold; }
     else i.textContent = "";   // 주제 줄에는 표시 없음 (사용자 2026-11-09)
     const t = document.createElement("span"); t.textContent = text; d.append(i, t); olEl.append(d); return d;
   };
   chaps.forEach(g => {
     const kc = "c" + g.ch; node(0, g.ch + " " + g.title, kc, true);
-    if (!olOpen.has(kc)) return;
+    if (!isOpen(kc)) return;
     let h2 = null, h3 = null;
     g.cards.forEach(j => {
       const c = deck[j];
       if (c.h2t && c.h2t !== h2) { h2 = c.h2t; h3 = null; node(1, h2, kc + "|" + h2, true); }
-      if (c.h2t && !olOpen.has(kc + "|" + c.h2t)) return;
+      if (c.h2t && !isOpen(kc + "|" + c.h2t)) return;
       if (c.h3t && c.h3t !== h3) {   // 소제목: ▸ 는 접기, 이름을 누르면 그 안의 주제 카드 전부 열기
         h3 = c.h3t; const k3 = kc + "|" + c.h2t + "|" + h3, h2c = c.h2t, h3c = h3;
-        node(2, h3, k3, true, () => { olOpen.add(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
+        node(2, h3, k3, true, () => { olShut.delete(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
       }
-      if (c.h3t && !olOpen.has(kc + "|" + c.h2t + "|" + c.h3t)) return;
+      if (c.h3t && !isOpen(kc + "|" + c.h2t + "|" + c.h3t)) return;
       const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false);
       d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j); d.dataset.j = j;
     });
   });
   olEl.scrollTop = top;
+  const c1 = moved && olEl.querySelector(".ol-n.cur");
+  if (c1) { const r = c1.getBoundingClientRect(), b = olEl.getBoundingClientRect(); if (r.top < b.top || r.bottom > b.bottom) olEl.scrollTop += r.top - b.top - b.height / 3; }
 }
 load("공부홈").then(h => {
   if (!h?.subjects?.length) return startSolo();
