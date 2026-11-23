@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795418566489">
+<meta name="hito-build" content="1795418742370">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2143,6 +2143,10 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
 .star { margin-left: 6px; color: var(--accent); font-size: .62em; font-weight: 600; letter-spacing: 1px; white-space: nowrap; vertical-align: .15em; }   /* 빈출: 연결 기출 2문항 ★ · 3문항 ★★ · 4문항 이상 ★★★ (사용자 2026-11-23) */
 .ol-n .star { margin-left: 4px; font-size: 9.5px; vertical-align: 0; }
+.star.sc { position: absolute; top: 16px; right: 20px; z-index: 5; margin: 0; padding: 4px 9px; border-radius: 999px; font-size: 14px; vertical-align: 0; }   /* 카드 오른쪽 위 (사용자 2026-11-23) */
+.star.sc.on { background: var(--accent-soft); }
+.exdd { position: absolute; left: calc(100% + 14px); top: 8px; z-index: 6; width: 212px; max-height: 70vh; overflow-y: auto; padding: 6px 4px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
+.exdd.in { left: auto; right: 14px; top: 50px; box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 14px 36px rgba(0,0,0,.16); }
 .noex #app { grid-template-columns: minmax(0, 1fr); }
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
@@ -2451,7 +2455,7 @@ function show(i) {
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   box.append(crumb(i));
-  const h = document.createElement("h2"); h.textContent = c.title; starTo(h, c); box.append(h);
+  const h = document.createElement("h2"); h.textContent = c.title; box.append(h); starCorner(box, c);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
@@ -2462,7 +2466,7 @@ function show(i) {
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
     b2.append(crumb(j));
-    const h3 = document.createElement("h2"); h3.textContent = d.title; starTo(h3, d); b2.append(h3);
+    const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3); starCorner(b2, d);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
     o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(crow(b2, d));
@@ -2651,15 +2655,32 @@ async function pickSub(s) {
   if (hs !== s) return;
   items = e?.items || []; picks = st || {};
   freq = {}; items.forEach(it => new Set(it.c || []).forEach(x => freq[x] = (freq[x] || 0) + 1));
-  items.forEach(it => {
-    const row = document.createElement("div"); row.className = "ex"; row.dataset.k = it.k;
-    const b = document.createElement("b"); b.textContent = "[" + it.k + "]"; row.append(b);
-    [["ans", "답"], ["o", "완료"], ["x", "다시"]].forEach(([m, t]) => { const c = document.createElement("button"); c.className = "c"; c.dataset.m = m; c.dataset.t = t; c.textContent = t; c.onclick = () => m === "ans" ? (c.classList.toggle("shown"), paintRow(it, row)) : choose(it, m, row); row.append(c); });
-    const go = document.createElement("button"); go.className = "go"; go.innerHTML = "<svg viewBox=\\"0 0 24 24\\"><path d=\\"M7 4v16l13-8z\\"/></svg>"; go.setAttribute("aria-label", "연관 카드"); go.onclick = () => openEx(it, row); row.append(go);
-    paintRow(it, row); exsEl.append(row);
-  });
+  items.forEach(it => exsEl.append(exRow(it)));
   exsEl.scrollTop = 0;
   await goTab(s.merged || (tab === "basic" && s.basic) ? "basic" : "deep", false);
+}
+function exRow(it) {   // 기출 한 줄: [번호] 답 · 완료 · 다시 ▶ (JBL 과 카드 별 드롭박스가 같이 씀)
+  const row = document.createElement("div"); row.className = "ex"; row.dataset.k = it.k;
+  const b = document.createElement("b"); b.textContent = "[" + it.k + "]"; row.append(b);
+  [["ans", "답"], ["o", "완료"], ["x", "다시"]].forEach(([m, t]) => { const c = document.createElement("button"); c.className = "c"; c.dataset.m = m; c.dataset.t = t; c.textContent = t; c.onclick = () => m === "ans" ? (c.classList.toggle("shown"), paintRow(it, row)) : choose(it, m); row.append(c); });
+  const go = document.createElement("button"); go.className = "go"; go.innerHTML = "<svg viewBox=\\"0 0 24 24\\"><path d=\\"M7 4v16l13-8z\\"/></svg>"; go.setAttribute("aria-label", "연관 카드"); go.onclick = () => openEx(it); row.append(go);
+  paintRow(it, row); return row;
+}
+// 카드 오른쪽 위 별: 누르면 카드 오른쪽 공백에 이 카드에 연결된 기출 번호 드롭박스 (사용자 2026-11-23). 펜으로 눌러도 필기 안 됨
+function starCorner(box, c) {
+  const n = (c && c.code && freq[c.code]) || 0; if (n < 2) return;
+  const s = document.createElement("button"); s.className = "star sc"; s.textContent = "★".repeat(Math.min(n - 1, 3)); s.setAttribute("aria-label", "연결 기출");
+  s.addEventListener("pointerdown", e => e.stopPropagation());
+  s.onclick = e => {
+    e.stopPropagation();
+    const p = box.querySelector(":scope > .exdd"); if (p) { p.remove(); s.classList.remove("on"); return; }
+    const d = document.createElement("div"); d.className = "exdd";
+    d.addEventListener("pointerdown", ev => ev.stopPropagation()); d.addEventListener("click", ev => ev.stopPropagation());
+    items.filter(it => (it.c || []).includes(c.code)).forEach(it => d.append(exRow(it)));
+    box.append(d); s.classList.add("on");
+    if (box.getBoundingClientRect().right + 236 > innerWidth) d.classList.add("in");   // 오른쪽 공백이 모자라면 카드 안 별 아래로
+  };
+  box.append(s);
 }
 function rowMark(it) {   // 저장값 o = 완료, x = 다시. 예전에 고른 번호는 맞으면 완료, 틀리면 다시로 봄
   const p = picks[it.k];
@@ -2674,13 +2695,15 @@ function paintRow(it, row) {   // 답 = 누르면 정답 번호, 완료 = 청록
     c.classList.toggle("done", m === "o" && mk === "o"); c.classList.toggle("again", m === "x" && mk === "x");
   });
 }
-function choose(it, m, row) {
+function choose(it, m) {
   if (rowMark(it) === m) delete picks[it.k]; else picks[it.k] = m;
-  tb.save("기출_" + hs.sub, picks); paintRow(it, row);
+  tb.save("기출_" + hs.sub, picks);
+  document.querySelectorAll(".ex").forEach(r => { if (r.dataset.k === it.k) paintRow(it, r); });   // JBL·드롭박스 같은 번호 함께
 }
-function openEx(it, row) {
+function openEx(it) {
   act = it;
-  exsEl.querySelectorAll(".ex.cur").forEach(r => r.classList.remove("cur")); row.classList.add("cur");
+  exsEl.querySelectorAll(".ex.cur").forEach(r => r.classList.remove("cur"));
+  const jr = [...exsEl.children].find(r => r.dataset.k === it.k); if (jr) jr.classList.add("cur");
   goTab(hs.merged || (hs.basic && it.b.length) ? "basic" : "deep", true).then(mCard);
 }
 // 탭: 기초노트 = 장 → 큰 제목(누르면 그 자리로), 심화카드 = 장 → 카드 제목. jump면 연결된 첫 곳으로
