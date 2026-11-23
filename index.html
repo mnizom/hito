@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795419670496">
+<meta name="hito-build" content="1795420671179">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2718,10 +2718,11 @@ function markHx() {
     const lns = body.querySelectorAll(".ln"), trs = body.querySelectorAll("tr"), by = new Map();
     list.forEach(([u, n]) => { const el = typeof u === "string" ? trs[+u.slice(1)] : lns[u]; if (!el) return; if (!by.has(el)) by.set(el, new Set()); by.get(el).add(+n); });
     by.forEach((ns, el) => {
-      const right = [...ns].some(n => isRight(act, n));
+      const right = [...ns].some(n => n > 0 && isRight(act, n)), nums = [...ns].filter(n => n > 0).sort((a, b) => a - b);   // 선지 0 = 문제를 읽는 데 필요한 개념 (번호 없이 연하게)
       el.classList.add(right ? "hx-a" : "hx-o"); if (right && !first) first = el;
+      if (!nums.length) return;
       const tag = document.createElement("span"); tag.className = "hxn" + (right ? " a" : "");
-      tag.textContent = [...ns].sort((a, b) => a - b).map(n => "①②③④⑤"[n - 1] || n).join("");
+      tag.textContent = nums.map(n => "①②③④⑤"[n - 1] || n).join("");
       (el.tagName === "TR" ? el.lastElementChild || el : el).append(tag);
     });
   });
