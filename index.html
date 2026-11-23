@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795418845555">
+<meta name="hito-build" content="1795419670496">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2166,6 +2166,11 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 #inkcols button { width: 26px; height: 26px; box-shadow: none; border: 2px solid transparent; }
 #inkcols button.on { border-color: var(--ink); background: inherit; outline: 2px solid var(--surface); outline-offset: -4px; }
 .here { animation: here 1.8s ease-out; border-radius: 4px; }
+.hx-a, tr.hx-a > td, tr.hx-a > th { background: rgba(255, 196, 0, .42) !important; }   /* 기출 근거: 정답 진하게, 다른 선지 연하게 (카드는 늘 흰 종이) */
+.hx-o, tr.hx-o > td, tr.hx-o > th { background: rgba(255, 196, 0, .14) !important; }
+.ln.hx-a, .ln.hx-o { border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.hxn { margin-left: 4px; font-size: 12.5px; font-weight: 700; color: #a07a2c; white-space: nowrap; }
+.hxn.a { color: #b45309; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
 <button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
@@ -2474,6 +2479,7 @@ function show(i) {
     inkOn(b2, d);
   });
   inkOn(box, c);
+  markHx();
   if (c.said) showSaid(c.said);
   paint(c);
   addReset(c);
@@ -2701,8 +2707,28 @@ function choose(it, m) {
   tb.save("기출_" + hs.sub, picks);
   document.querySelectorAll(".ex").forEach(r => { if (r.dataset.k === it.k) paintRow(it, r); });   // JBL·드롭박스 같은 번호 함께
 }
+// 근거 하이라이트: ▶로 연 기출(act)의 h = {카드 코드: [[칸, 선지], …]}. 칸 "rN" = 카드 본문 N번째 표 행, 숫자 N = N번째 글 줄(.ln). 정답 근거는 진하게, 다른 선지 근거는 연하게 + 선지 번호 (사용자 2026-11-23)
+let hxJump = false;
+function markHx() {
+  if (!act || !act.h || typeof qv === "undefined") return;
+  let first = null;
+  qv.querySelectorAll(".card").forEach(bx => {
+    const c = bx._c, list = c && act.h[c.code]; if (!list) return;
+    const body = bx.querySelector(".orig, .origx"); if (!body) return;
+    const lns = body.querySelectorAll(".ln"), trs = body.querySelectorAll("tr"), by = new Map();
+    list.forEach(([u, n]) => { const el = typeof u === "string" ? trs[+u.slice(1)] : lns[u]; if (!el) return; if (!by.has(el)) by.set(el, new Set()); by.get(el).add(+n); });
+    by.forEach((ns, el) => {
+      const right = [...ns].some(n => isRight(act, n));
+      el.classList.add(right ? "hx-a" : "hx-o"); if (right && !first) first = el;
+      const tag = document.createElement("span"); tag.className = "hxn" + (right ? " a" : "");
+      tag.textContent = [...ns].sort((a, b) => a - b).map(n => "①②③④⑤"[n - 1] || n).join("");
+      (el.tagName === "TR" ? el.lastElementChild || el : el).append(tag);
+    });
+  });
+  if (hxJump && first) { hxJump = false; const f = first; setTimeout(() => scrollTo(0, f.getBoundingClientRect().top + scrollY - innerHeight / 3), 0); }
+}
 function openEx(it) {
-  act = it;
+  act = it; hxJump = true;
   exsEl.querySelectorAll(".ex.cur").forEach(r => r.classList.remove("cur"));
   const jr = [...exsEl.children].find(r => r.dataset.k === it.k); if (jr) jr.classList.add("cur");
   goTab(hs.merged || (hs.basic && it.b.length) ? "basic" : "deep", true).then(mCard);
