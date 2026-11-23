@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795177420041">
+<meta name="hito-build" content="1795418455870">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2141,6 +2141,8 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .ol-n.lv0 { color: var(--ink); font-weight: 600; }
 .ol-n.lv1, .ol-n.lv2 { color: var(--ink); }
 .ol-n.cur { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+.star { margin-left: 6px; color: var(--accent); font-size: .62em; font-weight: 600; letter-spacing: 1px; white-space: nowrap; vertical-align: .15em; }   /* 빈출: 연결 기출 2문항 ★ · 3문항 ★★ · 4문항 이상 ★★★ (사용자 2026-11-23) */
+.ol-n .star { margin-left: 4px; font-size: 9.5px; vertical-align: 0; }
 .noex #app { grid-template-columns: minmax(0, 1fr); }
 .solo #app { grid-template-columns: minmax(0, 1fr); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
@@ -2449,7 +2451,7 @@ function show(i) {
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   box.append(crumb(i));
-  const h = document.createElement("h2"); h.textContent = c.title; box.append(h);
+  const h = document.createElement("h2"); h.textContent = c.title; starTo(h, c); box.append(h);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
@@ -2460,7 +2462,7 @@ function show(i) {
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
     b2.append(crumb(j));
-    const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3);
+    const h3 = document.createElement("h2"); h3.textContent = d.title; starTo(h3, d); b2.append(h3);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
     o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(crow(b2, d));
@@ -2626,6 +2628,12 @@ const EXAM_DAY = new Date(2027, 0, 14);
 (() => { const t = new Date(); t.setHours(0, 0, 0, 0); const d = Math.round((EXAM_DAY - t) / 864e5); document.getElementById("dday").innerHTML = (d > 0 ? "D-" + d : d === 0 ? "D-day" : "D+" + -d) + "<small>" + (t.getMonth() + 1) + "." + t.getDate() + " " + "일월화수목금토"[t.getDay()] + "</small>"; })();   // 오늘 날짜와 요일 (사용자 2026-11-10)
 const subsEl = document.getElementById("subs"), exsEl = document.getElementById("exs"), tabs = document.getElementById("tabs"), tabsw = document.getElementById("tabsw"), chsEl = document.getElementById("chs"), cdsEl = document.getElementById("cds");
 let home = null, hs = null, items = [], picks = {}, act = null, tab = "deep", hop = 0;
+// 빈출 별: 카드 코드마다 연결된 기출 문항 수 (별점.py 와 같은 기준: 1문항 0개, 2문항 ★, 3문항 ★★, 4문항 이상 ★★★)
+let freq = {};
+function starTo(el, c) {
+  const n = (c && c.code && freq[c.code]) || 0; if (n < 2) return;
+  const s = document.createElement("span"); s.className = "star"; s.textContent = "★".repeat(Math.min(n - 1, 3)); el.append(s);
+}
 const isRight = (it, n) => String(it.a).split(/[^0-9]+/).includes(String(n));
 const bySec = x => "[data-s=\\"" + x + "\\"]";
 const linked = t => !act ? [] : t === "basic" ? act.b : act.c;   // »로 연 기출과 연결된 것 (기초노트 소제목 / 심화 카드 코드)
@@ -2642,6 +2650,7 @@ async function pickSub(s) {
   const [e, st] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub)]);
   if (hs !== s) return;
   items = e?.items || []; picks = st || {};
+  freq = {}; items.forEach(it => new Set(it.c || []).forEach(x => freq[x] = (freq[x] || 0) + 1));
   items.forEach(it => {
     const row = document.createElement("div"); row.className = "ex"; row.dataset.k = it.k;
     const b = document.createElement("b"); b.textContent = "[" + it.k + "]"; row.append(b);
@@ -2822,7 +2831,7 @@ function drawOutline() {
         node(2, h3, k3, true, () => { olShut.delete(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
       }
       if (c.h3t && !isOpen(kc + "|" + c.h2t + "|" + c.h3t)) return;
-      const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false);
+      const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false); starTo(d.lastChild, c);
       d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j); d.dataset.j = j;
     });
   });
