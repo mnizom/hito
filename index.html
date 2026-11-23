@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795420671179">
+<meta name="hito-build" content="1795421237968">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2169,7 +2169,9 @@ body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에
 .hx-a, tr.hx-a > td, tr.hx-a > th { background: rgba(255, 196, 0, .42) !important; }   /* 기출 근거: 정답 진하게, 다른 선지 연하게 (카드는 늘 흰 종이) */
 .hx-o, tr.hx-o > td, tr.hx-o > th { background: rgba(255, 196, 0, .14) !important; }
 .ln.hx-a, .ln.hx-o { border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.hxn { margin-left: 4px; font-size: 12.5px; font-weight: 700; color: #a07a2c; white-space: nowrap; }
+.ln.hx-a, .ln.hx-o, tr.hx-a > :last-child, tr.hx-o > :last-child { position: relative; }   /* 선지 번호는 글자 흐름 밖에 띄움: 칠해도 줄바꿈·카드 배치 그대로 (사용자 2026-11-23) */
+.hxn { position: absolute; right: 0; top: 0; transform: translate(60%, -55%); z-index: 2; pointer-events: none; padding: 0 2px; border-radius: 6px; background: #fff; font-size: 11px; line-height: 1.2; font-weight: 700; color: #a07a2c; white-space: nowrap; box-shadow: 0 0 0 1px rgba(160, 122, 44, .25); }
+tr > :last-child > .hxn { transform: translate(35%, -45%); }
 .hxn.a { color: #b45309; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
