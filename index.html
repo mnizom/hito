@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795546366255">
+<meta name="hito-build" content="1795546739759">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2148,6 +2148,8 @@ body.olp:not(.rfp) #olT, body.rfp #rfT { background: var(--ink); color: var(--su
 .star.sc { position: absolute; top: 16px; right: 20px; z-index: 5; margin: 0; padding: 4px 9px; border-radius: 999px; font-size: 14px; vertical-align: 0; }   /* 카드 오른쪽 위 (사용자 2026-11-23) */
 .star.sc.on { background: var(--accent-soft); }
 .star.sc.zero { color: var(--ink-2); }
+.cx { float: left; width: 26px; height: 26px; margin: -8px 6px 0 -10px; padding: 0; border-radius: 999px; font-size: 19px; line-height: 24px; text-align: center; color: var(--ink-2); background: none; }   /* 카드 왼쪽 위 닫기 (사용자 2026-11-25) */
+.cx:hover { background: var(--surface-2); color: var(--ink); }
 .exdd { position: absolute; left: calc(100% + 14px); top: 8px; z-index: 6; width: 212px; max-height: 70vh; overflow-y: auto; padding: 6px 4px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
 .exdd.in { left: auto; right: 14px; top: 50px; box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 14px 36px rgba(0,0,0,.16); }
 .noex #app { grid-template-columns: minmax(0, 1fr); }
@@ -2452,6 +2454,18 @@ document.getElementById("inkundo").onclick = () => {
 };
 function crow(box, c) { box._c = c; return box; }
 // 카드 위 위치: 장 > 절 > 소제목 (제목 위 작은 연한 글씨, 사용자 2026-11-13)
+function cardX(j) {   // 카드 왼쪽 위 ×: 이 카드만 닫음, 마지막 한 장이면 빈 화면 (휴대폰은 목차로 돌아감)
+  const b = document.createElement("button"); b.className = "cx"; b.textContent = "×"; b.setAttribute("aria-label", "닫기");
+  b.addEventListener("pointerdown", e => e.stopPropagation());
+  b.onclick = e => {
+    e.stopPropagation();
+    const rest = olSel.filter(x => x !== j);
+    if (isM()) document.body.classList.remove("mcard");
+    if (!rest.length) { stopRecording(true); olSel = []; qv.textContent = ""; ok.hidden = mic.hidden = pen.hidden = true; drawOutline(); return; }
+    olShow(rest);
+  };
+  return b;
+}
 function crumb(i) {
   const c = deck[i], g = chaps.find(x => x.cards.includes(i));
   const parts = [g ? g.title : "", c.h2t, c.h3t].filter((v, k, a) => v && v !== c.title && a.indexOf(v) === k);
@@ -2464,7 +2478,7 @@ function show(i) {
   draft = {}; heard = []; seen = new Set(); res = {}; hearing = false; grading = false;
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
-  box.append(crumb(i));
+  box.append(cardX(i), crumb(i));
   const h = document.createElement("h2"); h.textContent = c.title; box.append(h); starCorner(box, c);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
@@ -2475,7 +2489,7 @@ function show(i) {
   const ex = extraNext; extraNext = []; olSel = [i].concat(ex);
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
-    b2.append(crumb(j));
+    b2.append(cardX(j), crumb(j));
     const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3); starCorner(b2, d);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
