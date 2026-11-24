@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795546922551">
+<meta name="hito-build" content="1795546947598">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2133,7 +2133,7 @@ body.flow #flT { background: var(--ink); color: var(--surface); }
 body.olp #ol { display: block; }
 /* 목차 = JBL 처럼 왼쪽 여백 칸 (사용자 2026-11-20). 기본은 전부 펼침, 접은 것만 접힘 */
 #olT, #rfT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
-body.olp:not(.rfp) #olT, body.rfp #rfT { background: var(--ink); color: var(--surface); }
+body.olp #olT { background: var(--ink); color: var(--surface); }
 .solo #olT, .solo #rfT { display: none; }
 .ol-n.none { opacity: .35; cursor: default; }
 .ol-n.none:hover { background: none; }
@@ -2179,7 +2179,7 @@ tr > :last-child > .hxn { transform: translate(35%, -45%); }
 .hxn.a { color: #b45309; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="rfT">라플</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><div id="side"><section id="exs"></section><nav id="ol"></nav></div><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
@@ -2678,7 +2678,7 @@ async function pickSub(s) {
   exsEl.textContent = "";
   const [e, st, rf] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub), load("라플_" + s.sub).catch(() => null)]);
   if (hs !== s) return;
-  rafl = rf?.t || null; document.getElementById("rfT").hidden = !rafl;
+  rafl = rf?.t || null; olLabel();
   items = e?.items || []; picks = st || {};
   freq = {}; items.forEach(it => new Set(it.c || []).forEach(x => freq[x] = (freq[x] || 0) + 1));
   items.forEach(it => exsEl.append(exRow(it)));
@@ -2859,8 +2859,15 @@ viewEl.addEventListener("touchend", e => {
 viewEl.addEventListener("touchcancel", () => { sw0 = null; }, { passive: true });
 // 접는 목차: 왼쪽 여백 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 기본은 전부 펼침, 사용자가 접은 것만 접힘
 const olEl = document.getElementById("ol"), olShut = new Set();
-document.getElementById("olT").onclick = () => { const on = !(bc.contains("olp") && !bc.contains("rfp")); bc.toggle("olp", on); bc.remove("rfp"); tb.pos("공부홈.목차", on ? "열림" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
-document.getElementById("rfT").onclick = () => { const on = !bc.contains("rfp"); bc.toggle("olp", on); bc.toggle("rfp", on); tb.pos("공부홈.목차", on ? "라플" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
+// 목차 버튼 하나: 라플 목차 → 기존 목차 → 닫힘 (사용자 2026-11-25). 라플 데이터 없는 과목은 기존 목차 → 닫힘
+const olT = document.getElementById("olT");
+function olLabel() { olT.textContent = bc.contains("olp") && bc.contains("rfp") && rafl ? "라플" : "목차"; }
+olT.onclick = () => {
+  const st = !bc.contains("olp") ? "닫음" : bc.contains("rfp") && rafl ? "라플" : "열림";
+  const nx = st === "닫음" ? (rafl ? "라플" : "열림") : st === "라플" ? "열림" : "닫음";
+  bc.toggle("olp", nx !== "닫음"); bc.toggle("rfp", nx === "라플"); tb.pos("공부홈.목차", nx); olLabel(); sideUpd();
+  if (nx !== "닫음") { olAt = null; drawOutline(); }
+};
 let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
 function olShow(list, focus) {   // 열 카드 목록 → 첫 카드가 위(채점 대상), 나머지 아래로
   list = [...new Set(list)].sort((a, b) => a - b); if (!list.length) return;
