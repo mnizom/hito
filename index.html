@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795421237968">
+<meta name="hito-build" content="1795546366255">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2132,9 +2132,11 @@ body.flow #flT { background: var(--ink); color: var(--surface); }
 #ol { display: none; }
 body.olp #ol { display: block; }
 /* 목차 = JBL 처럼 왼쪽 여백 칸 (사용자 2026-11-20). 기본은 전부 펼침, 접은 것만 접힘 */
-#olT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
-body.olp #olT { background: var(--ink); color: var(--surface); }
-.solo #olT { display: none; }
+#olT, #rfT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+body.olp:not(.rfp) #olT, body.rfp #rfT { background: var(--ink); color: var(--surface); }
+.solo #olT, .solo #rfT { display: none; }
+.ol-n.none { opacity: .35; cursor: default; }
+.ol-n.none:hover { background: none; }
 .ol-n { display: flex; align-items: baseline; gap: 4px; padding: 4px 5px; user-select: none; -webkit-user-select: none; border-radius: 8px; font-size: 12px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
 .ol-n:hover { background: var(--surface-2); }
 .ol-n i { flex: none; width: 12px; font-size: 10.5px; font-style: normal; color: var(--ink-2); }
@@ -2175,7 +2177,7 @@ tr > :last-child > .hxn { transform: translate(35%, -45%); }
 .hxn.a { color: #b45309; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="rfT">라플</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><div id="side"><section id="exs"></section><nav id="ol"></nav></div><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
@@ -2640,7 +2642,7 @@ function startSolo() {   // 공부 홈 데이터가 없으면 예전 화면 (과
 const EXAM_DAY = new Date(2027, 0, 14);
 (() => { const t = new Date(); t.setHours(0, 0, 0, 0); const d = Math.round((EXAM_DAY - t) / 864e5); document.getElementById("dday").innerHTML = (d > 0 ? "D-" + d : d === 0 ? "D-day" : "D+" + -d) + "<small>" + (t.getMonth() + 1) + "." + t.getDate() + " " + "일월화수목금토"[t.getDay()] + "</small>"; })();   // 오늘 날짜와 요일 (사용자 2026-11-10)
 const subsEl = document.getElementById("subs"), exsEl = document.getElementById("exs"), tabs = document.getElementById("tabs"), tabsw = document.getElementById("tabsw"), chsEl = document.getElementById("chs"), cdsEl = document.getElementById("cds");
-let home = null, hs = null, items = [], picks = {}, act = null, tab = "deep", hop = 0;
+let home = null, hs = null, items = [], picks = {}, act = null, tab = "deep", hop = 0, rafl = null;   // rafl = 라플 목차 [[깊이, 제목, [카드 키]]] (라플목차/작업/내보내기.py)
 // 빈출 별: 카드 코드마다 연결된 기출 문항 수 (별점.py 와 같은 기준: 1문항 0개, 2문항 ★, 3문항 ★★, 4문항 이상 ★★★)
 let freq = {};
 function starTo(el, c) {
@@ -2660,8 +2662,9 @@ function drawSubs() {
 async function pickSub(s) {
   hs = s; act = null; tb.pos("공부홈", s.sub); drawSubs();
   exsEl.textContent = "";
-  const [e, st] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub)]);
+  const [e, st, rf] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub), load("라플_" + s.sub).catch(() => null)]);
   if (hs !== s) return;
+  rafl = rf?.t || null; document.getElementById("rfT").hidden = !rafl;
   items = e?.items || []; picks = st || {};
   freq = {}; items.forEach(it => new Set(it.c || []).forEach(x => freq[x] = (freq[x] || 0) + 1));
   items.forEach(it => exsEl.append(exRow(it)));
@@ -2790,7 +2793,7 @@ tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.da
 const bc = document.body.classList;
 const sideUpd = () => bc.toggle("side", !bc.contains("noex") || bc.contains("olp"));   // 왼쪽 여백 칸: JBL 이나 목차가 켜져 있으면
 bc.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-bc.toggle("olp", tb.posOf("공부홈.목차") === "열림");
+bc.toggle("olp", ["열림", "라플"].includes(tb.posOf("공부홈.목차"))); bc.toggle("rfp", tb.posOf("공부홈.목차") === "라플");
 sideUpd();
 document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", bc.toggle("noex") ? "닫음" : "열림"); sideUpd(); if (deck.length && olSel.length) olShow(olSel); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
 // 검색: 궁금한 것을 넣으면 지금 과목 카드 중 관련 카드 최대 5개를 관련 높은 순서로 한 화면에 (claude.ai sample, 사용자 2026-11-13)
@@ -2842,7 +2845,8 @@ viewEl.addEventListener("touchend", e => {
 viewEl.addEventListener("touchcancel", () => { sw0 = null; }, { passive: true });
 // 접는 목차: 왼쪽 여백 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 기본은 전부 펼침, 사용자가 접은 것만 접힘
 const olEl = document.getElementById("ol"), olShut = new Set();
-document.getElementById("olT").onclick = () => { const on = bc.toggle("olp"); tb.pos("공부홈.목차", on ? "열림" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
+document.getElementById("olT").onclick = () => { const on = !(bc.contains("olp") && !bc.contains("rfp")); bc.toggle("olp", on); bc.remove("rfp"); tb.pos("공부홈.목차", on ? "열림" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
+document.getElementById("rfT").onclick = () => { const on = !bc.contains("rfp"); bc.toggle("olp", on); bc.toggle("rfp", on); tb.pos("공부홈.목차", on ? "라플" : "닫음"); sideUpd(); if (on) { olAt = null; drawOutline(); } };
 let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
 function olShow(list, focus) {   // 열 카드 목록 → 첫 카드가 위(채점 대상), 나머지 아래로
   list = [...new Set(list)].sort((a, b) => a - b); if (!list.length) return;
@@ -2863,6 +2867,7 @@ function drawOutline() {
   const sel = olSel, k0 = cur + "|" + sel.join(","), moved = olAt !== k0; olAt = k0;
   const isOpen = k => !olShut.has(k);
   const top = olEl.scrollTop; olEl.textContent = "";
+  if (bc.contains("rfp") && rafl) { drawRafl(); olEl.scrollTop = top; return olCur(moved); }
   const node = (lv, text, key, kids, onText) => {
     const d = document.createElement("div"); d.className = "ol-n lv" + lv; d.style.paddingLeft = (6 + lv * 14) + "px";
     const i = document.createElement("i");
@@ -2889,8 +2894,36 @@ function drawOutline() {
     });
   });
   olEl.scrollTop = top;
+  olCur(moved);
+}
+function olCur(moved) {
   const c1 = moved && olEl.querySelector(".ol-n.cur");
   if (c1) { const r = c1.getBoundingClientRect(), b = olEl.getBoundingClientRect(); if (r.top < b.top || r.bottom > b.bottom) olEl.scrollTop += r.top - b.top - b.height / 3; }
+}
+// 라플 목차: 라플 장 ▸ 항목 ▸ 세부 ▸ 연결된 카드. 카드가 하나도 없는 항목은 흐리게 (사용자 2026-11-25)
+function drawRafl() {
+  const idx = {}; deck.forEach((c, j) => idx[c.key] = j);
+  const rows = rafl.map(r => ({ lv: r[0], t: r[1], js: r[2].map(k => idx[k]).filter(j => j !== undefined), all: [] }));
+  for (let i = rows.length - 1; i >= 0; i--) {   // 아래 항목 카드까지 모음
+    const r = rows[i]; r.all = r.js.slice();
+    for (let k = i + 1; k < rows.length && rows[k].lv > r.lv; k++) if (rows[k].lv === r.lv + 1) r.all.push(...rows[k].all);
+  }
+  let shut = -1;
+  rows.forEach((r, i) => {
+    if (shut >= 0 && r.lv > shut) return; shut = -1;
+    const key = "r" + cur + "|" + i, open = !olShut.has(key), kids = r.js.length || (rows[i + 1] && rows[i + 1].lv > r.lv);
+    const d = document.createElement("div"); d.className = "ol-n lv" + Math.min(r.lv, 2); d.style.paddingLeft = (6 + r.lv * 14) + "px";
+    const ic = document.createElement("i"), t = document.createElement("span"); t.textContent = r.t; d.append(ic, t); olEl.append(d);
+    if (!r.all.length) { d.classList.add("none"); return; }
+    ic.textContent = kids ? (open ? "▾" : "▸") : "";
+    d.onclick = e => { if (e.target === ic) { open ? olShut.add(key) : olShut.delete(key); drawOutline(); return; } olShow(r.all); mCard(); };
+    if (!open) { shut = r.lv; return; }
+    r.js.forEach(j => {
+      const c = deck[j], e = document.createElement("div"); e.className = "ol-n lv3"; e.style.paddingLeft = (6 + (r.lv + 1) * 14) + "px";
+      const i2 = document.createElement("i"), s2 = document.createElement("span"); s2.textContent = c.title; e.append(i2, s2); starTo(s2, c);
+      e.classList.toggle("cur", olSel.includes(j)); e.onclick = () => olToggle(j); e.dataset.j = j; olEl.append(e);
+    });
+  });
 }
 load("공부홈").then(h => {
   if (!h?.subjects?.length) return startSolo();
