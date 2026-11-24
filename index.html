@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795546739759">
+<meta name="hito-build" content="1795546922551">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2807,7 +2807,7 @@ tabsw.querySelectorAll("button").forEach(b => b.onclick = () => hs && goTab(b.da
 const bc = document.body.classList;
 const sideUpd = () => bc.toggle("side", !bc.contains("noex") || bc.contains("olp"));   // 왼쪽 여백 칸: JBL 이나 목차가 켜져 있으면
 bc.toggle("noex", tb.posOf("공부홈.기출") === "닫음");
-bc.toggle("olp", ["열림", "라플"].includes(tb.posOf("공부홈.목차"))); bc.toggle("rfp", tb.posOf("공부홈.목차") === "라플");
+{ const v = tb.posOf("공부홈.목차"), on = v !== "닫음"; bc.toggle("olp", on); bc.toggle("rfp", on); }   // 열 때 기본은 라플 목차, 기존 목차는 목차 버튼으로 (사용자 2026-11-25)
 sideUpd();
 document.getElementById("exT").onclick = () => { tb.pos("공부홈.기출", bc.toggle("noex") ? "닫음" : "열림"); sideUpd(); if (deck.length && olSel.length) olShow(olSel); else drawOutline(); };   // 기출 켜고 끌 때 열린 카드들 그대로
 // 검색: 궁금한 것을 넣으면 지금 과목 카드 중 관련 카드 최대 5개를 관련 높은 순서로 한 화면에 (claude.ai sample, 사용자 2026-11-13)
