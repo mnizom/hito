@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795546947598">
+<meta name="hito-build" content="1795600411992">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2150,6 +2150,16 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .star.sc.zero { color: var(--ink-2); }
 .cx { float: left; width: 26px; height: 26px; margin: -8px 6px 0 -10px; padding: 0; border-radius: 999px; font-size: 19px; line-height: 24px; text-align: center; color: var(--ink-2); background: none; }   /* 카드 왼쪽 위 닫기 (사용자 2026-11-25) */
 .cx:hover { background: var(--surface-2); color: var(--ink); }
+.ol-n { -webkit-touch-callout: none; }
+.ol-n.lift { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.ol-n input, .utin { font: inherit; color: var(--ink); background: none; border: 0; border-bottom: 1px solid var(--hair); outline: none; padding: 0; width: 100%; min-width: 0; }
+.ublank { aspect-ratio: 2 / 1; }
+.ut { cursor: text; }
+#ask { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .25); }
+#ask > div { background: var(--surface); color: var(--ink); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); text-align: center; }
+#ask p { margin: 0 0 14px; font-weight: 600; }
+#ask button { margin: 0 5px; padding: 6px 18px; border-radius: 999px; background: var(--surface-2); color: var(--ink); font-weight: 600; }
+#ask button.del { background: #e5383b; color: #fff; }
 .exdd { position: absolute; left: calc(100% + 14px); top: 8px; z-index: 6; width: 212px; max-height: 70vh; overflow-y: auto; padding: 6px 4px; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
 .exdd.in { left: auto; right: 14px; top: 50px; box-shadow: 0 2px 6px rgba(0,0,0,.08), 0 14px 36px rgba(0,0,0,.16); }
 .noex #app { grid-template-columns: minmax(0, 1fr); }
@@ -2190,6 +2200,7 @@ if (parent.document.documentElement.dataset.theme) document.documentElement.data
 const tb = parent.hitoTextbook, sel = document.getElementById("sel"), qv = document.getElementById("qv"), code = document.getElementById("code"), prev = document.getElementById("prev"), next = document.getElementById("next");
 const mic = document.getElementById("mic"), pen = document.getElementById("pen"), ok = document.getElementById("ok");
 const HOME_STUDY = false;   // 공부 홈에서 학습(빈칸·쓰기·말하기·채점) 켜기. 사용자 2026-11-09: 기능은 저장해 두고 지금은 카드만 → true 로 바꾸면 기출 끈 상태에서 다시 학습 가능
+let baseDeck = [], baseChaps = [], ulist = [], uById = {}, ucards = {}, moving = null;   // 내 카드 (사용자 2026-11-25): ulist = [{id, t 제목, a 기본 목차 자리(이 카드 뒤), r 라플 자리(카드 키 또는 "r:항목번호")}], 내 기록 저장소 "내카드_<과목>"
 let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null, tbCss = "", extraNext = [];   // tbCss = 과목 데이터 공통 css(심화판), extraNext = 다음 show 에서 함께 보일 카드(기출 하나가 여러 ● 주제에 걸칠 때)
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
@@ -2382,7 +2393,7 @@ function inkOn(box, card) {
   box.addEventListener("touchmove", e => { if (stylus(e) && INK.act === st) e.preventDefault(); }, { passive: false });
   box.addEventListener("click", e => { if (Date.now() - INK.penAt < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
   box.addEventListener("pointerdown", e => {
-    if (e.pointerType !== "pen") return;
+    if (e.pointerType !== "pen" || e.target.closest("input")) return;
     if (INK.act !== st) { inkAct(st); INK.penAt = Date.now(); e.preventDefault(); return; }   // 펜으로 한 번 터치해야 이 카드(포스트잇)에 써짐 (사용자 2026-11-10)
     e.preventDefault(); e.stopPropagation(); try { box.setPointerCapture(e.pointerId); } catch {}
     INK.penAt = Date.now();
@@ -2431,7 +2442,7 @@ inkTool("pen");
 document.getElementById("inkerase").onclick = () => { inkTool(INK.tool === "erase" ? "pen" : "erase"); hideTools(); };
 let lp = null;   // 펜을 한 자리에 꾹(0.55초) 누르면 도구함. 그 사이 그은 점은 지움
 document.addEventListener("pointerdown", e => {
-  if (e.target.closest("#inkbar")) return;
+  if (e.target.closest("#inkbar, #ol, input")) return;
   hideTools();
   if (e.pointerType !== "pen") return;
   clearTimeout(lp?.t);
@@ -2479,7 +2490,7 @@ function show(i) {
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   box.append(cardX(i), crumb(i));
-  const h = document.createElement("h2"); h.textContent = c.title; box.append(h); starCorner(box, c);
+  const h = document.createElement("h2"); if (c.user) h.append(uTitle(c)); else h.textContent = c.title; box.append(h); starCorner(box, c);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
@@ -2502,7 +2513,7 @@ function show(i) {
   paint(c);
   addReset(c);
   showCode();
-  prev.disabled = i === 0; next.disabled = i === deck.length - 1;
+  prev.disabled = step(-1) < 0; next.disabled = step(1) < 0;
   const exOn = !!home && (!HOME_STUDY || !document.body.classList.contains("noex"));   // 공부 홈: 기출을 켠 상태(또는 HOME_STUDY 꺼짐)면 학습 모드 없음, 답이 다 보임 (사용자 2026-11-09)
   document.body.classList.toggle("exmode", exOn);
   setMode(exOn ? false : studyPref);
@@ -2512,7 +2523,7 @@ function show(i) {
 }
 async function open_(id) {
   qv.textContent = ""; deck = []; chaps = [];
-  const [d, st] = await Promise.all([load(id), tb.state(id)]), box = document.createElement("div");
+  const [d, st, us] = await Promise.all([load(id), tb.state(id), tb.state("내카드_" + id)]), box = document.createElement("div");
   store = st; tbCss = d.css || "";
   box.innerHTML = d.body;
   box.querySelectorAll(".chap").forEach(sec => {   // 코드 = PDF의 장 번호 두 자리 + 카드 번호 두 자리 (16장 3번 → 1603, 1장 1번 → 0101)
@@ -2526,6 +2537,7 @@ async function open_(id) {
       restore(one); deck.push(one);
     });
   });
+  baseDeck = deck; baseChaps = chaps; ulist = (us && us.list) || []; ucards = {}; moving = null; rebuild();
   cur = id; tb.last(id);
   if (done) { done[id] = deck.filter(x => x.best).length; drawProg(); }
   show(Math.max(0, deck.findIndex(c => c.key === tb.posOf(id))));
@@ -2641,8 +2653,8 @@ code.addEventListener("keydown", e => { if (e.key === "Enter") find(true); });
 // 코드를 누르면 비우고 입력을 받는다. 못 찾은 채로 나가면 지금 카드 번호로 되돌린다
 code.addEventListener("focus", () => { code.value = ""; code.classList.remove("no", "bonus"); });
 code.addEventListener("blur", () => { if (deck[at]) showCode(); });
-prev.onclick = () => show(at - 1);
-next.onclick = () => show(at + 1);
+prev.onclick = () => { const j = step(-1); if (j >= 0) show(j); };
+next.onclick = () => { const j = step(1); if (j >= 0) show(j); };
 sel.addEventListener("change", () => open_(sel.value));
 document.getElementById("out").onclick = () => { stopRecording(true); tb.close() };
 for (const s of tb.subjects) { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; sel.append(o); }
@@ -2853,8 +2865,8 @@ viewEl.addEventListener("touchend", e => {
   if (!s || !deck.length || e.changedTouches.length !== 1) return;
   const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
   if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6 || Date.now() - s.at > 800) return;
-  const j = at + (dx < 0 ? 1 : -1);
-  if (j >= 0 && j < deck.length) show(j);
+  const j = step(dx < 0 ? 1 : -1);
+  if (j >= 0) show(j);
 }, { passive: true });
 viewEl.addEventListener("touchcancel", () => { sw0 = null; }, { passive: true });
 // 접는 목차: 왼쪽 여백 칸에 장 ▸ 절 ▸ 소제목 ▸ 카드(● 주제) 제목. 기본은 전부 펼침, 사용자가 접은 것만 접힘
@@ -2866,6 +2878,7 @@ olT.onclick = () => {
   const st = !bc.contains("olp") ? "닫음" : bc.contains("rfp") && rafl ? "라플" : "열림";
   const nx = st === "닫음" ? (rafl ? "라플" : "열림") : st === "라플" ? "열림" : "닫음";
   bc.toggle("olp", nx !== "닫음"); bc.toggle("rfp", nx === "라플"); tb.pos("공부홈.목차", nx); olLabel(); sideUpd();
+  if (nx !== "닫음") tb.pos("공부홈.순서", nx === "라플" ? "라플" : "기본");   // 넘기기 순서 = 마지막으로 연 목차
   if (nx !== "닫음") { olAt = null; drawOutline(); }
 };
 let olSel = [], olFocus = -1;   // 접는 목차에서 함께 열린 카드들 (목차 순서), 방금 연 카드
@@ -2911,7 +2924,7 @@ function drawOutline() {
       }
       if (c.h3t && !isOpen(kc + "|" + c.h2t + "|" + c.h3t)) return;
       const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false); starTo(d.lastChild, c);
-      d.classList.toggle("cur", olSel.includes(j)); d.onclick = () => olToggle(j); d.dataset.j = j;
+      d.classList.toggle("cur", olSel.includes(j)); d.classList.toggle("lift", moving === c.key); d.onclick = () => olToggle(j); d.dataset.j = j; d.dataset.k = c.key;
     });
   });
   olEl.scrollTop = top;
@@ -2921,10 +2934,134 @@ function olCur(moved) {
   const c1 = moved && olEl.querySelector(".ol-n.cur");
   if (c1) { const r = c1.getBoundingClientRect(), b = olEl.getBoundingClientRect(); if (r.top < b.top || r.bottom > b.bottom) olEl.scrollTop += r.top - b.top - b.height / 3; }
 }
+// 내 카드: 덱 = 교과서 카드 + 내 카드(기본 목차 자리 a 뒤에). 자리를 바꾸거나 만들고 지울 때마다 다시 짬
+function blankBody() { const b = document.createElement("div"); b.className = "b ublank"; return b; }
+function rebuild() {
+  const keepAt = deck[at]?.key, keepSel = olSel.map(j => deck[j]?.key);
+  uById = {}; ulist.forEach(u => uById[u.id] = u);
+  const kidsA = {};
+  ulist.forEach(u => {
+    const o = ucards[u.id] || (ucards[u.id] = { code: "", key: u.id, user: true, sid: "", all: 0, groups: [], points: [], body: blankBody() });
+    o.title = u.t; (kidsA[u.a] = kidsA[u.a] || []).push(o);
+  });
+  deck = []; chaps = baseChaps.map(g => ({ ch: g.ch, title: g.title, cards: [] }));
+  const seen = new Set();
+  const put = (c, g, par) => {
+    if (seen.has(c.key)) return; seen.add(c.key);
+    if (c.user) { c.h2t = par.h2t; c.h3t = par.h3t; c.ch = par.ch; }
+    g.cards.push(deck.length); deck.push(c);
+    (kidsA[c.key] || []).forEach(x => put(x, g, c));
+  };
+  baseChaps.forEach((g, gi) => g.cards.forEach(j => put(baseDeck[j], chaps[gi], baseDeck[j])));
+  const last = chaps[chaps.length - 1];
+  if (last) ulist.forEach(u => put(ucards[u.id], last, { h2t: "", h3t: "", ch: last.ch }));   // 자리 카드가 없어진 내 카드는 맨 뒤
+  at = Math.max(0, deck.findIndex(c => c.key === keepAt));
+  olSel = keepSel.map(k => deck.findIndex(c => c.key === k)).filter(j => j >= 0);
+}
+function raflRows() {   // 라플 항목마다 덱 번호: 교과서 카드 뒤에 그 카드 뒤로 둔 내 카드, 항목에 직접 둔 내 카드는 항목 끝
+  const idx = {}, kidsR = {}, seen = new Set(); deck.forEach((c, j) => idx[c.key] = j);
+  ulist.forEach(u => (kidsR[u.r] = kidsR[u.r] || []).push(u.id));
+  const exp = (k, out) => { if (seen.has(k) || idx[k] === undefined) return; seen.add(k); out.push(idx[k]); (kidsR[k] || []).forEach(x => exp(x, out)); };
+  return rafl.map((r, i) => { const out = []; r[2].forEach(k => exp(k, out)); (kidsR["r:" + i] || []).forEach(x => exp(x, out)); return { lv: r[0], t: r[1], js: out, all: [] }; });
+}
+function step(d) {   // 이전·다음: 마지막으로 연 목차가 라플이면 라플 순서 (사용자 2026-11-25). 라플에 없는 카드는 기본 순서
+  if (rafl && tb.posOf("공부홈.순서") !== "기본") {
+    const o = raflRows().flatMap(r => r.js), k = o.indexOf(at);
+    if (k >= 0) { const t = o[k + d]; return t === undefined ? -1 : t; }
+  }
+  const j = at + d; return j >= 0 && j < deck.length ? j : -1;
+}
+function saveU() { tb.save("내카드_" + cur, { list: ulist.map(u => ({ ...u })) }); }
+function guessA(i) {   // 흐린 라플 항목에서 만든 카드의 기본 목차 자리: 라플에서 그 앞 항목의 마지막 교과서 카드 뒤
+  const bi = {}; baseDeck.forEach((c, j) => bi[c.key] = j);
+  for (let k = i; k >= 0; k--) { const ks = rafl[k][2].filter(x => bi[x] !== undefined); if (ks.length) return ks.reduce((a, b) => bi[a] > bi[b] ? a : b); }
+  return baseDeck[0]?.key || "";
+}
+function newRow(row, pos) {   // 꾹 누른 줄 아래 제목 입력. Enter 나 다른 곳을 누르면 만들고 오른쪽에 열기
+  const d = document.createElement("div"); d.className = "ol-n lv3"; d.style.paddingLeft = row.style.paddingLeft;
+  const inp = document.createElement("input"); inp.type = "text"; inp.setAttribute("aria-label", "새 카드 제목");
+  d.append(document.createElement("i"), inp); row.after(d); inp.focus();
+  let fin = false;
+  const end = ok => {
+    if (fin) return; fin = true;
+    const v = inp.value.trim(); d.remove();
+    if (!ok || !v) return;
+    const u = { id: "u" + Date.now().toString(36), t: v, a: pos.a, r: pos.r }; ulist.push(u); saveU(); rebuild();
+    const j = deck.findIndex(c => c.key === u.id); olShow([j], j); mCard();
+  };
+  inp.onkeydown = e => { if (e.key === "Enter" && !e.isComposing) end(true); if (e.key === "Escape") end(false); };
+  inp.onblur = () => end(true);
+}
+function moveHere(row) {   // 들린 내 카드를 탭한 카드 뒤로 (라플 목차면 라플 자리만, 기본 목차면 기본 자리만)
+  const k = row.dataset.k, r = row.dataset.r, u = uById[moving]; if (!u) { moving = null; return drawOutline(); }
+  if (k === moving) { moving = null; return drawOutline(); }
+  const inR = bc.contains("rfp") && rafl, f = inR ? "r" : "a", to = k || (inR && r !== undefined ? "r:" + r : null);
+  if (!to) return;
+  ulist.forEach(x => { if (x[f] === u.id) x[f] = u[f]; });   // 이 카드 뒤에 붙어 있던 내 카드는 원래 자리에 남김
+  u[f] = to; moving = null; saveU(); rebuild(); drawOutline();
+}
+function uTitle(c) {   // 내 카드 제목: 누르면 고치기, 비우면 삭제 확인
+  const sp = document.createElement("span"); sp.className = "ut"; sp.textContent = c.title;
+  sp.onclick = e => {
+    e.stopPropagation();
+    const inp = document.createElement("input"); inp.className = "utin"; inp.type = "text"; inp.value = c.title; inp.setAttribute("aria-label", "카드 제목");
+    sp.replaceWith(inp); inp.focus(); inp.select();
+    let fin = false;
+    const back = () => inp.replaceWith(uTitle(c));
+    const end = ok => {
+      if (fin) return; fin = true;
+      const v = inp.value.trim();
+      if (!ok || v === c.title) return back();
+      if (v) { uById[c.key].t = v; c.title = v; saveU(); back(); drawOutline(); drawToc(); return; }
+      askDel(() => delU(c.key), back);
+    };
+    inp.onkeydown = ev => { if (ev.key === "Enter" && !ev.isComposing) end(true); if (ev.key === "Escape") end(false); };
+    inp.onblur = () => end(true);
+  };
+  return sp;
+}
+function askDel(yes, no) {
+  const w = document.createElement("div"); w.id = "ask";
+  const box = document.createElement("div"), p = document.createElement("p"); p.textContent = "삭제할까요?";
+  const b1 = document.createElement("button"), b2 = document.createElement("button"); b1.className = "del"; b1.textContent = "삭제"; b2.textContent = "취소";
+  b1.onclick = () => { w.remove(); yes(); }; b2.onclick = () => { w.remove(); no(); };
+  box.append(p, b1, b2); w.append(box); document.body.append(w);
+}
+function delU(id) {
+  const u = uById[id]; if (!u) return;
+  ulist.forEach(x => { if (x.a === id) x.a = u.a; if (x.r === id) x.r = u.r; });
+  ulist = ulist.filter(x => x !== u); delete ucards[id]; saveU(); rebuild();
+  const j = deck.findIndex(c => c.key === u.a); olSel = []; show(j >= 0 ? j : 0);
+}
+// 목차 꾹 누르기: 교과서 카드·라플 항목 = 그 아래 새 카드, 내 카드 = 들기 → 다른 줄을 탭하면 그 뒤로
+{
+  let t = null, x0 = 0, y0 = 0, fired = false;
+  const stop = () => { clearTimeout(t); t = null; };
+  olEl.addEventListener("pointerdown", e => {
+    const row = e.target.closest(".ol-n"); fired = false; stop();
+    if (!row || e.target.closest("input")) return;
+    x0 = e.clientX; y0 = e.clientY;
+    t = setTimeout(() => {
+      t = null; fired = true;
+      const k = row.dataset.k, r = row.dataset.r;
+      if (k && uById[k]) { moving = k; drawOutline(); return; }
+      if (k) return newRow(row, { a: k, r: k });
+      if (r !== undefined && rafl) newRow(row, { r: "r:" + r, a: guessA(+r) });
+    }, 550);
+  });
+  olEl.addEventListener("pointermove", e => { if (t && Math.hypot(e.clientX - x0, e.clientY - y0) > 8) stop(); });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(n => olEl.addEventListener(n, stop));
+  olEl.addEventListener("contextmenu", e => { if (e.target.closest(".ol-n")) e.preventDefault(); });
+  olEl.addEventListener("click", e => {
+    if (fired) { fired = false; e.stopPropagation(); e.preventDefault(); return; }
+    if (!moving || e.target.closest("input")) return;
+    const row = e.target.closest(".ol-n"); e.stopPropagation(); e.preventDefault();
+    if (row) moveHere(row);
+  }, true);
+}
 // 라플 목차: 라플 장 ▸ 항목 ▸ 세부 ▸ 연결된 카드. 카드가 하나도 없는 항목은 흐리게 (사용자 2026-11-25)
 function drawRafl() {
-  const idx = {}; deck.forEach((c, j) => idx[c.key] = j);
-  const rows = rafl.map(r => ({ lv: r[0], t: r[1], js: r[2].map(k => idx[k]).filter(j => j !== undefined), all: [] }));
+  const rows = raflRows();
   for (let i = rows.length - 1; i >= 0; i--) {   // 아래 항목 카드까지 모음
     const r = rows[i]; r.all = r.js.slice();
     for (let k = i + 1; k < rows.length && rows[k].lv > r.lv; k++) if (rows[k].lv === r.lv + 1) r.all.push(...rows[k].all);
@@ -2934,7 +3071,7 @@ function drawRafl() {
     if (shut >= 0 && r.lv > shut) return; shut = -1;
     const key = "r" + cur + "|" + i, open = !olShut.has(key), kids = r.js.length || (rows[i + 1] && rows[i + 1].lv > r.lv);
     const d = document.createElement("div"); d.className = "ol-n lv" + Math.min(r.lv, 2); d.style.paddingLeft = (6 + r.lv * 14) + "px";
-    const ic = document.createElement("i"), t = document.createElement("span"); t.textContent = r.t; d.append(ic, t); olEl.append(d);
+    const ic = document.createElement("i"), t = document.createElement("span"); t.textContent = r.t; d.append(ic, t); olEl.append(d); d.dataset.r = i;
     if (!r.all.length) { d.classList.add("none"); return; }
     ic.textContent = kids ? (open ? "▾" : "▸") : "";
     d.onclick = e => { if (e.target === ic) { open ? olShut.add(key) : olShut.delete(key); drawOutline(); return; } olShow(r.all); mCard(); };
@@ -2942,7 +3079,7 @@ function drawRafl() {
     r.js.forEach(j => {
       const c = deck[j], e = document.createElement("div"); e.className = "ol-n lv3"; e.style.paddingLeft = (6 + (r.lv + 1) * 14) + "px";
       const i2 = document.createElement("i"), s2 = document.createElement("span"); s2.textContent = c.title; e.append(i2, s2); starTo(s2, c);
-      e.classList.toggle("cur", olSel.includes(j)); e.onclick = () => olToggle(j); e.dataset.j = j; olEl.append(e);
+      e.classList.toggle("cur", olSel.includes(j)); e.classList.toggle("lift", moving === c.key); e.onclick = () => olToggle(j); e.dataset.j = j; e.dataset.k = c.key; olEl.append(e);
     });
   });
 }
