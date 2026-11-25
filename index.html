@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795600411992">
+<meta name="hito-build" content="1795600826753">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2154,6 +2154,12 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .ol-n.lift { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
 .ol-n input, .utin { font: inherit; color: var(--ink); background: none; border: 0; border-bottom: 1px solid var(--hair); outline: none; padding: 0; width: 100%; min-width: 0; }
 .ublank { aspect-ratio: 2 / 1; }
+#memo { display: none; position: fixed; right: 12px; top: 84px; bottom: 12px; z-index: 2; overflow-y: auto; overscroll-behavior: contain; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); width: calc(max(0px, (100vw - 920px) / 2) - 24px); }   /* 과목 손필기 메모장: 오른쪽 여백 (사용자 2026-11-25) */
+#memopad { position: relative; }
+#memopad > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
+body.side #memo { width: calc(220px + max(0px, (100vw - 1360px) / 2) - 24px); }
+@media (min-width: 1240px) { body.memo #memo { display: block; } }
+@media (min-width: 1000px) { body.memo.side #memo { display: block; } }
 .ut { cursor: text; }
 #ask { position: fixed; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .25); }
 #ask > div { background: var(--surface); color: var(--ink); border-radius: 18px; padding: 18px 22px; box-shadow: var(--shadow); text-align: center; }
@@ -2686,7 +2692,7 @@ function drawSubs() {
   dd.value = home.subjects.indexOf(hs);
 }
 async function pickSub(s) {
-  hs = s; act = null; tb.pos("공부홈", s.sub); drawSubs();
+  hs = s; act = null; tb.pos("공부홈", s.sub); drawSubs(); setMemo(s.sub);
   exsEl.textContent = "";
   const [e, st, rf] = await Promise.all([load("기출_" + s.sub).catch(() => null), tb.state("기출_" + s.sub), load("라플_" + s.sub).catch(() => null)]);
   if (hs !== s) return;
@@ -2933,6 +2939,22 @@ function drawOutline() {
 function olCur(moved) {
   const c1 = moved && olEl.querySelector(".ol-n.cur");
   if (c1) { const r = c1.getBoundingClientRect(), b = olEl.getBoundingClientRect(); if (r.top < b.top || r.bottom > b.bottom) olEl.scrollTop += r.top - b.top - b.height / 3; }
+}
+// 과목 메모장: 오른쪽 여백, 과목마다 하나. 맨 아래 필기보다 항상 화면 한 높이만큼 빈 곳이 남게 길어짐 (사용자 2026-11-25)
+const memoEl = document.createElement("div"); memoEl.id = "memo"; document.body.append(memoEl);
+function setMemo(sub) {
+  memoEl.textContent = ""; document.body.classList.toggle("memo", !!(sub && tb.ink));
+  if (!sub || !tb.ink) return;
+  const pad = document.createElement("div"); pad.id = "memopad"; memoEl.append(pad);
+  const card = { key: "메모", sub: "메모_" + sub, keep: true };
+  const grow = () => {
+    const w = pad.offsetWidth || 1, view = memoEl.clientHeight || innerHeight;
+    let y = 0; (card.ink || []).forEach(st => { for (let k = 1; k < st.p.length; k += 2) if (st.p[k] > y) y = st.p[k]; });
+    const h = Math.max(view, Math.ceil(y * w + view)); if (Math.abs(pad.offsetHeight - h) > 4) pad.style.height = h + "px";
+  };
+  pad.style.height = (memoEl.clientHeight || innerHeight) + "px";
+  card.onSave = grow; inkOn(pad, card);
+  if (card.inkSt) { const d0 = card.inkSt.draw; card.inkSt.draw = () => { grow(); d0(); }; }
 }
 // 내 카드: 덱 = 교과서 카드 + 내 카드(기본 목차 자리 a 뒤에). 자리를 바꾸거나 만들고 지울 때마다 다시 짬
 function blankBody() { const b = document.createElement("div"); b.className = "b ublank"; return b; }
