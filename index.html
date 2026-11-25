@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795600826753">
+<meta name="hito-build" content="1795601050168">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2132,9 +2132,9 @@ body.flow #flT { background: var(--ink); color: var(--surface); }
 #ol { display: none; }
 body.olp #ol { display: block; }
 /* 목차 = JBL 처럼 왼쪽 여백 칸 (사용자 2026-11-20). 기본은 전부 펼침, 접은 것만 접힘 */
-#olT, #rfT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+#hmT, #olT, #rfT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 body.olp #olT { background: var(--ink); color: var(--surface); }
-.solo #olT, .solo #rfT { display: none; }
+.solo #olT, .solo #rfT, .solo #hmT { display: none; }
 .ol-n.none { opacity: .35; cursor: default; }
 .ol-n.none:hover { background: none; }
 .ol-n { display: flex; align-items: baseline; gap: 4px; padding: 4px 5px; user-select: none; -webkit-user-select: none; border-radius: 8px; font-size: 12px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
@@ -2156,6 +2156,41 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .ublank { aspect-ratio: 2 / 1; }
 #memo { display: none; position: fixed; right: 12px; top: 84px; bottom: 12px; z-index: 2; overflow-y: auto; overscroll-behavior: contain; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); width: calc(max(0px, (100vw - 920px) / 2) - 24px); }   /* 과목 손필기 메모장: 오른쪽 여백 (사용자 2026-11-25) */
 #memopad { position: relative; }
+#hpg { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: none; flex-direction: column; }   /* 홈: 달력 + 하루 (사용자 2026-11-25) */
+#hpg.on { display: flex; }
+#hpg canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
+#hpg .hh { display: flex; align-items: center; gap: 10px; padding: max(12px, env(safe-area-inset-top)) 18px 6px 22px; }
+#hpg .hh .dd { font: 700 24px/1.2 "Gowun Batang", AppleMyungjo, serif; font-variant-numeric: tabular-nums; }
+#hpg .hh .dd small { margin-left: 8px; font: 500 13px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
+#hpg .hh .x { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--surface); box-shadow: var(--shadow); }
+#hpg .hh .x svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; }
+#hpg .hb { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 6px 18px max(18px, env(safe-area-inset-bottom)); }
+#hpg .cal { position: relative; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); padding: 12px 12px 10px; display: flex; flex-direction: column; min-height: 0; }
+#hpg .wk { display: grid; grid-template-columns: repeat(7, 1fr); font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 0 0 6px; }
+#hpg .wk span { padding-left: 6px; }
+#hpg .wk span:nth-child(6) { color: var(--b); } #hpg .wk span:nth-child(7) { color: var(--a); }
+#hpg .grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; border-top: 1px solid var(--hair); border-left: 1px solid var(--hair); }
+#hpg .d { border-right: 1px solid var(--hair); border-bottom: 1px solid var(--hair); padding: 3px 5px; font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+#hpg .d.sat { color: var(--b); } #hpg .d.sun { color: var(--a); }
+#hpg .d .n { display: inline-block; min-width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 10px; }
+#hpg .d.m1 .n { font-weight: 700; color: var(--ink); padding: 0 5px; }
+#hpg .d.today .n { background: var(--ink); color: var(--surface); font-weight: 600; padding: 0 5px; }
+#hpg .d.past { opacity: .55; }
+#hpg .d.exam { background: var(--a-soft); } #hpg .d.exam .n { color: var(--a); font-weight: 700; }
+#hpg .day { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+#hpg .dh { display: flex; align-items: center; gap: 10px; }
+#hpg .dh .nav { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); }
+#hpg .dh .nav svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+#hpg .dh .date { font: 700 22px/1.2 "Gowun Batang", AppleMyungjo, serif; }
+#hpg .dh .date small { margin-left: 6px; font: 500 14px "IBM Plex Sans KR", system-ui, sans-serif; color: var(--ink-2); }
+#hpg .att { margin-left: auto; }
+#hpg .att button { padding: 8px 16px; border-radius: 999px; background: var(--ink); color: var(--surface); font-size: 14px; font-weight: 600; box-shadow: var(--shadow); }
+#hpg .att span { padding: 7px 14px; border-radius: 999px; background: var(--b-soft); color: var(--b); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+#hpg .box { position: relative; background: var(--surface); border-radius: 20px; box-shadow: var(--shadow); padding: 10px 14px; min-height: 0; }
+#hpg .box h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+#hpg .box.todo { flex: 0.7; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 37px, var(--hair) 37px, var(--hair) 38px); background-position: 0 34px; }
+#hpg .pair { flex: 1.3; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 900px) { #hpg .hb { grid-template-columns: 1fr; overflow-y: auto; } #hpg .cal { min-height: 520px; } #hpg .box.todo { min-height: 220px; } #hpg .pair { min-height: 320px; } }
 #memopad > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; }
 body.side #memo { width: calc(220px + max(0px, (100vw - 1360px) / 2) - 24px); }
 @media (min-width: 1240px) { body.memo #memo { display: block; } }
@@ -2195,7 +2230,7 @@ tr > :last-child > .hxn { transform: translate(35%, -45%); }
 .hxn.a { color: #b45309; }
 @keyframes here { 0%, 40% { background: var(--accent-soft); box-shadow: 0 0 0 6px var(--accent-soft); } 100% { background: transparent; box-shadow: 0 0 0 6px transparent; } }
 </style></head><body>
-<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
+<button id="mback" aria-label="목차">‹</button><div id="hd"><span class="l"><span id="dday"></span><span class="l2"><button id="hmT">홈</button><select id="subdd" aria-label="과목"></select><button id="exT">JBL</button><button id="olT">목차</button><button id="flT">흐름</button><button id="srT">검색</button><input id="srQ" type="text" aria-label="검색" hidden></span></span><span class="r"><button id="out" class="round" aria-label="나가기"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span></div>
 <div id="app"><aside id="subs"></aside><div id="side"><section id="exs"></section><nav id="ol"></nav></div><main id="view">
 <div class="top"><div id="tabs" hidden><div class="mode" id="tabsw"><button data-t="basic">기초노트</button><button data-t="deep">심화카드</button></div><select id="chs" aria-label="장"></select><select id="cds" aria-label="목차"></select></div><div class="wrap"><div class="bar"><span id="prog"></span></div>
 <select id="sel" aria-label="과목"></select>
@@ -2940,6 +2975,56 @@ function olCur(moved) {
   const c1 = moved && olEl.querySelector(".ol-n.cur");
   if (c1) { const r = c1.getBoundingClientRect(), b = olEl.getBoundingClientRect(); if (r.top < b.top || r.bottom > b.bottom) olEl.scrollTop += r.top - b.top - b.height / 3; }
 }
+// 홈: 왼쪽 달력(11/23 주 ~ 1/14 주, 손글씨), 오른쪽 하루(날짜, 국시실 출석 시각, 오늘 할 일, 일기, 생각 — 손글씨). 저장: 필기 "플래너" 아래 키, 출석은 내 기록 "플래너" (사용자 2026-11-25)
+const hpg = document.createElement("div"); hpg.id = "hpg"; document.body.append(hpg);
+const HCAL0 = new Date(2026, 10, 23), HCAL1 = new Date(2027, 0, 17), HEXAM = new Date(2027, 0, 14), HW = ["일", "월", "화", "수", "목", "금", "토"];
+const hcards = {}, hcard = k => hcards[k] || (hcards[k] = { key: k, sub: "플래너", keep: true });
+const ymd = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+let hday = null, hplan = null;
+function openHome() {
+  hpg.textContent = ""; hpg.classList.add("on"); hday = new Date(); hday.setHours(0, 0, 0, 0);
+  const hh = document.createElement("div"); hh.className = "hh";
+  const dd = document.createElement("span"); dd.className = "dd"; dd.innerHTML = document.getElementById("dday").innerHTML;
+  const x = document.createElement("button"); x.className = "x"; x.setAttribute("aria-label", "닫기"); x.innerHTML = "<svg viewBox=\\"0 0 24 24\\"><path d=\\"M6 6l12 12M18 6 6 18\\"/></svg>";
+  x.onclick = () => { hpg.classList.remove("on"); hpg.textContent = ""; };
+  hh.append(dd, x);
+  const hb = document.createElement("div"); hb.className = "hb";
+  const cal = document.createElement("section"); cal.className = "cal";
+  const wk = document.createElement("div"); wk.className = "wk"; ["월", "화", "수", "목", "금", "토", "일"].forEach(t => { const sp = document.createElement("span"); sp.textContent = t; wk.append(sp); });
+  const grid = document.createElement("div"); grid.className = "grid";
+  const today = new Date(); today.setHours(0, 0, 0, 0); const same = (a, b) => a.toDateString() === b.toDateString();
+  for (let d = new Date(HCAL0); d <= HCAL1; d.setDate(d.getDate() + 1)) {
+    const c = document.createElement("div"), dow = (d.getDay() + 6) % 7, m1 = d.getDate() === 1 || same(d, HCAL0);
+    c.className = "d" + (dow === 5 ? " sat" : dow === 6 ? " sun" : "") + (m1 ? " m1" : "") + (same(d, today) ? " today" : "") + (d < today ? " past" : "") + (same(d, HEXAM) ? " exam" : "");
+    const n = document.createElement("span"); n.className = "n"; n.textContent = m1 ? (d.getMonth() + 1) + "/" + d.getDate() : d.getDate(); c.append(n); grid.append(c);
+  }
+  cal.append(wk, grid);
+  const day = document.createElement("section"); day.className = "day";
+  hb.append(cal, day); hpg.append(hh, hb);
+  inkOn(cal, hcard("달력"));
+  tb.state("플래너").then(v => { hplan = v || {}; drawDay(day); });
+}
+function drawDay(day) {
+  day.textContent = "";
+  const k = ymd(hday), today = ymd(new Date()), att = (hplan.출석 || {})[k];
+  const dh = document.createElement("div"); dh.className = "dh";
+  const nav = (d, path, lab) => { const b = document.createElement("button"); b.className = "nav"; b.setAttribute("aria-label", lab); b.innerHTML = "<svg viewBox=\\"0 0 24 24\\"><path d=\\"" + path + "\\"/></svg>"; b.onclick = () => { hday.setDate(hday.getDate() + d); drawDay(day); }; return b; };
+  const dt = document.createElement("span"); dt.className = "date"; dt.innerHTML = (hday.getMonth() + 1) + "월 " + hday.getDate() + "일<small>" + HW[hday.getDay()] + "요일</small>";
+  const a = document.createElement("div"); a.className = "att";
+  if (att) { const sp = document.createElement("span"); sp.textContent = "출석 " + att; a.append(sp); }
+  else if (k === today) {
+    const b = document.createElement("button"); b.textContent = "국시실 출석";
+    b.onclick = () => { const t = new Date(); hplan.출석 = { ...(hplan.출석 || {}), [k]: String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") }; tb.save("플래너", hplan); drawDay(day); };
+    a.append(b);
+  }
+  dh.append(nav(-1, "M15 5l-7 7 7 7", "전날"), dt, nav(1, "M9 5l7 7-7 7", "다음날"), a);
+  const box = (cls, title, key) => { const b = document.createElement("div"); b.className = "box " + cls; const h = document.createElement("h3"); h.textContent = title; b.append(h); return [b, key]; };
+  const [todo, k1] = box("todo", "오늘 할 일", "할일_" + k), pair = document.createElement("div"); pair.className = "pair";
+  const [di, k2] = box("", "일기", "일기_" + k), [th, k3] = box("", "생각", "생각_" + k);
+  pair.append(di, th); day.append(dh, todo, pair);
+  [[todo, k1], [di, k2], [th, k3]].forEach(([b, kk]) => inkOn(b, hcard(kk)));
+}
+document.getElementById("hmT").onclick = openHome;
 // 과목 메모장: 오른쪽 여백, 과목마다 하나. 맨 아래 필기보다 항상 화면 한 높이만큼 빈 곳이 남게 길어짐 (사용자 2026-11-25)
 const memoEl = document.createElement("div"); memoEl.id = "memo"; document.body.append(memoEl);
 function setMemo(sub) {
