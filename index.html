@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795845664905">
+<meta name="hito-build" content="1795845871761">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2259,9 +2259,24 @@ let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store =
 let noMap = new WeakMap();   // 카드 번호 (1)(2)…: 소제목마다 새로 셈, 교과서 카드만 (내 카드는 번호 없음 → 넣어도 다른 번호 안 바뀜) (사용자 2026-11-28)
 function cardNo(c) {
   if (!c || c.user) return "";
-  if (!noMap.has(c)) { noMap = new WeakMap(); chaps.forEach(g => { let k0 = null, n = 0; g.cards.forEach(j => { const d = deck[j]; if (!d || d.user) return; const k = (d.h2t || "") + "|" + (d.h3t || ""); if (k !== k0) { k0 = k; n = 0; } noMap.set(d, "(" + ++n + ")"); }); }); }
+  if (!noMap.has(c)) numberAll();
   return noMap.get(c) || "";
 }
+let h3Map = {};   // 소제목 번호 1) 2) …: 절(h2)마다 새로 셈 (사용자 2026-11-28)
+function numberAll() {
+  noMap = new WeakMap(); h3Map = {};
+  chaps.forEach(g => {
+    let k0 = null, n = 0, h2 = null, m = 0, h3 = null;
+    g.cards.forEach(j => {
+      const d = deck[j]; if (!d) return;
+      if ((d.h2t || "") !== h2) { h2 = d.h2t || ""; m = 0; h3 = null; }
+      if (d.h3t && d.h3t !== h3) { h3 = d.h3t; h3Map[g.ch + "|" + h2 + "|" + h3] ??= ++m + ")"; }
+      if (d.user) return;
+      const k = h2 + "|" + (d.h3t || ""); if (k !== k0) { k0 = k; n = 0; } noMap.set(d, "(" + ++n + ")");
+    });
+  });
+}
+const h3Lab = (ch, h2, h3) => { if (!Object.keys(h3Map).length) numberAll(); const n = h3Map[ch + "|" + (h2 || "") + "|" + h3]; return n ? n + " " + h3 : h3; };
 const noTitle = c => { const n = cardNo(c); return n ? n + " " + c.title : c.title; };
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
@@ -2540,7 +2555,7 @@ function cardX(j) {   // 카드 왼쪽 위 ×: 이 카드만 닫음, 마지막 �
 }
 function crumb(i) {
   const c = deck[i], g = chaps.find(x => x.cards.includes(i));
-  const parts = [g ? g.title : "", c.h2t, c.h3t].filter((v, k, a) => v && v !== c.title && a.indexOf(v) === k);
+  const parts = [g ? g.title : "", c.h2t, c.h3t].filter((v, k, a) => v && v !== c.title && a.indexOf(v) === k).map(v => v === c.h3t && g ? h3Lab(g.ch, c.h2t, v) : v);
   const d = document.createElement("div"); d.className = "crumb"; d.textContent = parts.join("  >  "); return d;
 }
 function show(i) {
@@ -2583,7 +2598,7 @@ function show(i) {
   drawToc(); drawOutline();
 }
 async function open_(id) {
-  qv.textContent = ""; deck = []; chaps = [];
+  qv.textContent = ""; deck = []; chaps = []; h3Map = {}; noMap = new WeakMap();
   const [d, st, us] = await Promise.all([load(id), tb.state(id), tb.state("내카드_" + id)]), box = document.createElement("div");
   store = st; tbCss = d.css || "";
   box.innerHTML = d.body;
@@ -2984,7 +2999,7 @@ function drawOutline() {
       if (c.h2t && !isOpen(kc + "|" + c.h2t)) return;
       if (c.h3t && c.h3t !== h3) {   // 소제목: ▸ 는 접기, 이름을 누르면 그 안의 주제 카드 전부 열기
         h3 = c.h3t; const k3 = kc + "|" + c.h2t + "|" + h3, h2c = c.h2t, h3c = h3;
-        node(2, h3, k3, true, () => { olShut.delete(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
+        node(2, h3Lab(g.ch, h2c, h3), k3, true, () => { olShut.delete(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
       }
       if (c.h3t && !isOpen(kc + "|" + c.h2t + "|" + c.h3t)) return;
       const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.user ? c.title : noTitle(c), "", false); starTo(d.lastChild, c);
@@ -3085,7 +3100,7 @@ function rebuild() {
     const o = ucards[u.id] || (ucards[u.id] = { code: "", key: u.id, user: true, sid: "", all: 0, groups: [], points: [], body: blankBody() });
     o.title = u.t; (kidsA[u.a] = kidsA[u.a] || []).push(o);
   });
-  deck = []; chaps = baseChaps.map(g => ({ ch: g.ch, title: g.title, cards: [] }));
+  deck = []; chaps = baseChaps.map(g => ({ ch: g.ch, title: g.title, cards: [] })); h3Map = {}; noMap = new WeakMap();
   const seen = new Set();
   const put = (c, g, par) => {
     if (seen.has(c.key)) return; seen.add(c.key);
