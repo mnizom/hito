@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="HiTo">
 <meta name="theme-color" content="#f6f4f7">
-<meta name="hito-build" content="1795601469604">
+<meta name="hito-build" content="1795845664905">
   <script type="module" crossorigin src="./assets/index-DAxaUDlm.js"></script>
 </head><body>
 <!-- 자동 생성 파일: ../hito.html 을 고치고 npm run sync -->
@@ -2034,16 +2034,16 @@ body.exmode .card .mode { display: none; }
   body.mcard #hd { padding-left: 58px; }
   body:not(.side) #view { display: block !important; }   /* JBL·목차 다 끄면 왼쪽 목록이 없으니 카드 화면 그대로 */
   #view { overflow-x: hidden; }
-  #qv .kn .k-side { display: block !important; }   /* 그림은 표 아래로 */
-  #qv .kn .k-side > div { width: auto !important; }
-  #qv .kn .k-sf { margin: 8px auto 0; max-width: 100%; }
-  #qv .kn img { max-width: 100%; height: auto; }
-  #qv .kn table:not(.txw) { display: block; overflow-x: auto; }   /* 넓은 표는 카드 안에서 옆으로 */
+  body:not(.fixw) #qv .kn .k-side { display: block !important; }   /* 그림은 표 아래로 */
+  body:not(.fixw) #qv .kn .k-side > div { width: auto !important; }
+  body:not(.fixw) #qv .kn .k-sf { margin: 8px auto 0; max-width: 100%; }
+  body:not(.fixw) #qv .kn img { max-width: 100%; height: auto; }
+  body:not(.fixw) #qv .kn table:not(.txw) { display: block; overflow-x: auto; }   /* 넓은 표는 카드 안에서 옆으로 */
   html, body { overflow-x: hidden; }
   #qv { padding-left: 10px; padding-right: 10px; }
-  #qv .card { overflow-x: hidden; padding-left: 14px; padding-right: 14px; }
-  #qv .kn { margin: 0; }
-  #qv .kn td.k-l { white-space: normal !important; }
+  body:not(.fixw) #qv .card { overflow-x: hidden; padding-left: 14px; padding-right: 14px; }
+  body:not(.fixw) #qv .kn { margin: 0; }
+  body:not(.fixw) #qv .kn td.k-l { white-space: normal !important; }
 }
 body:not(.solo) .wrap > .bar { display: none; }   /* 공부 홈: "전체 0 / 0" 없음 */   /* 공부 홈: 카드 위 드롭다운 없음 (접는 목차가 대신, 사용자 2026-11-09) */
 #subs { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 6px 6px 60px; overscroll-behavior: contain; }
@@ -2084,7 +2084,7 @@ body.olp:not(.noex) #exs { border-bottom: 1px solid var(--hair); }
 .note .nx { position: absolute; right: 10px; top: 8px; width: 26px; height: 26px; color: var(--ink-2); font-size: 18px; z-index: 4; }
 #qv .kn .k-phs { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
 #qv .kn .k-phn { color: var(--ink) !important; border-left-color: var(--accent) !important; font-size: 13px !important; }   /* 카드 사진(병리·영상)은 한 줄에 4장 (사용자 2026-11-10) */
-@media (max-width: 700px) { #qv .kn .k-phs { grid-template-columns: repeat(2, 1fr) !important; } }
+@media (max-width: 700px) { body:not(.fixw) #qv .kn .k-phs { grid-template-columns: repeat(2, 1fr) !important; } }
 #qv .kn td, #qv .kn th { word-break: keep-all; overflow-wrap: anywhere; }   /* 표 칸에서 한글이 한 글자씩 꺾이지 않게 (사용자 2026-11-10) */
 @media (max-width: 1400px) {   /* 포스트잇 칸 때문에 카드가 좁으면 그림은 표 아래로 (표가 쪽 폭 전체) */
   #qv .kn .k-side { display: block !important; }
@@ -2135,6 +2135,10 @@ body.olp #ol { display: block; }
 #hmT, #olT, #rfT { padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
 body.olp #olT { background: var(--ink); color: var(--surface); }
 .solo #olT, .solo #rfT, .solo #hmT { display: none; }
+.ol-part { padding: 14px 6px 4px; font-size: 12.5px; line-height: 1.4; color: var(--ink); word-break: keep-all; user-select: none; -webkit-user-select: none; }
+.ol-part:first-child { padding-top: 4px; }
+.ol-part b { font-weight: 700; }
+.ol-part span { display: block; font-size: 11px; color: var(--ink-2); }
 .ol-n.none { opacity: .35; cursor: default; }
 .ol-n.none:hover { background: none; }
 .ol-n { display: flex; align-items: baseline; gap: 4px; padding: 4px 5px; user-select: none; -webkit-user-select: none; border-radius: 8px; font-size: 12px; line-height: 1.35; color: var(--ink-2); cursor: pointer; word-break: keep-all; }
@@ -2152,6 +2156,8 @@ body.olp #olT { background: var(--ink); color: var(--surface); }
 .cx:hover { background: var(--surface-2); color: var(--ink); }
 .ol-n { -webkit-touch-callout: none; }
 .ol-n.lift { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+body.rfp #ol .ol-n { font-size: 10.5px; padding: 3px 5px; }   /* 라플 목차만 글씨 작게 (사용자 2026-11-28) */
+body.rfp #ol .ol-n i { font-size: 9.5px; }
 .ol-n input, .utin { font: inherit; color: var(--ink); background: none; border: 0; border-bottom: 1px solid var(--hair); outline: none; padding: 0; width: 100%; min-width: 0; }
 .ublank { aspect-ratio: 2 / 1; }
 #memo { display: none; position: fixed; right: 12px; top: 84px; bottom: 12px; z-index: 2; overflow-y: auto; overscroll-behavior: contain; border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); width: calc(max(0px, (100vw - 920px) / 2) - 24px); }   /* 과목 손필기 메모장: 오른쪽 여백 (사용자 2026-11-25) */
@@ -2214,6 +2220,7 @@ body.side #memo { width: calc(220px + max(0px, (100vw - 1360px) / 2) - 24px); }
 body:not(.solo) #sel, body:not(.solo) .nav { display: none; }   /* 공부 홈에서는 과목 선택·카드 번호 이동(‹ 0701 ›) 없음 */
 .card.more { margin-top: 18px; }
 #qv .card { position: relative; }
+body.fixw #qv .card { width: var(--cw); zoom: var(--cz); padding: var(--cpad) !important; font-size: var(--cfs); }   /* 화면 폭이 줄어도 카드는 전체 화면 때 폭 그대로 통째로 줄임: 글줄·손글씨 자리 그대로 (사용자 2026-11-28) */
 #qv .card > canvas.ink { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 3; }
 #inkbar { display: none; position: fixed; left: 0; top: 0; gap: 8px; z-index: 40; }   /* 도구함: 펜을 한 자리에 꾹 누르면 그 자리에 (사용자 2026-11-10) */
 #inkbar.show { display: flex; }
@@ -2249,6 +2256,13 @@ const mic = document.getElementById("mic"), pen = document.getElementById("pen")
 const HOME_STUDY = false;   // 공부 홈에서 학습(빈칸·쓰기·말하기·채점) 켜기. 사용자 2026-11-09: 기능은 저장해 두고 지금은 카드만 → true 로 바꾸면 기출 끈 상태에서 다시 학습 가능
 let baseDeck = [], baseChaps = [], ulist = [], uById = {}, ucards = {}, moving = null;   // 내 카드 (사용자 2026-11-25): ulist = [{id, t 제목, a 기본 목차 자리(이 카드 뒤), r 라플 자리(카드 키 또는 "r:항목번호")}], 내 기록 저장소 "내카드_<과목>"
 let chaps = [], deck = [], at = 0, cur = null, recorder = null, run = 0, store = {}, done = null, tbCss = "", extraNext = [];   // tbCss = 과목 데이터 공통 css(심화판), extraNext = 다음 show 에서 함께 보일 카드(기출 하나가 여러 ● 주제에 걸칠 때)
+let noMap = new WeakMap();   // 카드 번호 (1)(2)…: 소제목마다 새로 셈, 교과서 카드만 (내 카드는 번호 없음 → 넣어도 다른 번호 안 바뀜) (사용자 2026-11-28)
+function cardNo(c) {
+  if (!c || c.user) return "";
+  if (!noMap.has(c)) { noMap = new WeakMap(); chaps.forEach(g => { let k0 = null, n = 0; g.cards.forEach(j => { const d = deck[j]; if (!d || d.user) return; const k = (d.h2t || "") + "|" + (d.h3t || ""); if (k !== k0) { k0 = k; n = 0; } noMap.set(d, "(" + ++n + ")"); }); }); }
+  return noMap.get(c) || "";
+}
+const noTitle = c => { const n = cardNo(c); return n ? n + " " + c.title : c.title; };
 const cache = {}, load = id => cache[id] || (cache[id] = tb.load(id).catch(e => { delete cache[id]; throw e; }));   // 과목 데이터는 한 번만 받음 (기초노트·심화 탭을 오갈 때)
 // study = 학습 모드(빈칸 가림 + 마이크·펜·채점) / 보기 모드(답이 다 보임). 채점 전까지 모아 두는 것: draft = 칸에 쓴 답, heard = 말한 받아쓰기
 // seen = 이번에 눌러 열어 본 칸(채점에서 뺌), res = 이번 채점 결과(칸 아래 표시), writingOn = 입력칸 켜 둠
@@ -2444,7 +2458,7 @@ function inkOn(box, card) {
     if (INK.act !== st) { inkAct(st); INK.penAt = Date.now(); e.preventDefault(); return; }   // 펜으로 한 번 터치해야 이 카드(포스트잇)에 써짐 (사용자 2026-11-10)
     e.preventDefault(); e.stopPropagation(); try { box.setPointerCapture(e.pointerId); } catch {}
     INK.penAt = Date.now();
-    const at_ = ev => { const rc = box.getBoundingClientRect(), w = box.offsetWidth; return [(ev.clientX - rc.left) / w, (ev.clientY - rc.top) / w]; };
+    const at_ = ev => { const rc = box.getBoundingClientRect(), w = rc.width || box.offsetWidth; return [(ev.clientX - rc.left) / w, (ev.clientY - rc.top) / w]; };
     const erase = ev => {
       const [x, y] = at_(ev), lim = 12 / box.offsetWidth;
       const hit = st.strokes.filter(s => { for (let k = 0; k < s.p.length; k += 2) if (Math.hypot(s.p[k] - x, s.p[k + 1] - y) < lim) return true; return false; });
@@ -2537,7 +2551,7 @@ function show(i) {
   qv.textContent = "";
   const box = document.createElement("div"); box.className = "card";
   box.append(cardX(i), crumb(i));
-  const h = document.createElement("h2"); if (c.user) h.append(uTitle(c)); else h.textContent = c.title; box.append(h); starCorner(box, c);
+  const h = document.createElement("h2"); if (c.user) h.append(uTitle(c)); else h.textContent = noTitle(c); box.append(h); starCorner(box, c);
   const sw = document.createElement("div"); sw.className = "mode";
   [["view", "보기"], ["study", "학습"]].forEach(([m, t]) => { const b = document.createElement("button"); b.dataset.m = m; b.textContent = t; b.onclick = () => { studyPref = m === "study"; setMode(studyPref); }; sw.append(b); });
   const ctl = document.createElement("div"); ctl.className = "ctl"; ctl.append(mic, pen, ok, sw); h.append(ctl);
@@ -2548,7 +2562,7 @@ function show(i) {
   ex.forEach(j => {   // 같은 기출에 걸린 다른 ● 주제: 아래에 이어서 (빈칸은 눌러서 열기만, 채점은 위 카드만)
     const d = deck[j], b2 = document.createElement("div"); b2.className = "card more";
     b2.append(cardX(j), crumb(j));
-    const h3 = document.createElement("h2"); h3.textContent = d.title; b2.append(h3); starCorner(b2, d);
+    const h3 = document.createElement("h2"); h3.textContent = noTitle(d); b2.append(h3); starCorner(b2, d);
     const o2 = document.createElement("div"); o2.className = "origx";
     o2.onclick = e => { const k = e.target.closest(".bk"); if (k && study) k.classList.toggle("seen"); };
     o2.append(d.body.cloneNode(true)); b2.append(o2); qv.append(crow(b2, d));
@@ -2957,7 +2971,10 @@ function drawOutline() {
     else i.textContent = "";   // 주제 줄에는 표시 없음 (사용자 2026-11-09)
     const t = document.createElement("span"); t.textContent = text; d.append(i, t); olEl.append(d); return d;
   };
+  const partAt = {}; (hs?.parts || []).forEach(([t, cs]) => { if (cs?.length) partAt[cs[0]] = t; });   // 부(Ⅰ Ⅱ …): 장 묶음 머리, 이름만 봐도 흐름 (공부홈.json parts, 사용자 2026-11-28)
   chaps.forEach(g => {
+    const pt = partAt[+g.ch];
+    if (pt) { const d = document.createElement("div"), k = pt.indexOf(": "), b = document.createElement("b"); d.className = "ol-part"; b.textContent = k > 0 ? pt.slice(0, k) : pt; d.append(b); if (k > 0) { const f = document.createElement("span"); f.textContent = pt.slice(k + 2); d.append(f); } olEl.append(d); }
     const kc = "c" + g.ch; node(0, g.ch + " " + g.title, kc, true);
     if (!isOpen(kc)) return;
     let h2 = null, h3 = null;
@@ -2970,7 +2987,7 @@ function drawOutline() {
         node(2, h3, k3, true, () => { olShut.delete(k3); olShow(g.cards.filter(x => deck[x].h2t === h2c && deck[x].h3t === h3c)); mCard(); });
       }
       if (c.h3t && !isOpen(kc + "|" + c.h2t + "|" + c.h3t)) return;
-      const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.title, "", false); starTo(d.lastChild, c);
+      const lv = c.h3t ? 3 : c.h2t ? 2 : 1, d = node(lv, c.user ? c.title : noTitle(c), "", false); starTo(d.lastChild, c);
       d.classList.toggle("cur", olSel.includes(j)); d.classList.toggle("lift", moving === c.key); d.onclick = () => olToggle(j); d.dataset.j = j; d.dataset.k = c.key;
     });
   });
@@ -3202,11 +3219,29 @@ function drawRafl() {
     if (!open) { shut = r.lv; return; }
     r.js.forEach(j => {
       const c = deck[j], e = document.createElement("div"); e.className = "ol-n lv3"; e.style.paddingLeft = (6 + (r.lv + 1) * 14) + "px";
-      const i2 = document.createElement("i"), s2 = document.createElement("span"); s2.textContent = c.title; e.append(i2, s2); starTo(s2, c);
+      const i2 = document.createElement("i"), s2 = document.createElement("span"); s2.textContent = c.user ? c.title : noTitle(c); e.append(i2, s2); starTo(s2, c);
       e.classList.toggle("cur", olSel.includes(j)); e.classList.toggle("lift", moving === c.key); e.onclick = () => olToggle(j); e.dataset.j = j; e.dataset.k = c.key; olEl.append(e);
     });
   });
 }
+// 아이패드에서 앱 폭이 줄어도 카드 비율 그대로 (사용자 2026-11-28): 전체 화면일 때 카드 폭·여백·글씨 크기를 방향별로 기억 → 좁아지면 그 폭으로 그리고 통째로 축소
+function cardFit() {
+  const ot = screen.orientation?.type || (Math.abs(window.orientation || 0) === 90 ? "landscape" : "portrait"), land = String(ot).startsWith("landscape");
+  const fw = land ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height), key = "hito.cardW." + (land ? "l" : "p");
+  const cs = getComputedStyle(qv), avail = qv.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  if (avail < 100) return;   // 카드 화면이 숨어 있을 때(휴대폰 목차 화면)는 그대로
+  if (innerWidth >= fw - 2) {
+    bc.remove("fixw");
+    const c = qv.querySelector(".card"); if (c) { const p = getComputedStyle(c); lsSet(key, JSON.stringify({ w: avail, pad: p.padding, fs: p.fontSize })); }
+    return;
+  }
+  let rec = null; try { rec = JSON.parse(lsGet(key)) } catch {}
+  if (!rec?.w || rec.w <= avail + 1) { bc.remove("fixw"); return; }
+  qv.style.setProperty("--cw", rec.w + "px"); qv.style.setProperty("--cz", avail / rec.w); qv.style.setProperty("--cpad", rec.pad); qv.style.setProperty("--cfs", rec.fs);
+  bc.add("fixw");
+}
+{ let q = 0; const fit = () => { if (!q) q = requestAnimationFrame(() => { q = 0; cardFit(); }); };
+  new ResizeObserver(fit).observe(qv); new MutationObserver(fit).observe(qv, { childList: true }); addEventListener("orientationchange", fit); }
 load("공부홈").then(h => {
   if (!h?.subjects?.length) return startSolo();
   home = h;
